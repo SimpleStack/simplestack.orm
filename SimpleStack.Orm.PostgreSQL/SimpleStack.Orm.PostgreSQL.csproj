@@ -7,8 +7,8 @@
     <ProjectGuid>{74D93896-B300-4955-AD2D-BBCA74FE1CD4}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Dapper.Link.PostgreSQL</RootNamespace>
-    <AssemblyName>Dapper.Link.PostgreSQL</AssemblyName>
+    <RootNamespace>SimpleStack.Orm.PostgreSQL</RootNamespace>
+    <AssemblyName>SimpleStack.Orm.PostgreSQL</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>

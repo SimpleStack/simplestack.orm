@@ -7,8 +7,8 @@
     <ProjectGuid>{6B5B762C-AA7B-486E-9429-FABC6465777F}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Dapper.Linq.Tests</RootNamespace>
-    <AssemblyName>Dapper.Linq.Tests</AssemblyName>
+    <RootNamespace>SimpleStack.Orm.Tests</RootNamespace>
+    <AssemblyName>SimpleStack.Orm.Tests</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>

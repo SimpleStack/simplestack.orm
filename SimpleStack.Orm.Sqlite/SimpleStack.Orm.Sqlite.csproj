@@ -7,8 +7,8 @@
     <ProjectGuid>{AD93E924-EDFF-44D2-8414-D3103B0344CB}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Dapper.Linq.Sqlite</RootNamespace>
-    <AssemblyName>Dapper.Linq.Sqlite</AssemblyName>
+    <RootNamespace>SimpleStack.Orm.Sqlite</RootNamespace>
+    <AssemblyName>SimpleStack.Orm.Sqlite</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <NuGetPackageImportStamp>416e2be3</NuGetPackageImportStamp>

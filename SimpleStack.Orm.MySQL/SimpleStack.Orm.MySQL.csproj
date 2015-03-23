@@ -7,8 +7,8 @@
     <ProjectGuid>{3AE3BBF2-B92D-4055-8272-42E018DA199B}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Dapper.Linq.MySQL</RootNamespace>
-    <AssemblyName>Dapper.Linq.MySQL</AssemblyName>
+    <RootNamespace>SimpleStack.Orm.MySQL</RootNamespace>
+    <AssemblyName>SimpleStack.Orm.MySQL</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
