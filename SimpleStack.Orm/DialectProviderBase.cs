@@ -960,8 +960,7 @@ namespace SimpleStack.Orm
 		/// <param name="compositeIndex">Zero-based index of the composite.</param>
 		/// <param name="modelDef">      The model definition.</param>
 		/// <returns>The composite index name with schema.</returns>
-		protected virtual string GetCompositeIndexNameWithSchema(CompositeIndexAttribute compositeIndex,
-			ModelDefinition modelDef)
+		protected virtual string GetCompositeIndexNameWithSchema(CompositeIndexAttribute compositeIndex,ModelDefinition modelDef)
 		{
 			return compositeIndex.Name ?? GetIndexName(compositeIndex.Unique,
 				(modelDef.IsInSchema
@@ -997,7 +996,7 @@ namespace SimpleStack.Orm
 		/// <summary>Gets model definition.</summary>
 		/// <param name="modelType">Type of the model.</param>
 		/// <returns>The model definition.</returns>
-		public static ModelDefinition GetModelDefinition(Type modelType)
+		protected static ModelDefinition GetModelDefinition(Type modelType)
 		{
 			return modelType.GetModelDefinition();
 		}
