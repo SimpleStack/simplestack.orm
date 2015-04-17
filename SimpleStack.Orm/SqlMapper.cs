@@ -898,13 +898,13 @@ namespace Dapper
 			switch (type.FullName)
 			{
 				case "Microsoft.SqlServer.Types.SqlGeography":
-					AddTypeHandler(type, handler = new UdtTypeHandler("GEOGRAPHY"));
+					AddTypeHandler(type, handler = new UdtTypeHandler("geography"));
 					return DbType.Object;
 				case "Microsoft.SqlServer.Types.SqlGeometry":
-					AddTypeHandler(type, handler = new UdtTypeHandler("GEOMETRY"));
+					AddTypeHandler(type, handler = new UdtTypeHandler("geometry"));
 					return DbType.Object;
 				case "Microsoft.SqlServer.Types.SqlHierarchyId":
-					AddTypeHandler(type, handler = new UdtTypeHandler("HIERARCHYID"));
+					AddTypeHandler(type, handler = new UdtTypeHandler("hierarchyid"));
 					return DbType.Object;
 			}
 			if (demand)
@@ -1025,6 +1025,15 @@ namespace Dapper
 					 SqlMapper.connectionStringComparer.Equals(connectionString, other.connectionString) &&
 					 parametersType == other.parametersType;
 			}
+		}
+
+		/// <summary>
+		/// Obtains the data as a list; if it is *already* a list, the original object is returned without
+		/// any duplication; otherwise, ToList() is invoked.
+		/// </summary>
+		public static List<T> AsList<T>(this IEnumerable<T> source)
+		{
+			return (source == null || source is List<T>) ? (List<T>)source : source.ToList();
 		}
 
 #if CSHARP30
@@ -1515,7 +1524,7 @@ this IDbConnection cnn, string sql, object param = null, IDbTransaction transact
 				cmd = command.SetupCommand(cnn, info.ParamReader);
 				reader = cmd.ExecuteReader(wasClosed ? CommandBehavior.CloseConnection | CommandBehavior.SequentialAccess : CommandBehavior.SequentialAccess);
 
-				var result = new GridReader(cmd, reader, identity, command.Parameters as DynamicParameters);
+				var result = new GridReader(cmd, reader, identity, command.Parameters as DynamicParameters, command.AddToCache);
 				cmd = null; // now owned by result
 				wasClosed = false; // *if* the connection was closed and we got this far, then we now have a reader
 				// with the CloseConnection flag, so the reader will deal with the connection; we
@@ -2591,9 +2600,11 @@ this IDbConnection cnn, string sql, Func<TFirst, TSecond, TThird, TFourth, TRetu
 
 					 if (startBound == 0)
 					 {
-						 r.GetValues(values);
 						 for (int i = 0; i < values.Length; i++)
-							 if (values[i] is DBNull) values[i] = null;
+						 {
+							 object val = r.GetValue(i);
+							 values[i] = val is DBNull ? null : val;
+						 }
 					 }
 					 else
 					 {
@@ -4107,13 +4118,15 @@ Type type, IDataReader reader, int startBound = 0, int length = -1, bool returnN
 			private IDataReader reader;
 			private IDbCommand command;
 			private Identity identity;
+			private bool addToCache;
 
-			internal GridReader(IDbCommand command, IDataReader reader, Identity identity, SqlMapper.IParameterCallbacks callbacks)
+			internal GridReader(IDbCommand command, IDataReader reader, Identity identity, SqlMapper.IParameterCallbacks callbacks, bool addToCache)
 			{
 				this.command = command;
 				this.reader = reader;
 				this.identity = identity;
 				this.callbacks = callbacks;
+				this.addToCache = addToCache;
 			}
 
 #if !CSHARP30
@@ -4167,7 +4180,7 @@ Type type, IDataReader reader, int startBound = 0, int length = -1, bool returnN
 				if (reader == null) throw new ObjectDisposedException(GetType().FullName, "The reader has been disposed; this can happen after all data has been consumed");
 				if (consumed) throw new InvalidOperationException("Query results must be consumed in the correct order, and each result can only be consumed once");
 				var typedIdentity = identity.ForGrid(type, gridIndex);
-				CacheInfo cache = GetCacheInfo(typedIdentity, null, true);
+				CacheInfo cache = GetCacheInfo(typedIdentity, null, addToCache);
 				var deserializer = cache.Deserializer;
 
 				int hash = GetColumnHash(reader);
@@ -4463,6 +4476,9 @@ Type type, IDataReader reader, int startBound = 0, int length = -1, bool returnN
 			internal Action<object, DynamicParameters> OutputCallback { get; set; }
 			internal object OutputTarget { get; set; }
 			internal bool CameFromTemplate { get; set; }
+
+			public byte? Precision { get; set; }
+			public byte? Scale { get; set; }
 		}
 
 		/// <summary>
@@ -4535,20 +4551,39 @@ Type type, IDataReader reader, int startBound = 0, int length = -1, bool returnN
 		/// <summary>
 		/// Add a parameter to this dynamic parameter list
 		/// </summary>
-		/// <param name="name"></param>
-		/// <param name="value"></param>
-		/// <param name="dbType"></param>
-		/// <param name="direction"></param>
-		/// <param name="size"></param>
+		public void Add(string name, object value, DbType? dbType, ParameterDirection? direction, int? size)
+		{
+			parameters[Clean(name)] = new ParamInfo()
+			{
+				Name = name,
+				Value = value,
+				ParameterDirection = direction ?? ParameterDirection.Input,
+				DbType = dbType,
+				Size = size
+			};
+		}
+
+		/// <summary>
+		/// Add a parameter to this dynamic parameter list
+		/// </summary>
 		public void Add(
 #if CSHARP30
-string name, object value, DbType? dbType, ParameterDirection? direction, int? size
+string name, object value, DbType? dbType, ParameterDirection? direction, int? size, byte? precision, byte? scale
 #else
-string name, object value = null, DbType? dbType = null, ParameterDirection? direction = null, int? size = null
+string name, object value = null, DbType? dbType = null, ParameterDirection? direction = null, int? size = null, byte? precision = null, byte? scale = null
 #endif
 )
 		{
-			parameters[Clean(name)] = new ParamInfo() { Name = name, Value = value, ParameterDirection = direction ?? ParameterDirection.Input, DbType = dbType, Size = size };
+			parameters[Clean(name)] = new ParamInfo()
+			{
+				Name = name,
+				Value = value,
+				ParameterDirection = direction ?? ParameterDirection.Input,
+				DbType = dbType,
+				Size = size,
+				Precision = precision,
+				Scale = scale
+			};
 		}
 
 		static string Clean(string name)
@@ -4676,11 +4711,11 @@ string name, object value = null, DbType? dbType = null, ParameterDirection? dir
 					p.Direction = param.ParameterDirection;
 					if (handler == null)
 					{
+						p.Value = val ?? DBNull.Value;
 						if (dbType != null && p.DbType != dbType)
 						{
 							p.DbType = dbType.Value;
 						}
-						p.Value = val ?? DBNull.Value;
 						var s = val as string;
 						if (s != null)
 						{
@@ -4693,6 +4728,8 @@ string name, object value = null, DbType? dbType = null, ParameterDirection? dir
 						{
 							p.Size = param.Size.Value;
 						}
+						if (param.Precision != null) p.Precision = param.Precision.Value;
+						if (param.Scale != null) p.Scale = param.Scale.Value;
 					}
 					else
 					{
@@ -4738,7 +4775,7 @@ string name, object value = null, DbType? dbType = null, ParameterDirection? dir
 			{
 				if (default(T) != null)
 				{
-					throw new ApplicationException("Attempting to cast a DBNull to a non nullable type!");
+					throw new ApplicationException("Attempting to cast a DBNull to a non nullable type! Note that out/return parameters will not have updated values until the data stream completes (after the 'foreach' for Query(..., buffered: false), or after the GridReader has been disposed for QueryMultiple)");
 				}
 				return default(T);
 			}
