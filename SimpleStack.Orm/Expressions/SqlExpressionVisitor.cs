@@ -249,20 +249,23 @@ namespace SimpleStack.Orm.Expressions
 		{
 			if (_underlyingExpression != null)
 				_underlyingExpression = null; //Where() clears the expression
-			return Where(string.Empty);
+			_whereExpression = string.Empty;
+			return this;
 		}
 
+		// Disabled to force use of Expression<Func<T, bool>> 
+		//
 		/// <summary>Wheres the given predicate.</summary>
 		/// <param name="sqlFilter">   A filter specifying the SQL.</param>
 		/// <param name="filterParams">Options for controlling the filter.</param>
 		/// <returns>A SqlExpressionVisitor&lt;T&gt;</returns>
-		public virtual SqlExpressionVisitor<T> Where(string sqlFilter, params object[] filterParams)
-		{
-			_whereExpression = !string.IsNullOrEmpty(sqlFilter) ? sqlFilter.SqlFormat(filterParams) : string.Empty;
-			if (!string.IsNullOrEmpty(_whereExpression))
-				_whereExpression = (WhereStatementWithoutWhereString ? "" : "WHERE ") + _whereExpression;
-			return this;
-		}
+		//public virtual SqlExpressionVisitor<T> Where(string sqlFilter, params object[] filterParams)
+		//{
+		//	_whereExpression = !string.IsNullOrEmpty(sqlFilter) ? sqlFilter.SqlFormat(filterParams) : string.Empty;
+		//	if (!string.IsNullOrEmpty(_whereExpression))
+		//		_whereExpression = (WhereStatementWithoutWhereString ? "" : "WHERE ") + _whereExpression;
+		//	return this;
+		//}
 
 		/// <summary>Wheres the given predicate.</summary>
 		/// <param name="predicate">The predicate.</param>
