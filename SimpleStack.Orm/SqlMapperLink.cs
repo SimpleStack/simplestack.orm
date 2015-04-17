@@ -353,21 +353,27 @@ namespace SimpleStack.Orm
 			return dbConn.ExecuteScalar<int>(Config.DialectProvider.ExpressionVisitor<T>().ToDeleteRowStatement());
 		}
 
-		/// <summary>Alias for CreateTableIfNotExists.</summary>
+		/// <summary>Create Table</summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		/// <param name="dbConn">   The dbConn to act on.</param>
-		/// <param name="overwrite">true to overwrite, false to preserve.</param>
+		/// <param name="dropIfExists">true to drop table if already exists.</param>
 		public static void CreateTable<T>(this IDbConnection dbConn, bool dropIfExists)
 			where T : new()
 		{
 			var tableType = typeof(T);
 			CreateTable(dbConn, dropIfExists, tableType);
 		}
-		/// <summary>An IDbCommand extension method that creates a table.</summary>
-		/// <exception cref="Exception">Thrown when an exception error condition occurs.</exception>
-		/// <param name="dbCmd">    The dbCmd to act on.</param>
-		/// <param name="overwrite">true to overwrite, false to preserve.</param>
-		/// <param name="modelType">Type of the model.</param>
+
+		/// <summary>Drop table.</summary>
+		/// <typeparam name="T">Generic type parameter.</typeparam>
+		/// <param name="dbConn">   The dbConn to act on.</param>
+		public static void DropTable<T>(this IDbConnection dbConn)
+			where T : new()
+		{
+			var tableType = typeof(T);
+			DropTable(dbConn, tableType);
+		}
+
 		private static void CreateTable(this IDbConnection dbCmd, bool overwrite, Type modelType)
 		{
 			var modelDef = modelType.GetModelDefinition();
@@ -378,7 +384,7 @@ namespace SimpleStack.Orm
 
 			if (overwrite && tableExists)
 			{
-				DropTable(dbCmd, modelDef);
+				DropTable(dbCmd, modelType);
 				tableExists = false;
 			}
 
@@ -422,14 +428,11 @@ namespace SimpleStack.Orm
 			}
 		}
 
-		/// <summary>Drop table.</summary>
-		/// <param name="dbCmd">   The dbCmd to act on.</param>
-		/// <param name="modelDef">The model definition.</param>
-		private static void DropTable(IDbConnection dbCmd, ModelDefinition modelDef)
+		private static void DropTable(IDbConnection dbCmd, Type modelType)
 		{
 			try
 			{
-
+				var modelDef = modelType.GetModelDefinition();
 				var dialectProvider = Config.DialectProvider;
 				var tableName = dialectProvider.NamingStrategy.GetTableName(modelDef.ModelName);
 
