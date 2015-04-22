@@ -4711,11 +4711,11 @@ string name, object value = null, DbType? dbType = null, ParameterDirection? dir
 					p.Direction = param.ParameterDirection;
 					if (handler == null)
 					{
-						p.Value = val ?? DBNull.Value;
 						if (dbType != null && p.DbType != dbType)
 						{
 							p.DbType = dbType.Value;
 						}
+						p.Value = val ?? DBNull.Value;
 						var s = val as string;
 						if (s != null)
 						{
