@@ -82,15 +82,15 @@ namespace SimpleStack.Orm
 				}
 				else
 				{
-					var sqlInValues = sqlParam as SqlInValues;
-					if (sqlInValues != null)
-					{
-						escapedParams.Add(sqlInValues.ToSqlInString());
-					}
-					else
-					{
+					//var sqlInValues = sqlParam as SqlInValues;
+					//if (sqlInValues != null)
+					//{
+					//	escapedParams.Add(sqlInValues.ToSqlInString());
+					//}
+					//else
+					//{
 						escapedParams.Add(Config.DialectProvider.GetQuotedValue(sqlParam, sqlParam.GetType()));
-					}
+					//}
 				}
 			}
 			return string.Format(sqlText, escapedParams.ToArray());
