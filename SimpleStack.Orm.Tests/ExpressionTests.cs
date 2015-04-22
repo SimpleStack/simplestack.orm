@@ -17,7 +17,7 @@ namespace SimpleStack.Orm.Tests
 	[TestFixture]
     public abstract partial class ExpressionTests
 	{
-		public class EnumTypeHandler<T> : SqlMapper.ITypeHandler
+		public class EnumAsStringTypeHandler<T> : SqlMapper.ITypeHandler
 		{
 			public void SetValue(IDbDataParameter parameter, object value)
 			{
@@ -28,6 +28,20 @@ namespace SimpleStack.Orm.Tests
 			public object Parse(Type destinationType, object value)
 			{
 				return Enum.Parse(typeof (TestEnum), (string)value);
+			}
+		}
+
+		private class EnumAsIntTypeHandler<T> : SqlMapper.ITypeHandler
+		{
+			public void SetValue(IDbDataParameter parameter, object value)
+			{
+				parameter.DbType = DbType.Int32;
+				parameter.Value = (int)value;
+			}
+
+			public object Parse(Type destinationType, object value)
+			{
+				return (T)value;
 			}
 		}
 
