@@ -154,19 +154,19 @@ namespace SimpleStack.Orm
 		{
 			if (value == null) return "NULL";
 
-			if (!fieldType.UnderlyingSystemType.IsValueType && fieldType != typeof (string))
+			if (!fieldType.UnderlyingSystemType.IsValueType && fieldType != typeof(string))
 			{
 				return Config.DialectProvider.GetQuotedParam(value.ToString());
 			}
 			//TODO: vdaorn: DateTime
-			if (fieldType == typeof (float))
-				return ((float) value).ToString(CultureInfo.InvariantCulture);
+			if (fieldType == typeof(float))
+				return ((float)value).ToString(CultureInfo.InvariantCulture);
 
-			if (fieldType == typeof (double))
-				return ((double) value).ToString(CultureInfo.InvariantCulture);
+			if (fieldType == typeof(double))
+				return ((double)value).ToString(CultureInfo.InvariantCulture);
 
-			if (fieldType == typeof (decimal))
-				return ((decimal) value).ToString(CultureInfo.InvariantCulture);
+			if (fieldType == typeof(decimal))
+				return ((decimal)value).ToString(CultureInfo.InvariantCulture);
 
 			return ShouldQuoteValue(fieldType)
 				? Config.DialectProvider.GetQuotedParam(value.ToString())
