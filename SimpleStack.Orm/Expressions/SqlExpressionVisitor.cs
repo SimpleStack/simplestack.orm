@@ -61,7 +61,7 @@ namespace SimpleStack.Orm.Expressions
 		/// </summary>
 		protected SqlExpressionVisitor()
 		{
-			_modelDef = typeof (T).GetModelDefinition();
+			_modelDef = typeof(T).GetModelDefinition();
 			PrefixFieldWithTableName = false;
 			WhereStatementWithoutWhereString = false;
 		}
@@ -136,20 +136,19 @@ namespace SimpleStack.Orm.Expressions
 		{
 			get
 			{
-				if (!Skip.HasValue) return "";
-				string rows;
-				rows = Rows.HasValue ? string.Format(",{0}", Rows.Value) : string.Empty;
-				return string.Format("LIMIT {0}{1}", Skip.Value, rows);
+				return Config.DialectProvider.GetLimitExpression(Skip, Rows);
 			}
 		}
 
-		/// <summary>Gets or sets the rows.</summary>
-		/// <value>The rows.</value>
-		public int? Rows { get; set; }
+		/// <summary>
+		/// Get the maximum number of rows to return. Use Limit() to change the value
+		/// </summary>
+		public int? Rows { get; internal set; }
 
-		/// <summary>Gets or sets the skip.</summary>
-		/// <value>The skip.</value>
-		public int? Skip { get; set; }
+		/// <summary>
+		/// Get the number of rows skipped. Use Limit() to change the value
+		/// </summary>
+		public int? Skip { get; internal set; }
 
 		/// <summary>Gets or sets the update fields.</summary>
 		/// <value>The update fields.</value>
@@ -169,25 +168,12 @@ namespace SimpleStack.Orm.Expressions
 
 		/// <summary>Gets or sets the model definition.</summary>
 		/// <value>The model definition.</value>
-		protected internal ModelDefinition ModelDef
+		public ModelDefinition ModelDefinition
 		{
 			get { return _modelDef; }
 			set { _modelDef = value; }
 		}
 
-		/// <summary>Gets or sets a value indicating whether this object use field name.</summary>
-		/// <value>true if use field name, false if not.</value>
-		protected internal bool UseFieldName
-		{
-			get { return _useFieldName; }
-			set { _useFieldName = value; }
-		}
-
-		/// <summary>Gets or sets a value indicating whether this object is parameterized.</summary>
-		/// <value>true if this object is parameterized, false if not.</value>
-		[Obsolete]
-		public bool IsParameterized { get; set; }
-		
 		public IDictionary<string, object> Parameters
 		{
 			get { return _parameters; }
@@ -249,23 +235,20 @@ namespace SimpleStack.Orm.Expressions
 		{
 			if (_underlyingExpression != null)
 				_underlyingExpression = null; //Where() clears the expression
-			_whereExpression = string.Empty;
-			return this;
+			return Where(string.Empty);
 		}
 
-		// Disabled to force use of Expression<Func<T, bool>> 
-		//
 		/// <summary>Wheres the given predicate.</summary>
 		/// <param name="sqlFilter">   A filter specifying the SQL.</param>
 		/// <param name="filterParams">Options for controlling the filter.</param>
 		/// <returns>A SqlExpressionVisitor&lt;T&gt;</returns>
-		//public virtual SqlExpressionVisitor<T> Where(string sqlFilter, params object[] filterParams)
-		//{
-		//	_whereExpression = !string.IsNullOrEmpty(sqlFilter) ? sqlFilter.SqlFormat(filterParams) : string.Empty;
-		//	if (!string.IsNullOrEmpty(_whereExpression))
-		//		_whereExpression = (WhereStatementWithoutWhereString ? "" : "WHERE ") + _whereExpression;
-		//	return this;
-		//}
+		public virtual SqlExpressionVisitor<T> Where(string sqlFilter, params object[] filterParams)
+		{
+			_whereExpression = !string.IsNullOrEmpty(sqlFilter) ? sqlFilter.SqlFormat(filterParams) : string.Empty;
+			if (!string.IsNullOrEmpty(_whereExpression))
+				_whereExpression = (WhereStatementWithoutWhereString ? "" : "WHERE ") + _whereExpression;
+			return this;
+		}
 
 		/// <summary>Wheres the given predicate.</summary>
 		/// <param name="predicate">The predicate.</param>
@@ -600,9 +583,9 @@ namespace SimpleStack.Orm.Expressions
 				if (excludeDefaults && (value == null || value.Equals(value.GetType().GetDefaultValue())))
 					continue; //GetDefaultValue?
 
-				fieldDef.GetQuotedValue(item);
+				if (setFields.Length > 0)
+					setFields.Append(",");
 
-				if (setFields.Length > 0) setFields.Append(",");
 				setFields.AppendFormat("{0} = {1}",
 					dialectProvider.GetQuotedColumnName(fieldDef.FieldName),
 					AddParameter(value));
@@ -616,30 +599,14 @@ namespace SimpleStack.Orm.Expressions
 		/// <returns>This object as a string.</returns>
 		public virtual string ToSelectStatement()
 		{
-			var sql = new StringBuilder();
-
-			sql.Append(SelectExpression);
-			sql.Append(string.IsNullOrEmpty(WhereExpression)
-				? ""
-				: "\n" + WhereExpression);
-			sql.Append(string.IsNullOrEmpty(GroupByExpression)
-				? ""
-				: "\n" + GroupByExpression);
-			sql.Append(string.IsNullOrEmpty(HavingExpression)
-				? ""
-				: "\n" + HavingExpression);
-			sql.Append(string.IsNullOrEmpty(OrderByExpression)
-				? ""
-				: "\n" + OrderByExpression);
-
-			return ApplyPaging(sql.ToString());
+			return Config.DialectProvider.ToSelectStatement(this);
 		}
 
 		/// <summary>Converts this object to a count statement.</summary>
 		/// <returns>This object as a string.</returns>
 		public virtual string ToCountStatement()
 		{
-			return Config.DialectProvider.ToCountStatement(_modelDef.ModelType, WhereExpression, null);
+			return Config.DialectProvider.ToCountStatement(this);
 		}
 
 		/// <summary>Visits the given exponent.</summary>
@@ -735,14 +702,14 @@ namespace SimpleStack.Orm.Expressions
 			{
 				var m = b.Left as MemberExpression;
 				if (m != null && m.Expression != null
-				    && m.Expression.NodeType == ExpressionType.Parameter)
+					&& m.Expression.NodeType == ExpressionType.Parameter)
 					left = new PartialSqlString(string.Format("{0}={1}", VisitMemberAccess(m), GetQuotedTrueValue()));
 				else
 					left = Visit(b.Left);
 
 				m = b.Right as MemberExpression;
 				if (m != null && m.Expression != null
-				    && m.Expression.NodeType == ExpressionType.Parameter)
+					&& m.Expression.NodeType == ExpressionType.Parameter)
 					right = new PartialSqlString(string.Format("{0}={1}", VisitMemberAccess(m), GetQuotedTrueValue()));
 				else
 					right = Visit(b.Right);
@@ -754,9 +721,9 @@ namespace SimpleStack.Orm.Expressions
 				}
 
 				if (left as PartialSqlString == null)
-					left = ((bool) left) ? GetTrueExpression() : GetFalseExpression();
+					left = ((bool)left) ? GetTrueExpression() : GetFalseExpression();
 				if (right as PartialSqlString == null)
-					right = ((bool) right) ? GetTrueExpression() : GetFalseExpression();
+					right = ((bool)right) ? GetTrueExpression() : GetFalseExpression();
 			}
 			else
 			{
@@ -822,7 +789,7 @@ namespace SimpleStack.Orm.Expressions
 		protected virtual object VisitMemberAccess(MemberExpression m)
 		{
 			if (m.Expression != null
-			    && (m.Expression.NodeType == ExpressionType.Parameter || m.Expression.NodeType == ExpressionType.Convert))
+				&& (m.Expression.NodeType == ExpressionType.Parameter || m.Expression.NodeType == ExpressionType.Convert))
 			{
 				var propertyInfo = m.Member as PropertyInfo;
 
@@ -838,7 +805,7 @@ namespace SimpleStack.Orm.Expressions
 						: "") + GetQuotedColumnName(m.Member.Name));
 			}
 
-			var member = Expression.Convert(m, typeof (object));
+			var member = Expression.Convert(m, typeof(object));
 			var lambda = Expression.Lambda<Func<object>>(member);
 			var getter = lambda.Compile();
 			return getter();
@@ -858,7 +825,7 @@ namespace SimpleStack.Orm.Expressions
 		protected virtual object VisitNew(NewExpression nex)
 		{
 			// TODO : check !
-			var member = Expression.Convert(nex, typeof (object));
+			var member = Expression.Convert(nex, typeof(object));
 			var lambda = Expression.Lambda<Func<object>>(member);
 			try
 			{
@@ -910,7 +877,7 @@ namespace SimpleStack.Orm.Expressions
 					var o = Visit(u.Operand);
 
 					if (o as PartialSqlString == null)
-						return !((bool) o);
+						return !((bool)o);
 
 					if (IsFieldName(o))
 						o = o + "=" + GetQuotedTrueValue();
@@ -935,9 +902,9 @@ namespace SimpleStack.Orm.Expressions
 
 			var exp = m.Object as MemberExpression;
 			return exp != null
-			       && exp.Expression != null
-			       && exp.Expression.Type == typeof (T)
-			       && exp.Expression.NodeType == ExpressionType.Parameter;
+				   && exp.Expression != null
+				   && exp.Expression.Type == typeof(T)
+				   && exp.Expression.NodeType == ExpressionType.Parameter;
 		}
 
 		/// <summary>Visit method call.</summary>
@@ -945,7 +912,7 @@ namespace SimpleStack.Orm.Expressions
 		/// <returns>An object.</returns>
 		protected virtual object VisitMethodCall(MethodCallExpression m)
 		{
-			if (m.Method.DeclaringType == typeof (Sql))
+			if (m.Method.DeclaringType == typeof(Sql))
 				return VisitSqlMethodCall(m);
 
 			if (IsArrayMethod(m))
@@ -966,7 +933,7 @@ namespace SimpleStack.Orm.Expressions
 			for (int i = 0, n = original.Count; i < n; i++)
 			{
 				if (original[i].NodeType == ExpressionType.NewArrayInit ||
-				    original[i].NodeType == ExpressionType.NewArrayBounds)
+					original[i].NodeType == ExpressionType.NewArrayBounds)
 				{
 					list.AddRange(VisitNewArrayFromExpressionList(original[i] as NewArrayExpression));
 				}
@@ -1060,8 +1027,8 @@ namespace SimpleStack.Orm.Expressions
 		protected string RemoveQuoteFromAlias(string exp)
 		{
 			if ((exp.StartsWith("\"") || exp.StartsWith("`") || exp.StartsWith("'"))
-			    &&
-			    (exp.EndsWith("\"") || exp.EndsWith("`") || exp.EndsWith("'")))
+				&&
+				(exp.EndsWith("\"") || exp.EndsWith("`") || exp.EndsWith("'")))
 			{
 				exp = exp.Remove(0, 1);
 				exp = exp.Remove(exp.Length - 1, 1);
@@ -1171,7 +1138,7 @@ namespace SimpleStack.Orm.Expressions
 					if (memberExpr.NodeType == ExpressionType.MemberAccess)
 						memberExpr = (m.Arguments[0] as MemberExpression);
 
-					var member = Expression.Convert(memberExpr, typeof (object));
+					var member = Expression.Convert(memberExpr, typeof(object));
 					var lambda = Expression.Lambda<Func<object>>(member);
 					var getter = lambda.Compile();
 
@@ -1221,7 +1188,7 @@ namespace SimpleStack.Orm.Expressions
 			{
 				case "In":
 
-					var member = Expression.Convert(m.Arguments[1], typeof (object));
+					var member = Expression.Convert(m.Arguments[1], typeof(object));
 					var lambda = Expression.Lambda<Func<object>>(member);
 					var getter = lambda.Compile();
 
@@ -1230,7 +1197,7 @@ namespace SimpleStack.Orm.Expressions
 					var sIn = new StringBuilder();
 					foreach (var e in inArgs)
 					{
-						if (!typeof (ICollection).IsAssignableFrom(e.GetType()))
+						if (!typeof(ICollection).IsAssignableFrom(e.GetType()))
 						{
 							sIn.AppendFormat("{0}{1}",
 								sIn.Length > 0 ? "," : "",
@@ -1283,7 +1250,7 @@ namespace SimpleStack.Orm.Expressions
 			List<object> args = new List<object>();
 			if (m.Arguments.Count == 1 && m.Arguments[0].NodeType == ExpressionType.Constant)
 			{
-				args.Add(((ConstantExpression) m.Arguments[0]).Value);
+				args.Add(((ConstantExpression)m.Arguments[0]).Value);
 			}
 			else
 			{
@@ -1318,7 +1285,7 @@ namespace SimpleStack.Orm.Expressions
 						AddParameter("%" + args[0].ToString().ToUpper()));
 					break;
 				case "Contains":
-					statement = string.Format("upper({0}) LIKE {1}", 
+					statement = string.Format("upper({0}) LIKE {1}",
 						quotedColName,
 						AddParameter("%" + args[0].ToString().ToUpper() + "%"));
 					break;
@@ -1351,7 +1318,7 @@ namespace SimpleStack.Orm.Expressions
 		protected string AddParameter(object param)
 		{
 			string paramName = Config.DialectProvider.GetParameterName(_parameters.Count);
-			_parameters.Add(paramName,param);
+			_parameters.Add(paramName, param);
 			return paramName;
 		}
 	}

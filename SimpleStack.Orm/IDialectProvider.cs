@@ -119,25 +119,25 @@ namespace SimpleStack.Orm
 		/// <param name="objWithProperties">The object with properties.</param>
 		/// <param name="InsertFields">     The insert fields.</param>
 		/// <returns>The given data converted to a string.</returns>
-		CommandDefinition ToInsertRowStatement<T>(IEnumerable<T> objsWithProperties, ICollection<string> insertFields = null) where T : new();
+		CommandDefinition ToInsertRowStatement<T>(IEnumerable<T> objsWithProperties, ICollection<string> insertFields = null);// where T : new();
 
 		/// <summary>Converts this object to an update row statement.</summary>
 		/// <param name="objWithProperties">The object with properties.</param>
-		/// <param name="UpdateFields">     The update fields.</param>
+		/// <param name="updateFields">     The update fields.</param>
 		/// <returns>The given data converted to a string.</returns>
-		string ToUpdateRowStatement(object objWithProperties, ICollection<string> UpdateFields = null);
+		CommandDefinition ToUpdateRowStatement<T>(T objWithProperties, SqlExpressionVisitor<T> visitor);
 
 		/// <summary>Converts the objWithProperties to a delete row statement.</summary>
 		/// <param name="objWithProperties">The object with properties.</param>
 		/// <returns>objWithProperties as a string.</returns>
-		string ToDeleteRowStatement(object objWithProperties);
+		//string ToDeleteRowStatement(object objWithProperties);
 
 		/// <summary>Converts this object to a delete statement.</summary>
 		/// <param name="tableType">   Type of the table.</param>
 		/// <param name="sqlFilter">   A filter specifying the SQL.</param>
 		/// <param name="filterParams">Options for controlling the filter.</param>
 		/// <returns>The given data converted to a string.</returns>
-		string ToDeleteStatement(Type tableType, string sqlFilter, params object[] filterParams);
+		//string ToDeleteStatement(Type tableType, string sqlFilter, params object[] filterParams);
 
 		/// <summary>Creates parameterized delete statement.</summary>
 		/// <param name="connection">       The connection.</param>
@@ -172,7 +172,9 @@ namespace SimpleStack.Orm
 		/// <param name="sqlFilter">    A filter specifying the SQL.</param>
 		/// <param name="filterParams"> Options for controlling the filter.</param>
 		/// <returns>The given data converted to a string.</returns>
-		string ToCountStatement(Type fromTableType, string sqlFilter, params object[] filterParams);
+		string ToCountStatement<T>(SqlExpressionVisitor<T> visitor);
+
+		string ToSelectStatement<T>(SqlExpressionVisitor<T> visitor);
 
 		/// <summary>Converts the objWithProperties to an execute procedure statement.</summary>
 		/// <param name="objWithProperties">The object with properties.</param>
@@ -293,5 +295,6 @@ namespace SimpleStack.Orm
 										 string indexName = null, bool unique = false);
 		#endregion DDL
 
+		string GetLimitExpression(int? skip, int? rows);
 	}
 }

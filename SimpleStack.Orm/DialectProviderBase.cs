@@ -248,7 +248,7 @@ namespace SimpleStack.Orm
 		{
 			string fieldDefinition;
 
-			if (fieldType == typeof (string))
+			if (fieldType == typeof(string))
 			{
 				fieldDefinition = string.Format(StringLengthColumnDefinitionFormat,
 					fieldLength.GetValueOrDefault(DefaultStringLength));
@@ -292,40 +292,48 @@ namespace SimpleStack.Orm
 			return sql.ToString();
 		}
 
-		/// <summary>Inserts an and get last insert identifier described by dbCmd.</summary>
-		/// <exception cref="NotImplementedException">Thrown when the requested operation is unimplemented.</exception>
-		/// <typeparam name="T">Generic type parameter.</typeparam>
-		/// <param name="dbCmd">The database command.</param>
-		/// <returns>A long.</returns>
-		/// <summary>Converts this object to a count statement.</summary>
-		/// <param name="fromTableType">Type of from table.</param>
-		/// <param name="sqlFilter">    A filter specifying the SQL.</param>
-		/// <param name="filterParams"> Options for controlling the filter.</param>
-		/// <returns>The given data converted to a string.</returns>
-		public virtual string ToCountStatement(Type fromTableType, string sqlFilter, params object[] filterParams)
+		public virtual string ToCountStatement<T>(SqlExpressionVisitor<T> visitor)
+		{
+			var modelDef = typeof(T).GetModelDefinition();
+			var sql = new StringBuilder();
+
+			sql.AppendFormat("SELECT COUNT(*) FROM {0}", GetQuotedTableName(modelDef));
+
+			if (!string.IsNullOrEmpty(visitor.WhereExpression))
+			{
+				sql.Append(" WHERE ");
+				sql.Append(visitor.WhereExpression);
+			}
+
+			if (!string.IsNullOrEmpty(visitor.LimitExpression))
+			{
+				sql.Append(" ");
+				sql.Append(visitor.LimitExpression);
+			}
+			return sql.ToString();
+		}
+
+		public virtual string ToSelectStatement<T>(SqlExpressionVisitor<T> visitor)
 		{
 			var sql = new StringBuilder();
-			const string SelectStatement = "SELECT ";
-			var modelDef = fromTableType.GetModelDefinition();
-			var isFullSelectStatement =
-				!string.IsNullOrEmpty(sqlFilter)
-				&& sqlFilter.TrimStart().StartsWith(SelectStatement, StringComparison.OrdinalIgnoreCase);
 
-			if (isFullSelectStatement) return (filterParams != null ? sqlFilter.SqlFormat(filterParams) : sqlFilter);
+			sql.Append(visitor.SelectExpression);
+			sql.Append(string.IsNullOrEmpty(visitor.WhereExpression)
+				? String.Empty
+				: "\n" + visitor.WhereExpression);
+			sql.Append(string.IsNullOrEmpty(visitor.GroupByExpression)
+				? String.Empty
+				: "\n" + visitor.GroupByExpression);
+			sql.Append(string.IsNullOrEmpty(visitor.HavingExpression)
+				? String.Empty
+				: "\n" + visitor.HavingExpression);
+			sql.Append(string.IsNullOrEmpty(visitor.OrderByExpression)
+				? String.Empty
+				: "\n" + visitor.OrderByExpression);
+			sql.Append(string.IsNullOrEmpty(visitor.LimitExpression)
+				? String.Empty
+				: "\n" + visitor.LimitExpression);
 
-			sql.AppendFormat("SELECT {0} FROM {1}", "COUNT(*)",
-				GetQuotedTableName(modelDef));
-			if (!string.IsNullOrEmpty(sqlFilter))
-			{
-				sqlFilter = filterParams != null ? sqlFilter.SqlFormat(filterParams) : sqlFilter;
-				if ((!sqlFilter.StartsWith("ORDER ", StringComparison.InvariantCultureIgnoreCase)
-				     && !sqlFilter.StartsWith("LIMIT ", StringComparison.InvariantCultureIgnoreCase))
-				    && (!sqlFilter.StartsWith("WHERE ", StringComparison.InvariantCultureIgnoreCase)))
-				{
-					sql.Append(" WHERE ");
-				}
-				sql.Append(" " + sqlFilter);
-			}
 			return sql.ToString();
 		}
 
@@ -404,7 +412,7 @@ namespace SimpleStack.Orm
 
 		//	return sql;
 		//}
-		public virtual CommandDefinition ToInsertRowStatement<T>(IEnumerable<T> objsWithProperties, ICollection<string> insertFields = null) where T : new()
+		public virtual CommandDefinition ToInsertRowStatement<T>(IEnumerable<T> objsWithProperties, ICollection<string> insertFields = null)// where T : new()
 		{
 			if (insertFields == null)
 				insertFields = new List<string>();
@@ -455,7 +463,7 @@ namespace SimpleStack.Orm
 
 					string paramName = Config.DialectProvider.GetParameterName(parameters.Count);
 					sbColumnValues.Append(paramName);
-					parameters.Add(paramName,fieldDef.GetValue(obj));
+					parameters.Add(paramName, fieldDef.GetValue(obj));
 					isFirstField = false;
 				}
 				sbColumnValues.Append(')');
@@ -465,7 +473,7 @@ namespace SimpleStack.Orm
 			var sql = string.Format("INSERT INTO {0} ({1}) VALUES {2}", GetQuotedTableName(modelDef), sbColumnNames,
 				sbColumnValues);
 
-			return new CommandDefinition(sql,parameters);
+			return new CommandDefinition(sql, parameters);
 		}
 
 		/// <summary>Converts this object to an update row statement.</summary>
@@ -473,48 +481,36 @@ namespace SimpleStack.Orm
 		/// <param name="objWithProperties">The object with properties.</param>
 		/// <param name="updateFields">     The update fields.</param>
 		/// <returns>The given data converted to a string.</returns>
-		public virtual string ToUpdateRowStatement(object objWithProperties, ICollection<string> updateFields = null)
+		public virtual CommandDefinition ToUpdateRowStatement<T>(T objWithProperties, SqlExpressionVisitor<T> visitor)
 		{
-			if (updateFields == null)
-				updateFields = new List<string>();
-
-			var sqlFilter = new StringBuilder();
 			var sql = new StringBuilder();
 			var modelDef = objWithProperties.GetType().GetModelDefinition();
 
+			var parameters = new Dictionary<string, object>(visitor.Parameters);
+
 			foreach (var fieldDef in modelDef.FieldDefinitions)
 			{
-				if (fieldDef.IsComputed) continue;
+				if (fieldDef.IsComputed || fieldDef.AutoIncrement)
+					continue;
 
-				try
+				if (visitor.UpdateFields.Contains(fieldDef.Name))
 				{
-					if (fieldDef.IsPrimaryKey && updateFields.Count == 0)
+					if (sql.Length > 0)
 					{
-						if (sqlFilter.Length > 0) sqlFilter.Append(" AND ");
-
-						sqlFilter.AppendFormat("{0} = {1}", GetQuotedColumnName(fieldDef.FieldName),
-							fieldDef.GetQuotedValue(objWithProperties));
-
-						continue;
+						sql.Append(",");
 					}
-
-					if (updateFields.Count > 0 && !updateFields.Contains(fieldDef.Name) || fieldDef.AutoIncrement) continue;
-					if (sql.Length > 0) sql.Append(",");
-					sql.AppendFormat("{0} = {1}", GetQuotedColumnName(fieldDef.FieldName), fieldDef.GetQuotedValue(objWithProperties));
-				}
-				catch (Exception ex)
-				{
-					//Log.Error("ERROR in ToUpdateRowStatement(): " + ex.Message, ex);
+					var paramName = Config.DialectProvider.GetParameterName(parameters.Count);
+					sql.AppendFormat("{0} = {1}", GetQuotedColumnName(fieldDef.FieldName), paramName);
+					parameters.Add(paramName, fieldDef.GetValue(objWithProperties));
 				}
 			}
 
-			var updateSql = string.Format("UPDATE {0} SET {1}{2}",
-				GetQuotedTableName(modelDef), sql, (sqlFilter.Length > 0 ? " WHERE " + sqlFilter : ""));
+			var updateSql = string.Format("UPDATE {0} SET {1} {2}", GetQuotedTableName(modelDef), sql, visitor.WhereExpression);
 
 			if (sql.Length == 0)
 				throw new Exception("No valid update properties provided (e.g. p => p.FirstName): " + updateSql);
 
-			return updateSql;
+			return new CommandDefinition(updateSql, parameters);
 		}
 
 		/// <summary>Creates parameterized update statement.</summary>
@@ -525,63 +521,63 @@ namespace SimpleStack.Orm
 		/// <summary>Converts the objWithProperties to a delete row statement.</summary>
 		/// <param name="objWithProperties">The object with properties.</param>
 		/// <returns>objWithProperties as a string.</returns>
-		public virtual string ToDeleteRowStatement(object objWithProperties)
-		{
-			var sqlFilter = new StringBuilder();
-			var modelDef = objWithProperties.GetType().GetModelDefinition();
+		//public virtual string ToDeleteRowStatement(object objWithProperties)
+		//{
+		//	var sqlFilter = new StringBuilder();
+		//	var modelDef = objWithProperties.GetType().GetModelDefinition();
 
-			foreach (var fieldDef in modelDef.FieldDefinitions)
-			{
-				try
-				{
-					if (fieldDef.IsPrimaryKey)
-					{
-						if (sqlFilter.Length > 0) sqlFilter.Append(" AND ");
+		//	foreach (var fieldDef in modelDef.FieldDefinitions)
+		//	{
+		//		try
+		//		{
+		//			if (fieldDef.IsPrimaryKey)
+		//			{
+		//				if (sqlFilter.Length > 0) sqlFilter.Append(" AND ");
 
-						sqlFilter.AppendFormat("{0} = {1}", GetQuotedColumnName(fieldDef.FieldName),
-							fieldDef.GetQuotedValue(objWithProperties));
-					}
-				}
-				catch (Exception ex)
-				{
-					//Log.Error("ERROR in ToDeleteRowStatement(): " + ex.Message, ex);
-				}
-			}
+		//				sqlFilter.AppendFormat("{0} = {1}", GetQuotedColumnName(fieldDef.FieldName),
+		//					fieldDef.GetQuotedValue(objWithProperties));
+		//			}
+		//		}
+		//		catch (Exception ex)
+		//		{
+		//			//Log.Error("ERROR in ToDeleteRowStatement(): " + ex.Message, ex);
+		//		}
+		//	}
 
-			var deleteSql = string.Format("DELETE FROM {0} WHERE {1}",
-				GetQuotedTableName(modelDef), sqlFilter);
+		//	var deleteSql = string.Format("DELETE FROM {0} WHERE {1}",
+		//		GetQuotedTableName(modelDef), sqlFilter);
 
-			return deleteSql;
-		}
+		//	return deleteSql;
+		//}
 
 		/// <summary>Converts this object to a delete statement.</summary>
 		/// <param name="tableType">   Type of the table.</param>
 		/// <param name="sqlFilter">   A filter specifying the SQL.</param>
 		/// <param name="filterParams">Options for controlling the filter.</param>
 		/// <returns>The given data converted to a string.</returns>
-		public virtual string ToDeleteStatement(Type tableType, string sqlFilter, params object[] filterParams)
-		{
-			var sql = new StringBuilder();
-			const string deleteStatement = "DELETE ";
+		//public virtual string ToDeleteStatement(Type tableType, string sqlFilter, params object[] filterParams)
+		//{
+		//	var sql = new StringBuilder();
+		//	const string deleteStatement = "DELETE ";
 
-			var isFullDeleteStatement =
-				!string.IsNullOrEmpty(sqlFilter)
-				&& sqlFilter.Length > deleteStatement.Length
-				&& sqlFilter.Substring(0, deleteStatement.Length).ToUpper().Equals(deleteStatement);
+		//	var isFullDeleteStatement =
+		//		!string.IsNullOrEmpty(sqlFilter)
+		//		&& sqlFilter.Length > deleteStatement.Length
+		//		&& sqlFilter.Substring(0, deleteStatement.Length).ToUpper().Equals(deleteStatement);
 
-			if (isFullDeleteStatement) return sqlFilter.SqlFormat(filterParams);
+		//	if (isFullDeleteStatement) return sqlFilter.SqlFormat(filterParams);
 
-			var modelDef = tableType.GetModelDefinition();
-			sql.AppendFormat("DELETE FROM {0}", GetQuotedTableName(modelDef));
-			if (!string.IsNullOrEmpty(sqlFilter))
-			{
-				sqlFilter = sqlFilter.SqlFormat(filterParams);
-				sql.Append(" WHERE ");
-				sql.Append(sqlFilter);
-			}
+		//	var modelDef = tableType.GetModelDefinition();
+		//	sql.AppendFormat("DELETE FROM {0}", GetQuotedTableName(modelDef));
+		//	if (!string.IsNullOrEmpty(sqlFilter))
+		//	{
+		//		sqlFilter = sqlFilter.SqlFormat(filterParams);
+		//		sql.Append(" WHERE ");
+		//		sql.Append(sqlFilter);
+		//	}
 
-			return sql.ToString();
-		}
+		//	return sql.ToString();
+		//}
 
 		/// <summary>Converts a tableType to a create table statement.</summary>
 		/// <param name="tableType">Type of the table.</param>
@@ -665,7 +661,7 @@ namespace SimpleStack.Orm
 		public virtual DbType GetColumnDbType(Type valueType)
 		{
 			if (valueType.IsEnum)
-				return DbTypeMap.ColumnDbTypeMap[typeof (string)];
+				return DbTypeMap.ColumnDbTypeMap[typeof(string)];
 
 			return DbTypeMap.ColumnDbTypeMap[valueType];
 		}
@@ -870,10 +866,10 @@ namespace SimpleStack.Orm
 			}
 
 			return fieldDefinition != IntColumnDefinition
-			       && fieldDefinition != LongColumnDefinition
-			       && fieldDefinition != RealColumnDefinition
-			       && fieldDefinition != DecimalColumnDefinition
-			       && fieldDefinition != BoolColumnDefinition;
+				   && fieldDefinition != LongColumnDefinition
+				   && fieldDefinition != RealColumnDefinition
+				   && fieldDefinition != DecimalColumnDefinition
+				   && fieldDefinition != BoolColumnDefinition;
 		}
 
 		/// <summary>Gets undefined column definition.</summary>
@@ -960,7 +956,8 @@ namespace SimpleStack.Orm
 		/// <param name="compositeIndex">Zero-based index of the composite.</param>
 		/// <param name="modelDef">      The model definition.</param>
 		/// <returns>The composite index name with schema.</returns>
-		protected virtual string GetCompositeIndexNameWithSchema(CompositeIndexAttribute compositeIndex,ModelDefinition modelDef)
+		protected virtual string GetCompositeIndexNameWithSchema(CompositeIndexAttribute compositeIndex,
+			ModelDefinition modelDef)
 		{
 			return compositeIndex.Name ?? GetIndexName(compositeIndex.Unique,
 				(modelDef.IsInSchema
@@ -996,7 +993,7 @@ namespace SimpleStack.Orm
 		/// <summary>Gets model definition.</summary>
 		/// <param name="modelType">Type of the model.</param>
 		/// <returns>The model definition.</returns>
-		protected static ModelDefinition GetModelDefinition(Type modelType)
+		public static ModelDefinition GetModelDefinition(Type modelType)
 		{
 			return modelType.GetModelDefinition();
 		}
@@ -1095,8 +1092,8 @@ namespace SimpleStack.Orm
 				GetQuotedColumnName(fieldName),
 				GetQuotedTableName(referenceMD.ModelName),
 				GetQuotedColumnName(referenceFieldName),
-				GetForeignKeyOnDeleteClause(new ForeignKeyConstraint(typeof (T), FkOptionToString(onDelete))),
-				GetForeignKeyOnUpdateClause(new ForeignKeyConstraint(typeof (T), onUpdate: FkOptionToString(onUpdate))));
+				GetForeignKeyOnDeleteClause(new ForeignKeyConstraint(typeof(T), FkOptionToString(onDelete))),
+				GetForeignKeyOnUpdateClause(new ForeignKeyConstraint(typeof(T), onUpdate: FkOptionToString(onUpdate))));
 		}
 
 		/// <summary>Converts this object to a create index statement.</summary>
@@ -1122,6 +1119,14 @@ namespace SimpleStack.Orm
 				GetQuotedColumnName(fieldName)
 				);
 			return command;
+		}
+
+		public virtual string GetLimitExpression(int? skip, int? rows)
+		{
+			if (!skip.HasValue)
+				return String.Empty;
+
+			return string.Format("LIMIT {0}{1}", skip.Value, rows.HasValue ? string.Format(",{0}", rows.Value) : string.Empty);
 		}
 
 		/// <summary>Fk option to string.</summary>

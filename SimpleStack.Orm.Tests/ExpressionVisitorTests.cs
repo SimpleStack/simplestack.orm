@@ -41,7 +41,7 @@ namespace SimpleStack.Orm.Tests
 		private void SetupContext()
 		{
 			SqlMapper.AddTypeHandler(typeof(TestType2), new TestType2TypeHandler());
-			SqlMapper.AddTypeHandler(typeof(TestEnum), new EnumTypeHandler<TestEnum>());
+			SqlMapper.AddTypeHandler(typeof(TestEnum), new EnumAsStringTypeHandler<TestEnum>());
 
 			OpenDbConnection().Insert(new TestType2 { Id = 1, BoolCol = true, DateCol = new DateTime(2012, 1, 1), TextCol = "asdf", EnumCol = TestEnum.Val0 });
 			OpenDbConnection().Insert(new TestType2 { Id = 2, BoolCol = true, DateCol = new DateTime(2012, 2, 1), TextCol = "asdf123", EnumCol = TestEnum.Val1 });

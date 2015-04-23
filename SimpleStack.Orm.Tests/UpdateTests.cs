@@ -4,6 +4,7 @@ using System.Linq;
 using SimpleStack.Orm.Attributes;
 using NServiceKit.Text;
 using NUnit.Framework;
+using SimpleStack.Orm.MySQL;
 
 namespace SimpleStack.Orm.Tests
 {
@@ -107,7 +108,7 @@ namespace SimpleStack.Orm.Tests
 			/// <returns>A hash code for the current <see cref="T:System.Object" />.</returns>
 			public override int GetHashCode()
 			{
-				return (Id+Name+LongId+Double+DateTime).GetHashCode();
+				return (Id + Name + LongId + Double + DateTime).GetHashCode();
 			}
 
 			/// <summary>Assert is equal.</summary>
@@ -140,22 +141,22 @@ namespace SimpleStack.Orm.Tests
 
 		/// <summary>Creates model with fields of different types.</summary>
 		/// <returns>The new model with fields of different types.</returns>
-		private ModelWithFieldsOfDifferentTypes CreateModelWithFieldsOfDifferentTypes()
+		private void CreateModelWithFieldsOfDifferentTypes()
 		{
 			OpenDbConnection().CreateTable<ModelWithFieldsOfDifferentTypes>(true);
 
-			var row = ModelWithFieldsOfDifferentTypes.Create(1);
-			return row;
+			for (int i = 0; i < 10; i++)
+			{
+				OpenDbConnection().Insert(ModelWithFieldsOfDifferentTypes.Create(i));
+			}
 		}
 
 		/// <summary>Can update model with fields of different types table.</summary>
 		[Test]
-		public void Can_update_ModelWithFieldsOfDifferentTypes_table()
+		public void Can_update_ModelWithFieldsOfDifferentTypes_table_with_Implicit_Filter()
 		{
-			var row = CreateModelWithFieldsOfDifferentTypes();
-
-			OpenDbConnection().Insert(row);
-
+			CreateModelWithFieldsOfDifferentTypes();
+			var row = OpenDbConnection().Select<ModelWithFieldsOfDifferentTypes>(x => x.Id == 1).FirstOrDefault();
 			row.Name = "UpdatedName";
 
 			OpenDbConnection().Update<ModelWithFieldsOfDifferentTypes>(row);
@@ -163,74 +164,106 @@ namespace SimpleStack.Orm.Tests
 			var dbRow = OpenDbConnection().Select<ModelWithFieldsOfDifferentTypes>(x => x.Id == 1).FirstOrDefault();
 
 			ModelWithFieldsOfDifferentTypes.AssertIsEqual(dbRow, row);
+
+			Assert.AreNotEqual(row.Name, OpenDbConnection().First<ModelWithFieldsOfDifferentTypes>(x => x.Id == 2).Name);
+		}
+
+		[Test]
+		public void Can_update_ModelWithFieldsOfDifferentTypes_table_without_Implicit_Filter()
+		{
+			CreateModelWithFieldsOfDifferentTypes();
+			var row = OpenDbConnection().Select<ModelWithFieldsOfDifferentTypes>(x => x.Id == 1).FirstOrDefault();
+
+			OpenDbConnection().Update<ModelWithFieldsOfDifferentTypes>(new { Name = "UpdatedName" });
+
+			Assert.AreEqual("UpdatedName", OpenDbConnection().First<ModelWithFieldsOfDifferentTypes>(x => x.Id == 1).Name);
+			Assert.AreEqual("UpdatedName", OpenDbConnection().First<ModelWithFieldsOfDifferentTypes>(x => x.Id == 2).Name);
 		}
 
 		/// <summary>Can update model with fields of different types table with filter.</summary>
 		[Test]
 		public void Can_update_ModelWithFieldsOfDifferentTypes_table_with_filter()
 		{
-			var row = CreateModelWithFieldsOfDifferentTypes();
-
-			OpenDbConnection().Insert(row);
+			CreateModelWithFieldsOfDifferentTypes();
+			var row = OpenDbConnection().Select<ModelWithFieldsOfDifferentTypes>(x => x.Id == 1).FirstOrDefault();
 
 			row.Name = "UpdatedName";
 
-			OpenDbConnection().Update(row, x => x.LongId <= row.LongId);
+			OpenDbConnection().Update<ModelWithFieldsOfDifferentTypes>(row, x => x.LongId <= row.LongId);
 
 			var dbRow = OpenDbConnection().Select<ModelWithFieldsOfDifferentTypes>(x => x.Id == 1).FirstOrDefault();
 
 			ModelWithFieldsOfDifferentTypes.AssertIsEqual(dbRow, row);
+
+			Assert.AreNotEqual(row.Name, OpenDbConnection().First<ModelWithFieldsOfDifferentTypes>(x => x.Id == 2).Name);
 		}
 
 		/// <summary>Can update with anonymous type and expression filter.</summary>
 		[Test]
 		public void Can_update_with_anonymousType_and_expr_filter()
 		{
-			var row = CreateModelWithFieldsOfDifferentTypes();
+			CreateModelWithFieldsOfDifferentTypes();
+			var row = OpenDbConnection().Select<ModelWithFieldsOfDifferentTypes>(x => x.Id == 1).FirstOrDefault();
 
-			OpenDbConnection().Insert(row);
 			row.DateTime = DateTime.Now;
 			row.Name = "UpdatedName";
 
-			OpenDbConnection().Update<ModelWithFieldsOfDifferentTypes>(new { row.Name, row.DateTime },x => x.LongId >= row.LongId && x.LongId <= row.LongId);
+			OpenDbConnection().Update<ModelWithFieldsOfDifferentTypes>(new { row.Name, row.DateTime }, x => x.LongId >= row.LongId && x.LongId <= row.LongId);
 
 			var dbRow = OpenDbConnection().Select<ModelWithFieldsOfDifferentTypes>(x => x.Id == row.Id).FirstOrDefault();
 			Console.WriteLine(dbRow.Dump());
 			ModelWithFieldsOfDifferentTypes.AssertIsEqual(dbRow, row);
 		}
+		[Test]
+		public void Can_updateOnly_with_anonymousType_and_single_field_and_expr_filter()
+		{
+			CreateModelWithFieldsOfDifferentTypes();
+			var row = OpenDbConnection().Select<ModelWithFieldsOfDifferentTypes>(x => x.Id == 1).FirstOrDefault();
 
-		/// <summary>Can update with optional string parameters.</summary>
-		//[Test]
-		//public void Can_update_with_optional_string_params()
-		//{
-		//	var row = CreateModelWithFieldsOfDifferentTypes();
+			row.DateTime = DateTime.Now;
+			row.Name = "UpdatedName";
 
-		//	db.Insert(row);
-		//	row.Name = "UpdatedName";
+			OpenDbConnection().UpdateOnly(row, x => x.DateTime , x => x.LongId >= row.LongId && x.LongId <= row.LongId);
 
-		//	db.Update<ModelWithFieldsOfDifferentTypes>(set: "NAME = {0}".SqlFormat(row.Name), where: "LongId <= {0}".SqlFormat(row.LongId));
+			var dbRow = OpenDbConnection().Select<ModelWithFieldsOfDifferentTypes>(x => x.Id == row.Id).FirstOrDefault();
+			Assert.AreEqual("Name0", dbRow.Name);//Name shouldn't be updated
+			Assert.AreEqual(row.DateTime.RoundToSecond(), dbRow.DateTime.RoundToSecond());
+		}
 
-		//	var dbRow = db.GetById<ModelWithFieldsOfDifferentTypes>(row.Id);
-		//	Console.WriteLine(dbRow.Dump());
-		//	ModelWithFieldsOfDifferentTypes.AssertIsEqual(dbRow, row);
-		//}
+		[Test]
+		public void Can_updateOnly_with_anonymousType_and_two_fields_and_expr_filter()
+		{
+			CreateModelWithFieldsOfDifferentTypes();
+			var row = OpenDbConnection().Select<ModelWithFieldsOfDifferentTypes>(x => x.Id == 1).FirstOrDefault();
 
-		/// <summary>Can update with table name and optional string parameters.</summary>
-		//[Test]
-		//public void Can_update_with_tableName_and_optional_string_params()
-		//{
-		//	var row = CreateModelWithFieldsOfDifferentTypes();
+			row.DateTime = DateTime.Now;
+			row.Name = "UpdatedName";
+			row.LongId = 444719;
 
-		//	db.Insert(row);
-		//	row.Name = "UpdatedName";
+			OpenDbConnection().UpdateOnly(row,x => new {x.LongId,x.DateTime}, x => x.Id == row.Id);
 
-		//	db.Update(table: "ModelWithFieldsOfDifferentTypes",
-		//		set: "NAME = {0}".SqlFormat(row.Name), where: "LongId <= {0}".SqlFormat(row.LongId));
+			var dbRow = OpenDbConnection().Select<ModelWithFieldsOfDifferentTypes>(x => x.Id == row.Id).FirstOrDefault();
+			Assert.AreEqual("Name0", dbRow.Name);//Name shouldn't be updated
+			Assert.AreEqual(row.DateTime.RoundToSecond(), dbRow.DateTime.RoundToSecond());
+			Assert.AreEqual(444719, dbRow.LongId);
+		}
 
-		//	var dbRow = db.GetById<ModelWithFieldsOfDifferentTypes>(row.Id);
-		//	Console.WriteLine(dbRow.Dump());
-		//	ModelWithFieldsOfDifferentTypes.AssertIsEqual(dbRow, row);
-		//}
+		[Test]
+		public void Can_updateOnly_with_anonymousType_and_two_fields_without_filter()
+		{
+			CreateModelWithFieldsOfDifferentTypes();
+			var row = OpenDbConnection().Select<ModelWithFieldsOfDifferentTypes>(x => x.Id == 1).FirstOrDefault();
 
+			row.DateTime = DateTime.Now;
+			row.Name = "UpdatedName";
+			row.LongId = 444719;
+
+			OpenDbConnection().UpdateOnly(row, x => new { x.LongId, x.DateTime });
+
+			var dbRow = OpenDbConnection().Select<ModelWithFieldsOfDifferentTypes>(x => x.Id == row.Id).FirstOrDefault();
+			Assert.AreEqual("Name0", dbRow.Name);//Name shouldn't be updated
+			Assert.AreEqual(row.DateTime.RoundToSecond(), dbRow.DateTime.RoundToSecond());
+			Assert.AreEqual(444719, dbRow.LongId);
+		}
 	}
 }
