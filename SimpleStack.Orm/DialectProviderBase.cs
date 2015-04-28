@@ -301,7 +301,6 @@ namespace SimpleStack.Orm
 
 			if (!string.IsNullOrEmpty(visitor.WhereExpression))
 			{
-				sql.Append(" WHERE ");
 				sql.Append(visitor.WhereExpression);
 			}
 
@@ -521,34 +520,11 @@ namespace SimpleStack.Orm
 		/// <summary>Converts the objWithProperties to a delete row statement.</summary>
 		/// <param name="objWithProperties">The object with properties.</param>
 		/// <returns>objWithProperties as a string.</returns>
-		//public virtual string ToDeleteRowStatement(object objWithProperties)
-		//{
-		//	var sqlFilter = new StringBuilder();
-		//	var modelDef = objWithProperties.GetType().GetModelDefinition();
-
-		//	foreach (var fieldDef in modelDef.FieldDefinitions)
-		//	{
-		//		try
-		//		{
-		//			if (fieldDef.IsPrimaryKey)
-		//			{
-		//				if (sqlFilter.Length > 0) sqlFilter.Append(" AND ");
-
-		//				sqlFilter.AppendFormat("{0} = {1}", GetQuotedColumnName(fieldDef.FieldName),
-		//					fieldDef.GetQuotedValue(objWithProperties));
-		//			}
-		//		}
-		//		catch (Exception ex)
-		//		{
-		//			//Log.Error("ERROR in ToDeleteRowStatement(): " + ex.Message, ex);
-		//		}
-		//	}
-
-		//	var deleteSql = string.Format("DELETE FROM {0} WHERE {1}",
-		//		GetQuotedTableName(modelDef), sqlFilter);
-
-		//	return deleteSql;
-		//}
+		public virtual string ToDeleteRowStatement<T>(SqlExpressionVisitor<T> visitor)
+		{
+			return string.Format("DELETE FROM {0} WHERE {1}",
+				GetQuotedTableName(visitor.ModelDefinition), visitor.WhereExpression);
+		}
 
 		/// <summary>Converts this object to a delete statement.</summary>
 		/// <param name="tableType">   Type of the table.</param>
