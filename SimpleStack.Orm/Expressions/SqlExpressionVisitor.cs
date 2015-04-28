@@ -561,9 +561,7 @@ namespace SimpleStack.Orm.Expressions
 		/// <returns>This object as a string.</returns>
 		public virtual string ToDeleteRowStatement()
 		{
-			return string.Format("DELETE FROM {0} {1}",
-				Config.DialectProvider.GetQuotedTableName(_modelDef),
-				WhereExpression);
+			return Config.DialectProvider.ToDeleteRowStatement(this);
 		}
 
 		/// <summary>Converts this object to an update statement.</summary>
