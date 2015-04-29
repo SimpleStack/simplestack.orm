@@ -297,7 +297,9 @@ namespace SimpleStack.Orm
 			var modelDef = typeof(T).GetModelDefinition();
 			var sql = new StringBuilder();
 
-			sql.AppendFormat("SELECT COUNT(*) FROM {0}", GetQuotedTableName(modelDef));
+			sql.AppendFormat("SELECT COUNT({0}) FROM {1}",
+				visitor.Fields.Count == 0 ? "*" : (visitor.IsDistinct ? "DISTINCT" : String.Empty) + visitor.Fields.Aggregate((x, y) => x + ", " + y),
+				GetQuotedTableName(modelDef));
 
 			if (!string.IsNullOrEmpty(visitor.WhereExpression))
 			{
@@ -317,6 +319,7 @@ namespace SimpleStack.Orm
 			var sql = new StringBuilder();
 
 			sql.Append(visitor.SelectExpression);
+
 			sql.Append(string.IsNullOrEmpty(visitor.WhereExpression)
 				? String.Empty
 				: "\n" + visitor.WhereExpression);
@@ -492,7 +495,7 @@ namespace SimpleStack.Orm
 				if (fieldDef.IsComputed || fieldDef.AutoIncrement)
 					continue;
 
-				if (visitor.UpdateFields.Contains(fieldDef.Name))
+				if (visitor.Fields.Contains(fieldDef.Name))
 				{
 					if (sql.Length > 0)
 					{
@@ -522,7 +525,7 @@ namespace SimpleStack.Orm
 		/// <returns>objWithProperties as a string.</returns>
 		public virtual string ToDeleteRowStatement<T>(SqlExpressionVisitor<T> visitor)
 		{
-			return string.Format("DELETE FROM {0} WHERE {1}",
+			return string.Format("DELETE FROM {0} {1}",
 				GetQuotedTableName(visitor.ModelDefinition), visitor.WhereExpression);
 		}
 

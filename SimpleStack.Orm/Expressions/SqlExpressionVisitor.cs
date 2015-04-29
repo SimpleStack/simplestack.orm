@@ -48,7 +48,10 @@ namespace SimpleStack.Orm.Expressions
 		private string _sep = string.Empty;
 
 		/// <summary>The update fields.</summary>
-		private IList<string> _updateFields = new List<string>();
+		//private IList<string> _updateFields = new List<string>();
+
+		/// <summary>The fields.</summary>
+		private IList<string> _fields = new List<string>();
 
 		/// <summary>true to use field name.</summary>
 		private bool _useFieldName;
@@ -63,7 +66,6 @@ namespace SimpleStack.Orm.Expressions
 		{
 			_modelDef = typeof(T).GetModelDefinition();
 			PrefixFieldWithTableName = false;
-			WhereStatementWithoutWhereString = false;
 		}
 
 		/// <summary>
@@ -71,12 +73,6 @@ namespace SimpleStack.Orm.Expressions
 		/// </summary>
 		/// <value>true if prefix field with table name, false if not.</value>
 		public bool PrefixFieldWithTableName { get; set; }
-
-		/// <summary>
-		///     Gets or sets a value indicating whether the where statement without where string.
-		/// </summary>
-		/// <value>true if where statement without where string, false if not.</value>
-		public bool WhereStatementWithoutWhereString { get; set; }
 
 		/// <summary>Gets the separator.</summary>
 		/// <value>The separator.</value>
@@ -92,7 +88,7 @@ namespace SimpleStack.Orm.Expressions
 			get
 			{
 				if (string.IsNullOrEmpty(_selectExpression))
-					BuildSelectExpression(string.Empty, false);
+					BuildSelectExpression();
 				return _selectExpression;
 			}
 			set { _selectExpression = value; }
@@ -150,13 +146,15 @@ namespace SimpleStack.Orm.Expressions
 		/// </summary>
 		public int? Skip { get; internal set; }
 
+		public bool IsDistinct { get; private set; }
+
 		/// <summary>Gets or sets the update fields.</summary>
 		/// <value>The update fields.</value>
-		public IList<string> UpdateFields
-		{
-			get { return _updateFields; }
-			set { _updateFields = value; }
-		}
+		//public IList<string> UpdateFields
+		//{
+		//	get { return _updateFields; }
+		//	set { _updateFields = value; }
+		//}
 
 		/// <summary>Gets or sets the insert fields.</summary>
 		/// <value>The insert fields.</value>
@@ -164,6 +162,12 @@ namespace SimpleStack.Orm.Expressions
 		{
 			get { return _insertFields; }
 			set { _insertFields = value; }
+		}
+
+		//Query fields
+		public IList<string> Fields
+		{
+			get { return _fields; }
 		}
 
 		/// <summary>Gets or sets the model definition.</summary>
@@ -179,31 +183,37 @@ namespace SimpleStack.Orm.Expressions
 			get { return _parameters; }
 		}
 
-		/// <summary>Clear select expression. All properties will be selected.</summary>
-		/// <returns>A SqlExpressionVisitor&lt;T&gt;</returns>
-		public virtual SqlExpressionVisitor<T> Select()
+		public virtual SqlExpressionVisitor<T> Distinct(bool distinct = true)
 		{
-			return Select(string.Empty);
-		}
-
-		/// <summary>set the specified selectExpression.</summary>
-		/// <param name="selectExpression">
-		///     raw Select expression: "Select SomeField1, SomeField2 from
-		///     SomeTable".
-		/// </param>
-		/// <returns>A SqlExpressionVisitor&lt;T&gt;</returns>
-		public virtual SqlExpressionVisitor<T> Select(string selectExpression)
-		{
-			if (string.IsNullOrEmpty(selectExpression))
-			{
-				BuildSelectExpression(string.Empty, false);
-			}
-			else
-			{
-				this._selectExpression = selectExpression;
-			}
+			IsDistinct = distinct;
 			return this;
 		}
+
+		///// <summary>Clear select expression. All properties will be selected.</summary>
+		///// <returns>A SqlExpressionVisitor&lt;T&gt;</returns>
+		//public virtual SqlExpressionVisitor<T> Select()
+		//{
+		//	return Select(string.Empty);
+		//}
+
+		///// <summary>set the specified selectExpression.</summary>
+		///// <param name="selectExpression">
+		/////     raw Select expression: "Select SomeField1, SomeField2 from
+		/////     SomeTable".
+		///// </param>
+		///// <returns>A SqlExpressionVisitor&lt;T&gt;</returns>
+		//public virtual SqlExpressionVisitor<T> Select(string selectExpression)
+		//{
+		//	if (string.IsNullOrEmpty(selectExpression))
+		//	{
+		//		BuildSelectExpression(string.Empty);
+		//	}
+		//	else
+		//	{
+		//		this._selectExpression = selectExpression;
+		//	}
+		//	return this;
+		//}
 
 		/// <summary>Fields to be selected.</summary>
 		/// <typeparam name="TKey">objectWithProperties.</typeparam>
@@ -213,7 +223,7 @@ namespace SimpleStack.Orm.Expressions
 		{
 			_sep = string.Empty;
 			_useFieldName = true;
-			BuildSelectExpression(Visit(fields).ToString(), false);
+			_fields = Visit(fields).ToString().Split(',').ToList();
 			return this;
 		}
 
@@ -225,30 +235,39 @@ namespace SimpleStack.Orm.Expressions
 		{
 			_sep = string.Empty;
 			_useFieldName = true;
-			BuildSelectExpression(Visit(fields).ToString(), true);
+			_fields = Visit(fields).ToString().Split(',').ToList();
+			IsDistinct = true;
+			return this;
+		}
+
+		public SqlExpressionVisitor<T> Clear()
+		{
+			_underlyingExpression = null;
+			_fields.Clear();
+			IsDistinct = false;
 			return this;
 		}
 
 		/// <summary>Wheres the given predicate.</summary>
 		/// <returns>A SqlExpressionVisitor&lt;T&gt;</returns>
-		public virtual SqlExpressionVisitor<T> Where()
-		{
-			if (_underlyingExpression != null)
-				_underlyingExpression = null; //Where() clears the expression
-			return Where(string.Empty);
-		}
+		//public virtual SqlExpressionVisitor<T> Where()
+		//{
+		//	if (_underlyingExpression != null)
+		//		_underlyingExpression = null; //Where() clears the expression
+		//	return Where(string.Empty);
+		//}
 
-		/// <summary>Wheres the given predicate.</summary>
-		/// <param name="sqlFilter">   A filter specifying the SQL.</param>
-		/// <param name="filterParams">Options for controlling the filter.</param>
-		/// <returns>A SqlExpressionVisitor&lt;T&gt;</returns>
-		public virtual SqlExpressionVisitor<T> Where(string sqlFilter, params object[] filterParams)
-		{
-			_whereExpression = !string.IsNullOrEmpty(sqlFilter) ? sqlFilter.SqlFormat(filterParams) : string.Empty;
-			if (!string.IsNullOrEmpty(_whereExpression))
-				_whereExpression = (WhereStatementWithoutWhereString ? "" : "WHERE ") + _whereExpression;
-			return this;
-		}
+		///// <summary>Wheres the given predicate.</summary>
+		///// <param name="sqlFilter">   A filter specifying the SQL.</param>
+		///// <param name="filterParams">Options for controlling the filter.</param>
+		///// <returns>A SqlExpressionVisitor&lt;T&gt;</returns>
+		//public virtual SqlExpressionVisitor<T> Where(string sqlFilter, params object[] filterParams)
+		//{
+		//	_whereExpression = !string.IsNullOrEmpty(sqlFilter) ? sqlFilter.SqlFormat(filterParams) : string.Empty;
+		//	if (!string.IsNullOrEmpty(_whereExpression))
+		//		_whereExpression = (WhereStatementWithoutWhereString ? "" : "WHERE ") + _whereExpression;
+		//	return this;
+		//}
 
 		/// <summary>Wheres the given predicate.</summary>
 		/// <param name="predicate">The predicate.</param>
@@ -303,7 +322,7 @@ namespace SimpleStack.Orm.Expressions
 			_sep = " ";
 			_whereExpression = Visit(_underlyingExpression).ToString();
 			if (!string.IsNullOrEmpty(_whereExpression))
-				_whereExpression = (WhereStatementWithoutWhereString ? "" : "WHERE ") + _whereExpression;
+				_whereExpression = "WHERE " + _whereExpression;
 		}
 
 		/// <summary>Group by.</summary>
@@ -502,11 +521,11 @@ namespace SimpleStack.Orm.Expressions
 		///     IList&lt;string&gt; containing Names of properties to be
 		///     updated.
 		/// </param>
-		public virtual SqlExpressionVisitor<T> Update(IList<string> updateFields)
-		{
-			this._updateFields = updateFields;
-			return this;
-		}
+		//public virtual SqlExpressionVisitor<T> Update(IList<string> updateFields)
+		//{
+		//	this._updateFields = updateFields;
+		//	return this;
+		//}
 
 		/// <summary>Fields to be updated.</summary>
 		/// <typeparam name="TKey">objectWithProperties.</typeparam>
@@ -516,17 +535,17 @@ namespace SimpleStack.Orm.Expressions
 		{
 			_sep = string.Empty;
 			_useFieldName = false;
-			_updateFields = Visit(fields).ToString().Split(',').ToList();
+			_fields = Visit(fields).ToString().Split(',').ToList();
 			return this;
 		}
 
 		/// <summary>Clear UpdateFields list ( all fields will be updated)</summary>
 		/// <returns>A SqlExpressionVisitor&lt;T&gt;</returns>
-		public virtual SqlExpressionVisitor<T> Update()
-		{
-			_updateFields = new List<string>();
-			return this;
-		}
+		//public virtual SqlExpressionVisitor<T> Update()
+		//{
+		//	_fields = new List<string>();
+		//	return this;
+		//}
 
 		/// <summary>Fields to be inserted.</summary>
 		/// <typeparam name="TKey">objectWithProperties.</typeparam>
@@ -575,8 +594,9 @@ namespace SimpleStack.Orm.Expressions
 
 			foreach (var fieldDef in _modelDef.FieldDefinitions)
 			{
-				if (_updateFields.Count > 0 && !_updateFields.Contains(fieldDef.Name))
-					continue; // added
+				if (_fields.Count > 0 && !_fields.Contains(fieldDef.Name))
+					continue; // ignore field
+
 				var value = fieldDef.GetValue(item);
 				if (excludeDefaults && (value == null || value.Equals(value.GetType().GetDefaultValue())))
 					continue; //GetDefaultValue?
@@ -1078,13 +1098,13 @@ namespace SimpleStack.Orm.Expressions
 		/// <summary>Builds select expression.</summary>
 		/// <param name="fields">  x=> x.SomeProperty1 or x=> new{ x.SomeProperty1, x.SomeProperty2}</param>
 		/// <param name="distinct">true to distinct.</param>
-		private void BuildSelectExpression(string fields, bool distinct)
+		private void BuildSelectExpression()
 		{
 			_selectExpression = string.Format("SELECT {0}{1} \nFROM {2}",
-				(distinct ? "DISTINCT " : ""),
-				(string.IsNullOrEmpty(fields)
+				(IsDistinct ? "DISTINCT " : String.Empty),
+				(_fields.Count == 0)
 					? Config.DialectProvider.GetColumnNames(_modelDef)
-					: fields),
+					: _fields.Aggregate((x, y) => x + ", " + y),
 				Config.DialectProvider.GetQuotedTableName(_modelDef));
 		}
 

@@ -123,6 +123,11 @@ namespace SimpleStack.Orm
 			return dbConn.ExecuteScalar<TKey>(ev.Where(predicate).Select(field).ToSelectStatement(), ev.Parameters);
 		}
 
+		public static long Count<T>(this IDbConnection dbConn, Func<SqlExpressionVisitor<T>, SqlExpressionVisitor<T>> expression)
+		{
+			var ev = Config.DialectProvider.ExpressionVisitor<T>();
+			return dbConn.ExecuteScalar<long>(expression(ev).ToCountStatement(), ev.Parameters);
+		}
 		/// <summary>
 		/// An IDbConnection extension method that counts the given database connection.
 		/// </summary>
@@ -165,7 +170,9 @@ namespace SimpleStack.Orm
 		/// <param name="model">     The model.</param>
 		/// <param name="onlyFields">The only fields.</param>
 		/// <returns>An int.</returns>
-		public static int UpdateOnly<T>(this IDbConnection dbConn, T model, Func<SqlExpressionVisitor<T>, SqlExpressionVisitor<T>> onlyFields)
+		public static int UpdateOnly<T>(this IDbConnection dbConn,
+			T model,
+			Func<SqlExpressionVisitor<T>, SqlExpressionVisitor<T>> onlyFields)
 		{
 			return dbConn.UpdateOnly(model, onlyFields(Config.DialectProvider.ExpressionVisitor<T>()));
 		}
@@ -174,11 +181,13 @@ namespace SimpleStack.Orm
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		/// <param name="dbConn">    The dbConn to act on.</param>
 		/// <param name="model">     The model.</param>
-		/// <param name="visitor">The only fields.</param>
+		/// <param name="expression">The only fields.</param>
 		/// <returns>An int.</returns>
-		public static int UpdateOnly<T>(this IDbConnection dbConn, T model, SqlExpressionVisitor<T> visitor)
+		public static int UpdateOnly<T>(this IDbConnection dbConn, 
+			T model, 
+			SqlExpressionVisitor<T> expression)
 		{
-			var cmd = Config.DialectProvider.ToUpdateRowStatement(model, visitor);
+			var cmd = Config.DialectProvider.ToUpdateRowStatement(model, expression);
 			return dbConn.ExecuteScalar<int>(cmd);
 		}
 
@@ -190,7 +199,8 @@ namespace SimpleStack.Orm
 		/// <param name="onlyFields">The only fields.</param>
 		/// <param name="where">     The where.</param>
 		/// <returns>An int.</returns>
-		public static int UpdateOnly<T, TKey>(this IDbConnection dbConn, T obj,
+		public static int UpdateOnly<T, TKey>(this IDbConnection dbConn,
+			T obj,
 			Expression<Func<T, TKey>> onlyFields = null,
 			Expression<Func<T, bool>> where = null)
 		{
@@ -209,13 +219,13 @@ namespace SimpleStack.Orm
 		/// <param name="item">  The item.</param>
 		/// <param name="where"> The where.</param>
 		/// <returns>An int.</returns>
-		public static int UpdateNonDefaults<T>(this IDbConnection dbConn, T item, Expression<Func<T, bool>> where)
-		{
-			var ev = Config.DialectProvider.ExpressionVisitor<T>();
-			ev.Where(where);
-			var sql = ev.ToUpdateStatement(item, excludeDefaults: true);
-			return dbConn.ExecuteScalar<int>(sql);
-		}
+		//public static int UpdateNonDefaults<T>(this IDbConnection dbConn, T item, Expression<Func<T, bool>> where)
+		//{
+		//	var ev = Config.DialectProvider.ExpressionVisitor<T>();
+		//	ev.Where(where);
+		//	var sql = ev.ToUpdateStatement(item, excludeDefaults: true);
+		//	return dbConn.ExecuteScalar<int>(sql);
+		//}
 
 		/// <summary>An IDbConnection extension method that updates this object.</summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>

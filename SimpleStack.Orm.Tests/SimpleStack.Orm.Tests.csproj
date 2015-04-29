@@ -61,6 +61,7 @@
     <Compile Include="TestType.cs" />
     <Compile Include="TransactionTests.cs" />
     <Compile Include="UnaryExpressionsTest.cs" />
+    <Compile Include="SelectCountTests.cs" />
     <Compile Include="UpdateTests.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -141,11 +141,11 @@ namespace SimpleStack.Orm.Tests
 
 		/// <summary>Creates model with fields of different types.</summary>
 		/// <returns>The new model with fields of different types.</returns>
-		private void CreateModelWithFieldsOfDifferentTypes()
+		private void CreateModelWithFieldsOfDifferentTypes(int count = 10)
 		{
 			OpenDbConnection().CreateTable<ModelWithFieldsOfDifferentTypes>(true);
 
-			for (int i = 0; i < 10; i++)
+			for (int i = 0; i < count; i++)
 			{
 				OpenDbConnection().Insert(ModelWithFieldsOfDifferentTypes.Create(i));
 			}
@@ -214,6 +214,7 @@ namespace SimpleStack.Orm.Tests
 			Console.WriteLine(dbRow.Dump());
 			ModelWithFieldsOfDifferentTypes.AssertIsEqual(dbRow, row);
 		}
+
 		[Test]
 		public void Can_updateOnly_with_anonymousType_and_single_field_and_expr_filter()
 		{
@@ -249,7 +250,7 @@ namespace SimpleStack.Orm.Tests
 		}
 
 		[Test]
-		public void Can_updateOnly_with_anonymousType_and_two_fields_without_filter()
+		public void Can_updateOnly_single_field_with_sqlvisitor_syntax()
 		{
 			CreateModelWithFieldsOfDifferentTypes();
 			var row = OpenDbConnection().Select<ModelWithFieldsOfDifferentTypes>(x => x.Id == 1).FirstOrDefault();
@@ -258,12 +259,34 @@ namespace SimpleStack.Orm.Tests
 			row.Name = "UpdatedName";
 			row.LongId = 444719;
 
+			OpenDbConnection().UpdateOnly(row, ev => ev.Update(p => p.LongId).Where(x => x.Id == row.Id));
+			
+			var dbRow = OpenDbConnection().Select<ModelWithFieldsOfDifferentTypes>(x => x.Id == row.Id).FirstOrDefault();
+			Assert.AreEqual("Name0", dbRow.Name);//Name shouldn't be updated
+			Assert.AreEqual(444719, dbRow.LongId);
+		}
+
+		[Test]
+		public void Can_updateOnly_with_anonymousType_and_two_fields_without_filter()
+		{
+			CreateModelWithFieldsOfDifferentTypes();
+			var row = OpenDbConnection().Select<ModelWithFieldsOfDifferentTypes>(x => x.Id == 1).FirstOrDefault();
+
+			long oldLongId = row.LongId;
+
+			row.Name = "UpdatedName";
+			row.DateTime = DateTime.Now;
+			row.LongId = 444719;
+
 			OpenDbConnection().UpdateOnly(row, x => new { x.LongId, x.DateTime });
 
 			var dbRow = OpenDbConnection().Select<ModelWithFieldsOfDifferentTypes>(x => x.Id == row.Id).FirstOrDefault();
 			Assert.AreEqual("Name0", dbRow.Name);//Name shouldn't be updated
 			Assert.AreEqual(row.DateTime.RoundToSecond(), dbRow.DateTime.RoundToSecond());
 			Assert.AreEqual(444719, dbRow.LongId);
+
+			var oldValueCount = OpenDbConnection().Count<ModelWithFieldsOfDifferentTypes>(x => x.LongId == oldLongId);
+			Assert.AreEqual(0,oldValueCount);
 		}
 	}
 }

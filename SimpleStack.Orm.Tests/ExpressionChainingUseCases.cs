@@ -83,7 +83,7 @@ namespace SimpleStack.Orm.Tests
 
 			Assert.AreEqual(1, results.Count());
 
-			visitor.Where(); //clears underlying expression
+			visitor.Clear(); //clears underlying expression
 
 			visitor.Where(x => x.LastName.StartsWith("J")).And(x => x.Age > 40);
 			results = db.Select(visitor).ToArray();
@@ -104,7 +104,7 @@ namespace SimpleStack.Orm.Tests
 			var results = db.Select<Person>(visitor);
 			Assert.AreEqual(3, results.Count());
 
-			visitor.Where(); //clear the underlying expression
+			visitor.Clear(); //clear the underlying expression
 
 			visitor.Where(x => x.Age < 30).Or(x => x.Age > 45);
 			results = db.Select<Person>(visitor);
