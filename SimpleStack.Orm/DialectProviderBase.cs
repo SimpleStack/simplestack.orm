@@ -515,6 +515,60 @@ namespace SimpleStack.Orm
 			return new CommandDefinition(updateSql, parameters);
 		}
 
+		public virtual CommandDefinition ToUpdateRowStatement<T>(object updateOnly, SqlExpressionVisitor<T> ev)
+		{
+			var whereSql = ev.WhereExpression;
+			var sql = new StringBuilder();
+			var modelDef = typeof(T).GetModelDefinition();
+			var fields = modelDef.FieldDefinitionsArray;
+
+			var parameters = new Dictionary<string, object>(ev.Parameters);
+
+			foreach (var setField in updateOnly.GetType().GetPublicProperties())
+			{
+				var fieldDef = fields.FirstOrDefault(x => string.Equals(x.Name, setField.Name, StringComparison.InvariantCultureIgnoreCase));
+				if (fieldDef == null)
+					continue;
+
+				string parameterName;
+
+				if (fieldDef.IsPrimaryKey)
+				{
+					if (String.IsNullOrWhiteSpace(whereSql))
+					{
+						whereSql = "WHERE ";
+					}
+					else
+					{
+						whereSql += " AND ";
+					}
+					parameterName = GetParameterName(parameters.Count);
+					whereSql += String.Format("{0} = {1}", GetQuotedColumnName(fieldDef.FieldName), parameterName);
+					parameters.Add(parameterName, setField.GetPropertyGetterFn()(updateOnly));
+				}
+				else
+				{
+					if (sql.Length > 0)
+					{
+						sql.Append(",");
+					}
+
+					parameterName = GetParameterName(parameters.Count);
+
+					sql.AppendFormat("{0} = {1}",
+						GetQuotedColumnName(fieldDef.FieldName),
+						parameterName);
+
+					parameters.Add(parameterName, setField.GetPropertyGetterFn()(updateOnly));
+				}
+			}
+
+			var updateSql = string.Format("UPDATE {0} SET {1} {2}",
+				GetQuotedTableName(modelDef), sql, whereSql);
+
+			return new CommandDefinition(updateSql, parameters);
+		}
+
 		/// <summary>Creates parameterized update statement.</summary>
 		/// <param name="connection">       The connection.</param>
 		/// <param name="objWithProperties">The object with properties.</param>

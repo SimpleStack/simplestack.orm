@@ -170,11 +170,11 @@ namespace SimpleStack.Orm
 		/// <param name="model">     The model.</param>
 		/// <param name="onlyFields">The only fields.</param>
 		/// <returns>An int.</returns>
-		public static int UpdateOnly<T>(this IDbConnection dbConn,
+		public static int Update<T>(this IDbConnection dbConn,
 			T model,
 			Func<SqlExpressionVisitor<T>, SqlExpressionVisitor<T>> onlyFields)
 		{
-			return dbConn.UpdateOnly(model, onlyFields(Config.DialectProvider.ExpressionVisitor<T>()));
+			return dbConn.Update(model, onlyFields(Config.DialectProvider.ExpressionVisitor<T>()));
 		}
 
 		/// <summary>An IDbConnection extension method that updates the only.</summary>
@@ -183,7 +183,7 @@ namespace SimpleStack.Orm
 		/// <param name="model">     The model.</param>
 		/// <param name="expression">The only fields.</param>
 		/// <returns>An int.</returns>
-		public static int UpdateOnly<T>(this IDbConnection dbConn, 
+		public static int Update<T>(this IDbConnection dbConn, 
 			T model, 
 			SqlExpressionVisitor<T> expression)
 		{
@@ -199,7 +199,7 @@ namespace SimpleStack.Orm
 		/// <param name="onlyFields">The only fields.</param>
 		/// <param name="where">     The where.</param>
 		/// <returns>An int.</returns>
-		public static int UpdateOnly<T, TKey>(this IDbConnection dbConn,
+		public static int Update<T, TKey>(this IDbConnection dbConn,
 			T obj,
 			Expression<Func<T, TKey>> onlyFields = null,
 			Expression<Func<T, bool>> where = null)
@@ -210,36 +210,8 @@ namespace SimpleStack.Orm
 			var ev = Config.DialectProvider.ExpressionVisitor<T>();
 			ev.Update(onlyFields);
 			ev.Where(where);
-			return dbConn.UpdateOnly(obj, ev);
+			return dbConn.Update(obj, ev);
 		}
-
-		/// <summary>An IDbConnection extension method that updates the non defaults.</summary>
-		/// <typeparam name="T">Generic type parameter.</typeparam>
-		/// <param name="dbConn">The dbConn to act on.</param>
-		/// <param name="item">  The item.</param>
-		/// <param name="where"> The where.</param>
-		/// <returns>An int.</returns>
-		//public static int UpdateNonDefaults<T>(this IDbConnection dbConn, T item, Expression<Func<T, bool>> where)
-		//{
-		//	var ev = Config.DialectProvider.ExpressionVisitor<T>();
-		//	ev.Where(where);
-		//	var sql = ev.ToUpdateStatement(item, excludeDefaults: true);
-		//	return dbConn.ExecuteScalar<int>(sql);
-		//}
-
-		/// <summary>An IDbConnection extension method that updates this object.</summary>
-		/// <typeparam name="T">Generic type parameter.</typeparam>
-		/// <param name="dbConn">The dbConn to act on.</param>
-		/// <param name="item">  The item.</param>
-		/// <param name="where"> The where.</param>
-		/// <returns>An int.</returns>
-		//public static int Update<T>(this IDbConnection dbConn, T item, Expression<Func<T, bool>> where)
-		//{
-		//	var ev = Config.DialectProvider.ExpressionVisitor<T>();
-		//	ev.Where(where);
-		//	var sql = ev.ToUpdateStatement(item);
-		//	return dbConn.ExecuteScalar<int>(sql,ev.Parameters);
-		//}
 
 		/// <summary>An IDbConnection extension method that updates this object.</summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
@@ -247,67 +219,18 @@ namespace SimpleStack.Orm
 		/// <param name="updateOnly">The update only.</param>
 		/// <param name="where">     The where.</param>
 		/// <returns>An int.</returns>
-		public static int Update<T>(this IDbConnection dbConn, object updateOnly, Expression<Func<T, bool>> where = null)
+		public static int Update<T>(this IDbConnection dbConn, 
+			object updateOnly, 
+			Expression<Func<T, bool>> where = null)
 		{
-			//TODO : move this to IDialectProvider
-			var dialectProvider = Config.DialectProvider;
-			var ev = dialectProvider.ExpressionVisitor<T>();
-			var whereSql = ev.Where(where).WhereExpression;
-			var sql = new StringBuilder();
-			var modelDef = typeof(T).GetModelDefinition();
-			var fields = modelDef.FieldDefinitionsArray;
+			var ev = Config.DialectProvider.ExpressionVisitor<T>();
+			ev.Where(where);
 
-			var parameters = new Dictionary<string, object>(ev.Parameters);
-
-			foreach (var setField in updateOnly.GetType().GetPublicProperties())
-			{
-				var fieldDef = fields.FirstOrDefault(x => string.Equals(x.Name, setField.Name, StringComparison.InvariantCultureIgnoreCase));
-				if (fieldDef == null)
-					continue;
-
-				string parameterName;
-
-				if (fieldDef.IsPrimaryKey)
-				{
-					if (where != null)
-						continue;
-
-					if (String.IsNullOrWhiteSpace(whereSql))
-					{
-						whereSql = "WHERE ";
-					}
-					else
-					{
-						whereSql += " AND ";
-					}
-					parameterName = dialectProvider.GetParameterName(parameters.Count);
-					whereSql += String.Format("{0} = {1}", dialectProvider.GetQuotedColumnName(fieldDef.FieldName), parameterName);
-					parameters.Add(parameterName, setField.GetPropertyGetterFn()(updateOnly));
-				}
-				else
-				{
-					if (sql.Length > 0)
-					{
-						sql.Append(",");
-					}
-
-					parameterName = dialectProvider.GetParameterName(parameters.Count);
-
-					sql.AppendFormat("{0} = {1}",
-						dialectProvider.GetQuotedColumnName(fieldDef.FieldName),
-						parameterName);
-
-					parameters.Add(parameterName, setField.GetPropertyGetterFn()(updateOnly));
-				}
-			}
-
-			var updateSql = string.Format("UPDATE {0} SET {1} {2}",
-				dialectProvider.GetQuotedTableName(modelDef), sql, whereSql);
-
-			return dbConn.ExecuteScalar<int>(updateSql, parameters);
+			var cmd = Config.DialectProvider.ToUpdateRowStatement(updateOnly, ev);
+			return dbConn.ExecuteScalar<int>(cmd);
 		}
 
-		public static void Insert<T>(this IDbConnection dbConn, params T[] objs)// where T : new()
+		public static void Insert<T>(this IDbConnection dbConn, params T[] objs)
 		{
 			dbConn.ExecuteScalar(Config.DialectProvider.ToInsertRowStatement(objs));
 		}
@@ -316,7 +239,7 @@ namespace SimpleStack.Orm
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		/// <param name="dbConn">The dbConn to act on.</param>
 		/// <param name="objs">  The objects.</param>
-		public static void Insert<T>(this IDbConnection dbConn, IEnumerable<T> objs)// where T : new()
+		public static void Insert<T>(this IDbConnection dbConn, IEnumerable<T> objs)
 		{
 			dbConn.ExecuteScalar(Config.DialectProvider.ToInsertRowStatement(objs));
 		}

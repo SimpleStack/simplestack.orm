@@ -124,7 +124,7 @@ namespace SimpleStack.Orm.Tests
 				{
 					Assert.That(actual.DateTime, Is.EqualTo(expected.DateTime));
 				}
-				catch (Exception ex)
+				catch (Exception)
 				{
 					Assert.That(actual.DateTime.RoundToSecond(), Is.EqualTo(expected.DateTime.RoundToSecond()));
 				}
@@ -132,7 +132,7 @@ namespace SimpleStack.Orm.Tests
 				{
 					Assert.That(actual.Double, Is.EqualTo(expected.Double));
 				}
-				catch (Exception ex)
+				catch (Exception)
 				{
 					Assert.That(Math.Round(actual.Double, 10), Is.EqualTo(Math.Round(actual.Double, 10)));
 				}
@@ -224,7 +224,7 @@ namespace SimpleStack.Orm.Tests
 			row.DateTime = DateTime.Now;
 			row.Name = "UpdatedName";
 
-			OpenDbConnection().UpdateOnly(row, x => x.DateTime , x => x.LongId >= row.LongId && x.LongId <= row.LongId);
+			OpenDbConnection().Update(row, x => x.DateTime , x => x.LongId >= row.LongId && x.LongId <= row.LongId);
 
 			var dbRow = OpenDbConnection().Select<ModelWithFieldsOfDifferentTypes>(x => x.Id == row.Id).FirstOrDefault();
 			Assert.AreEqual("Name0", dbRow.Name);//Name shouldn't be updated
@@ -241,7 +241,7 @@ namespace SimpleStack.Orm.Tests
 			row.Name = "UpdatedName";
 			row.LongId = 444719;
 
-			OpenDbConnection().UpdateOnly(row,x => new {x.LongId,x.DateTime}, x => x.Id == row.Id);
+			OpenDbConnection().Update(row,x => new {x.LongId,x.DateTime}, x => x.Id == row.Id);
 
 			var dbRow = OpenDbConnection().Select<ModelWithFieldsOfDifferentTypes>(x => x.Id == row.Id).FirstOrDefault();
 			Assert.AreEqual("Name0", dbRow.Name);//Name shouldn't be updated
@@ -259,7 +259,7 @@ namespace SimpleStack.Orm.Tests
 			row.Name = "UpdatedName";
 			row.LongId = 444719;
 
-			OpenDbConnection().UpdateOnly(row, ev => ev.Update(p => p.LongId).Where(x => x.Id == row.Id));
+			OpenDbConnection().Update(row, ev => ev.Update(p => p.LongId).Where(x => x.Id == row.Id));
 			
 			var dbRow = OpenDbConnection().Select<ModelWithFieldsOfDifferentTypes>(x => x.Id == row.Id).FirstOrDefault();
 			Assert.AreEqual("Name0", dbRow.Name);//Name shouldn't be updated
@@ -278,7 +278,7 @@ namespace SimpleStack.Orm.Tests
 			row.DateTime = DateTime.Now;
 			row.LongId = 444719;
 
-			OpenDbConnection().UpdateOnly(row, x => new { x.LongId, x.DateTime });
+			OpenDbConnection().Update(row, x => new { x.LongId, x.DateTime });
 
 			var dbRow = OpenDbConnection().Select<ModelWithFieldsOfDifferentTypes>(x => x.Id == row.Id).FirstOrDefault();
 			Assert.AreEqual("Name0", dbRow.Name);//Name shouldn't be updated
