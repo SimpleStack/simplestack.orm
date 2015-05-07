@@ -41,12 +41,20 @@ namespace SimpleStack.Orm
 		/// </summary>
 		public void Dispose()
 		{
-			if (DbConnection != null)
+			Dispose(true);
+		}
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (disposing)
 			{
-				DbConnection.Dispose();
-				dbConnection = null;
+				if (DbConnection != null)
+				{
+					DbConnection.Dispose();
+					dbConnection = null;
+				}
+				isOpen = false;
 			}
-			isOpen = false;
 		}
 
 		/// <summary>Begins a database transaction.</summary>

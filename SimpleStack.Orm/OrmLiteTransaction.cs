@@ -32,17 +32,25 @@ namespace SimpleStack.Orm
 		/// </summary>
 		public void Dispose()
 		{
-			try
+			Dispose(true);
+		}
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (disposing)
 			{
-				trans.Dispose();
-			}
-			finally
-			{
-				Config.TSTransaction = prevTrans;
-				var ormLiteDbConn = this.db as OrmLiteConnection;
-				if (ormLiteDbConn != null)
+				try
 				{
-					ormLiteDbConn.Transaction = prevTrans;
+					trans.Dispose();
+				}
+				finally
+				{
+					Config.TSTransaction = prevTrans;
+					var ormLiteDbConn = this.db as OrmLiteConnection;
+					if (ormLiteDbConn != null)
+					{
+						ormLiteDbConn.Transaction = prevTrans;
+					}
 				}
 			}
 		}
