@@ -181,15 +181,15 @@ namespace SimpleStack.Orm
 			get { return definition ?? (definition = typeof(T).GetModelDefinition()); }
 		}
 
-        /// <summary>Name of the primary key.</summary>
-		private static string primaryKeyName;
+		///// <summary>Name of the primary key.</summary>
+		//private static string primaryKeyName;
 
-        /// <summary>Gets the name of the primary key.</summary>
-        /// <value>The name of the primary key.</value>
-		public static string PrimaryKeyName
-		{
-			get { return primaryKeyName ?? (primaryKeyName = Definition.PrimaryKey.FieldName); }
-		}
+		///// <summary>Gets the name of the primary key.</summary>
+		///// <value>The name of the primary key.</value>
+		//public static string PrimaryKeyName
+		//{
+		//	get { return primaryKeyName ?? (primaryKeyName = Definition.PrimaryKey.FieldName); }
+		//}
 
 	}
 }
