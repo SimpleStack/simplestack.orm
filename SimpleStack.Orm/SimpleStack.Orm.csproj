@@ -51,10 +51,10 @@
     <Compile Include="Attributes\ForeignKeyAttribute.cs" />
     <Compile Include="Attributes\IgnoreAttribute.cs" />
     <Compile Include="Attributes\IndexAttribute.cs" />
-    <Compile Include="Attributes\Textttribute.cs" />
+    <Compile Include="Attributes\PrimaryKeyAttribute.cs" />
     <Compile Include="Attributes\RefrerencesAttribute.cs" />
     <Compile Include="Attributes\RequiredAttribute.cs" />
-    <Compile Include="Attributes\PrimaryKeyAttribute.cs" />
+    <Compile Include="Attributes\TextAttribute.cs" />
     <Compile Include="Attributes\SchemaAttribute.cs" />
     <Compile Include="Attributes\SequenceAttribute.cs" />
     <Compile Include="Config.cs" />
