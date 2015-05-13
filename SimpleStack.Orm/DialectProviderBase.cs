@@ -483,19 +483,19 @@ namespace SimpleStack.Orm
 		/// <param name="objWithProperties">The object with properties.</param>
 		/// <param name="updateFields">     The update fields.</param>
 		/// <returns>The given data converted to a string.</returns>
-		public virtual CommandDefinition ToUpdateRowStatement<T>(T objWithProperties, SqlExpressionVisitor<T> visitor)
+		public virtual CommandDefinition ToUpdateRowStatement<T>(T objWithProperties, SqlExpressionVisitor<T> ev)
 		{
 			var sql = new StringBuilder();
 			var modelDef = objWithProperties.GetType().GetModelDefinition();
 
-			var parameters = new Dictionary<string, object>(visitor.Parameters);
+			var parameters = new Dictionary<string, object>(ev.Parameters);
 
 			foreach (var fieldDef in modelDef.FieldDefinitions)
 			{
 				if (fieldDef.IsComputed || fieldDef.AutoIncrement)
 					continue;
 
-				if (visitor.Fields.Contains(fieldDef.Name))
+				if (ev.Fields.Contains(fieldDef.Name))
 				{
 					if (sql.Length > 0)
 					{
@@ -507,7 +507,7 @@ namespace SimpleStack.Orm
 				}
 			}
 
-			var updateSql = string.Format("UPDATE {0} SET {1} {2}", GetQuotedTableName(modelDef), sql, visitor.WhereExpression);
+			var updateSql = string.Format("UPDATE {0} SET {1} {2}", GetQuotedTableName(modelDef), sql, ev.WhereExpression);
 
 			if (sql.Length == 0)
 				throw new Exception("No valid update properties provided (e.g. p => p.FirstName): " + updateSql);
