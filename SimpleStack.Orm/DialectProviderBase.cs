@@ -47,7 +47,7 @@ namespace SimpleStack.Orm
 		public string DecimalColumnDefinition = "DECIMAL";
 
 		/// <summary>SqlServer express limit.</summary>
-		private int defaultStringLength = 8000;
+		private int _defaultStringLength = 8000;
 
 		/// <summary>The default value format.</summary>
 		public string DefaultValueFormat = " DEFAULT ({0})";
@@ -70,12 +70,6 @@ namespace SimpleStack.Orm
 		/// <summary>The string length column definition format.</summary>
 		public string StringLengthColumnDefinitionFormat;
 
-		// private static ILog log = LogManager.GetLogger(typeof(OrmLiteDialectProviderBase<>));
-		/// <summary>The log.</summary>
-		/// <summary>(Only available in DEBUG builds) logs a debug.</summary>
-		/// <param name="fmt"> Describes the format to use.</param>
-		/// <param name="args">A variable-length parameters list containing arguments.</param>
-		/// <summary>The log.</summary>
 		/// <summary>The string length non unicode column definition format.</summary>
 		public string StringLengthNonUnicodeColumnDefinitionFormat = "VARCHAR({0})";
 
@@ -117,10 +111,10 @@ namespace SimpleStack.Orm
 		/// <value>The default string length.</value>
 		public int DefaultStringLength
 		{
-			get { return defaultStringLength; }
+			get { return _defaultStringLength; }
 			set
 			{
-				defaultStringLength = value;
+				_defaultStringLength = value;
 				UpdateStringColumnDefinitions();
 			}
 		}
@@ -150,6 +144,7 @@ namespace SimpleStack.Orm
 		/// <param name="value">    The value.</param>
 		/// <param name="fieldType">Type of the field.</param>
 		/// <returns>The quoted value.</returns>
+		[Obsolete("Use parameters everywhere")]
 		public virtual string GetQuotedValue(object value, Type fieldType)
 		{
 			if (value == null) return "NULL";
@@ -174,8 +169,7 @@ namespace SimpleStack.Orm
 		}
 
 		/// <summary>Creates a connection.</summary>
-		/// <param name="connectionString">Full pathname of the file.</param>
-		/// <param name="options"> Options for controlling the operation.</param>
+		/// <param name="connectionString">Connection String.</param>
 		/// <returns>The new connection.</returns>
 		public OrmLiteConnection CreateConnection(string connectionString)
 		{
@@ -274,14 +268,7 @@ namespace SimpleStack.Orm
 			}
 			else
 			{
-				if (isNullable)
-				{
-					sql.Append(" NULL");
-				}
-				else
-				{
-					sql.Append(" NOT NULL");
-				}
+				sql.Append(isNullable ? " NULL" : " NOT NULL");
 			}
 
 			if (!string.IsNullOrEmpty(defaultValue))
@@ -339,81 +326,6 @@ namespace SimpleStack.Orm
 			return sql.ToString();
 		}
 
-		/// <summary>Converts this object to a select statement.</summary>
-		/// <param name="tableType">   Type of the table.</param>
-		/// <param name="sqlFilter">   A filter specifying the SQL.</param>
-		/// <param name="filterParams">Options for controlling the filter.</param>
-		/// <returns>The given data converted to a string.</returns>
-		//public virtual string ToSelectStatement(Type tableType, string sqlFilter, params object[] filterParams)
-		//{
-		//	const string SelectStatement = "SELECT";
-		//	var isFullSelectStatement =
-		//		!string.IsNullOrEmpty(sqlFilter)
-		//		&& sqlFilter.TrimStart().StartsWith(SelectStatement, StringComparison.InvariantCultureIgnoreCase);
-
-		//	if (isFullSelectStatement)
-		//		return sqlFilter.SqlFormat(filterParams);
-
-		//	var modelDef = tableType.GetModelDefinition();
-		//	var sql = new StringBuilder("SELECT " + tableType.GetColumnNames() + " FROM " + GetQuotedTableName(modelDef));
-
-		//	if (!string.IsNullOrEmpty(sqlFilter))
-		//	{
-		//		sqlFilter = sqlFilter.SqlFormat(filterParams);
-		//		if (!sqlFilter.StartsWith("ORDER ", StringComparison.InvariantCultureIgnoreCase)
-		//			&& !sqlFilter.StartsWith("LIMIT ", StringComparison.InvariantCultureIgnoreCase))
-		//		{
-		//			sql.Append(" WHERE ");
-		//		}
-
-		//		sql.Append(sqlFilter);
-		//	}
-
-		//	return sql.ToString();
-		//}
-
-		/// <summary>Converts this object to an insert row statement.</summary>
-		/// <exception cref="Exception">Thrown when an exception error condition occurs.</exception>
-		/// <param name="command">          The command.</param>
-		/// <param name="objWithProperties">The object with properties.</param>
-		/// <param name="insertFields">     The insert fields.</param>
-		/// <returns>The given data converted to a string.</returns>
-		//public virtual string ToInsertRowStatement(object objWithProperties, ICollection<string> insertFields = null)
-		//{
-		//	if (insertFields == null) 
-		//		insertFields = new List<string>();
-
-		//	var sbColumnNames = new StringBuilder();
-		//	var sbColumnValues = new StringBuilder();
-		//	var modelDef = objWithProperties.GetType().GetModelDefinition();
-
-		//	foreach (var fieldDef in modelDef.FieldDefinitions)
-		//	{
-		//		if (fieldDef.IsComputed) continue;
-		//		if (fieldDef.AutoIncrement) continue;
-		//		//insertFields contains Property "Name" of fields to insert ( that's how expressions work )
-		//		if (insertFields.Count > 0 && !insertFields.Contains(fieldDef.Name)) continue;
-
-		//		if (sbColumnNames.Length > 0) sbColumnNames.Append(",");
-		//		if (sbColumnValues.Length > 0) sbColumnValues.Append(",");
-
-		//		try
-		//		{
-		//			sbColumnNames.Append(GetQuotedColumnName(fieldDef.FieldName));
-		//			sbColumnValues.Append(fieldDef.GetQuotedValue(objWithProperties));
-		//		}
-		//		catch (Exception ex)
-		//		{
-		//		   // Log.Error("ERROR in ToInsertRowStatement(): " + ex.Message, ex);
-		//			throw;
-		//		}
-		//	}
-
-		//	var sql = string.Format("INSERT INTO {0} ({1}) VALUES ({2})",
-		//							GetQuotedTableName(modelDef), sbColumnNames, sbColumnValues);
-
-		//	return sql;
-		//}
 		public virtual CommandDefinition ToInsertRowStatement<T>(IEnumerable<T> objsWithProperties, ICollection<string> insertFields = null)// where T : new()
 		{
 			if (insertFields == null)
@@ -481,7 +393,7 @@ namespace SimpleStack.Orm
 		/// <summary>Converts this object to an update row statement.</summary>
 		/// <exception cref="Exception">Thrown when an exception error condition occurs.</exception>
 		/// <param name="objWithProperties">The object with properties.</param>
-		/// <param name="updateFields">     The update fields.</param>
+		/// <param name="ev">The expression visitor.</param>
 		/// <returns>The given data converted to a string.</returns>
 		public virtual CommandDefinition ToUpdateRowStatement<T>(T objWithProperties, SqlExpressionVisitor<T> ev)
 		{
@@ -569,48 +481,11 @@ namespace SimpleStack.Orm
 			return new CommandDefinition(updateSql, parameters);
 		}
 
-		/// <summary>Creates parameterized update statement.</summary>
-		/// <param name="connection">       The connection.</param>
-		/// <param name="objWithProperties">The object with properties.</param>
-		/// <param name="updateFields">     The update fields.</param>
-		/// <returns>The new parameterized update statement.</returns>
-		/// <summary>Converts the objWithProperties to a delete row statement.</summary>
-		/// <param name="objWithProperties">The object with properties.</param>
-		/// <returns>objWithProperties as a string.</returns>
 		public virtual string ToDeleteRowStatement<T>(SqlExpressionVisitor<T> visitor)
 		{
 			return string.Format("DELETE FROM {0} {1}",
 				GetQuotedTableName(visitor.ModelDefinition), visitor.WhereExpression);
 		}
-
-		/// <summary>Converts this object to a delete statement.</summary>
-		/// <param name="tableType">   Type of the table.</param>
-		/// <param name="sqlFilter">   A filter specifying the SQL.</param>
-		/// <param name="filterParams">Options for controlling the filter.</param>
-		/// <returns>The given data converted to a string.</returns>
-		//public virtual string ToDeleteStatement(Type tableType, string sqlFilter, params object[] filterParams)
-		//{
-		//	var sql = new StringBuilder();
-		//	const string deleteStatement = "DELETE ";
-
-		//	var isFullDeleteStatement =
-		//		!string.IsNullOrEmpty(sqlFilter)
-		//		&& sqlFilter.Length > deleteStatement.Length
-		//		&& sqlFilter.Substring(0, deleteStatement.Length).ToUpper().Equals(deleteStatement);
-
-		//	if (isFullDeleteStatement) return sqlFilter.SqlFormat(filterParams);
-
-		//	var modelDef = tableType.GetModelDefinition();
-		//	sql.AppendFormat("DELETE FROM {0}", GetQuotedTableName(modelDef));
-		//	if (!string.IsNullOrEmpty(sqlFilter))
-		//	{
-		//		sqlFilter = sqlFilter.SqlFormat(filterParams);
-		//		sql.Append(" WHERE ");
-		//		sql.Append(sqlFilter);
-		//	}
-
-		//	return sql.ToString();
-		//}
 
 		/// <summary>Converts a tableType to a create table statement.</summary>
 		/// <param name="tableType">Type of the table.</param>
@@ -678,8 +553,7 @@ namespace SimpleStack.Orm
 			{
 				var indexName = GetCompositeIndexName(compositeIndex, modelDef);
 				var indexNames = string.Join(" ASC, ",
-					compositeIndex.FieldNames.ConvertAll(
-						n => GetQuotedName(n)).ToArray());
+					compositeIndex.FieldNames.ConvertAll(GetQuotedName).ToArray());
 
 				sqlIndexes.Add(
 					ToCreateIndexStatement(compositeIndex.Unique, indexName, modelDef, indexNames, true));
@@ -769,22 +643,6 @@ namespace SimpleStack.Orm
 		/// <returns>The given data converted to a string.</returns>
 		public virtual string ToExistStatement(Type fromTableType,
 			object objWithProperties,
-			string sqlFilter,
-			params object[] filterParams)
-		{
-			throw new NotImplementedException();
-		}
-
-		/// <summary>TODO : make abstract  ??</summary>
-		/// <exception cref="NotImplementedException">Thrown when the requested operation is unimplemented.</exception>
-		/// <param name="fromObjWithProperties">from object with properties.</param>
-		/// <param name="outputModelType">      Type of the output model.</param>
-		/// <param name="sqlFilter">            A filter specifying the SQL.</param>
-		/// <param name="filterParams">         Options for controlling the filter.</param>
-		/// <returns>The given data converted to a string.</returns>
-		public virtual string ToSelectFromProcedureStatement(
-			object fromObjWithProperties,
-			Type outputModelType,
 			string sqlFilter,
 			params object[] filterParams)
 		{
@@ -924,7 +782,7 @@ namespace SimpleStack.Orm
 
 		/// <summary>Gets the last insert identifier.</summary>
 		/// <exception cref="NotImplementedException">Thrown when the requested operation is unimplemented.</exception>
-		/// <param name="dbCmd">The command.</param>
+		/// <param name="dbConnection">The command.</param>
 		/// <returns>The last insert identifier.</returns>
 		public virtual long GetLastInsertId(IDbConnection dbConnection)
 		{
@@ -934,11 +792,6 @@ namespace SimpleStack.Orm
 			return dbConnection.ExecuteScalar<long>(SelectIdentitySql);
 		}
 
-		/// <summary>Creates parameterized insert statement.</summary>
-		/// <exception cref="Exception">Thrown when an exception error condition occurs.</exception>
-		/// <param name="connection">       The connection.</param>
-		/// <param name="objWithProperties">The object with properties.</param>
-		/// <param name="insertFields">     The insert fields.</param>
 		/// <returns>The new parameterized insert statement.</returns>
 		/// <summary>Gets value or database null.</summary>
 		/// <param name="fieldDef">         The field definition.</param>

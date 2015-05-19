@@ -78,7 +78,6 @@
     <Compile Include="PlatformExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PropertyIndexer.cs" />
-    <Compile Include="SqlInValue.cs" />
     <Compile Include="SqlMapper.cs" />
     <Compile Include="TypeSerializer.cs" />
   </ItemGroup>
