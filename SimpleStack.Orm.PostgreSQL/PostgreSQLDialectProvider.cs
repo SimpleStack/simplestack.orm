@@ -137,44 +137,44 @@ namespace SimpleStack.Orm.PostgreSQL
         /// <summary>Gets quoted value.</summary>
         /// <param name="value">    The value.</param>
         /// <param name="fieldType">Type of the field.</param>
-        /// <returns>The quoted value.</returns>
-		public override string GetQuotedValue(object value, Type fieldType)
-		{
-			if (value == null) return "NULL";
+		///// <returns>The quoted value.</returns>
+		//public override string GetQuotedValue(object value, Type fieldType)
+		//{
+		//	if (value == null) return "NULL";
 
-			if (fieldType == typeof(DateTime))
-			{
-				var dateValue = (DateTime)value;
-				const string iso8601Format = "yyyy-MM-dd HH:mm:ss.fff";
-				return base.GetQuotedValue(dateValue.ToString(iso8601Format), typeof(string));
-			}
-			if (fieldType == typeof(Guid))
-			{
-				var guidValue = (Guid)value;
-				return base.GetQuotedValue(guidValue.ToString("N"), typeof(string));
-			}
-			if(fieldType == typeof(byte[]))
-			{
-				return "E'" + ToBinary(value) + "'";
-			}
-			if (fieldType.IsArray && typeof(string).IsAssignableFrom(fieldType.GetElementType()))
-			{
-				var stringArray = (string[]) value;
-				return ToArray(stringArray);
-			}
-			if (fieldType.IsArray && typeof(int).IsAssignableFrom(fieldType.GetElementType()))
-			{
-				var integerArray = (int[]) value;
-				return ToArray(integerArray);
-			}
-			if (fieldType.IsArray && typeof(long).IsAssignableFrom(fieldType.GetElementType()))
-			{
-				var longArray = (long[]) value;
-				return ToArray(longArray);
-			}
+		//	if (fieldType == typeof(DateTime))
+		//	{
+		//		var dateValue = (DateTime)value;
+		//		const string iso8601Format = "yyyy-MM-dd HH:mm:ss.fff";
+		//		return base.GetQuotedValue(dateValue.ToString(iso8601Format), typeof(string));
+		//	}
+		//	if (fieldType == typeof(Guid))
+		//	{
+		//		var guidValue = (Guid)value;
+		//		return base.GetQuotedValue(guidValue.ToString("N"), typeof(string));
+		//	}
+		//	if(fieldType == typeof(byte[]))
+		//	{
+		//		return "E'" + ToBinary(value) + "'";
+		//	}
+		//	if (fieldType.IsArray && typeof(string).IsAssignableFrom(fieldType.GetElementType()))
+		//	{
+		//		var stringArray = (string[]) value;
+		//		return ToArray(stringArray);
+		//	}
+		//	if (fieldType.IsArray && typeof(int).IsAssignableFrom(fieldType.GetElementType()))
+		//	{
+		//		var integerArray = (int[]) value;
+		//		return ToArray(integerArray);
+		//	}
+		//	if (fieldType.IsArray && typeof(long).IsAssignableFrom(fieldType.GetElementType()))
+		//	{
+		//		var longArray = (long[]) value;
+		//		return ToArray(longArray);
+		//	}
 
-			return base.GetQuotedValue(value, fieldType);
-		}
+		//	return base.GetQuotedValue(value, fieldType);
+		//}
 
         /// <summary>Expression visitor.</summary>
         /// <typeparam name="T">Generic type parameter.</typeparam>

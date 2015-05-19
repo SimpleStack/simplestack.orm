@@ -157,37 +157,37 @@ namespace SimpleStack.Orm.Sqlite
         /// <param name="value">    The value.</param>
         /// <param name="fieldType">Type of the field.</param>
         /// <returns>The quoted value.</returns>
-        public override string GetQuotedValue(object value, Type fieldType)
-        {
-            if (value == null) return "NULL";
+		//public override string GetQuotedValue(object value, Type fieldType)
+		//{
+		//	if (value == null) return "NULL";
 
-            if (fieldType == typeof(Guid))
-            {
-                var guidValue = (Guid)value;
-                return base.GetQuotedValue(guidValue.ToString("N"), typeof(string));
-            }
-			//if (fieldType == typeof(DateTime))
-			//{
-			//	var dateValue = (DateTime)value;
-			//	return base.GetQuotedValue(
-			//		DateTimeSerializer.ToShortestXsdDateTimeString(dateValue),
-			//		typeof(string));
-			//}
-            if (fieldType == typeof(bool))
-            {
-                var boolValue = (bool)value;
-                return base.GetQuotedValue(boolValue ? 1 : 0, typeof(int));
-            }
+		//	if (fieldType == typeof(Guid))
+		//	{
+		//		var guidValue = (Guid)value;
+		//		return base.GetQuotedValue(guidValue.ToString("N"), typeof(string));
+		//	}
+		//	//if (fieldType == typeof(DateTime))
+		//	//{
+		//	//	var dateValue = (DateTime)value;
+		//	//	return base.GetQuotedValue(
+		//	//		DateTimeSerializer.ToShortestXsdDateTimeString(dateValue),
+		//	//		typeof(string));
+		//	//}
+		//	if (fieldType == typeof(bool))
+		//	{
+		//		var boolValue = (bool)value;
+		//		return base.GetQuotedValue(boolValue ? 1 : 0, typeof(int));
+		//	}
 
-            // output datetimeoffset as a string formatted for roundtripping.
-            if (fieldType == typeof (DateTimeOffset))
-            {
-                var dateTimeOffsetValue = (DateTimeOffset) value;
-                return base.GetQuotedValue(dateTimeOffsetValue.ToString("o"), typeof (string));
-            }
+		//	// output datetimeoffset as a string formatted for roundtripping.
+		//	if (fieldType == typeof (DateTimeOffset))
+		//	{
+		//		var dateTimeOffsetValue = (DateTimeOffset) value;
+		//		return base.GetQuotedValue(dateTimeOffsetValue.ToString("o"), typeof (string));
+		//	}
 
-            return base.GetQuotedValue(value, fieldType);
-        }
+		//	return base.GetQuotedValue(value, fieldType);
+		//}
 
         /// <summary>Expression visitor.</summary>
         /// <typeparam name="T">Generic type parameter.</typeparam>
