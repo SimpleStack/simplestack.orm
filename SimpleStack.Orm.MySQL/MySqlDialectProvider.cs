@@ -56,36 +56,36 @@ namespace SimpleStack.Orm.MySQL
         /// <summary>Gets quoted value.</summary>
         /// <param name="value">    The value.</param>
         /// <param name="fieldType">Type of the field.</param>
-        /// <returns>The quoted value.</returns>
-        public override string GetQuotedValue(object value, Type fieldType)
-        {
-            if (value == null) return "NULL";
+		///// <returns>The quoted value.</returns>
+		//public override string GetQuotedValue(object value, Type fieldType)
+		//{
+		//	if (value == null) return "NULL";
 
-            if (fieldType == typeof(DateTime))
-            {
-                var dateValue = (DateTime)value;
-                /*
-                 * ms not contained in format. MySql ignores ms part anyway
-                 * 
-                 * for more details see: http://dev.mysql.com/doc/refman/5.1/en/datetime.html
-                 */
-                const string dateTimeFormat = "yyyy-MM-dd HH:mm:ss"; 
+		//	if (fieldType == typeof(DateTime))
+		//	{
+		//		var dateValue = (DateTime)value;
+		//		/*
+		//		 * ms not contained in format. MySql ignores ms part anyway
+		//		 * 
+		//		 * for more details see: http://dev.mysql.com/doc/refman/5.1/en/datetime.html
+		//		 */
+		//		const string dateTimeFormat = "yyyy-MM-dd HH:mm:ss"; 
 
-                return base.GetQuotedValue(dateValue.ToString(dateTimeFormat), typeof(string));
-            }
-            if (fieldType == typeof(Guid))
-            {
-                var guidValue = (Guid)value;
-                return base.GetQuotedValue(guidValue.ToString("N"), typeof(string));
-            }
+		//		return base.GetQuotedValue(dateValue.ToString(dateTimeFormat), typeof(string));
+		//	}
+		//	if (fieldType == typeof(Guid))
+		//	{
+		//		var guidValue = (Guid)value;
+		//		return base.GetQuotedValue(guidValue.ToString("N"), typeof(string));
+		//	}
 
-            if (fieldType == typeof(byte[]))
-            {
-                return "0x" + BitConverter.ToString((byte[])value).Replace("-", "");
-            }
+		//	if (fieldType == typeof(byte[]))
+		//	{
+		//		return "0x" + BitConverter.ToString((byte[])value).Replace("-", "");
+		//	}
 
-            return base.GetQuotedValue(value, fieldType);
-        }
+		//	return base.GetQuotedValue(value, fieldType);
+		//}
 
         /// <summary>Gets quoted table name.</summary>
         /// <param name="modelDef">The model definition.</param>
@@ -134,10 +134,9 @@ namespace SimpleStack.Orm.MySQL
 		public override bool DoesTableExist(IDbConnection dbCmd, string tableName)
 		{
 			//Same as SQL Server apparently?
-			var sql = ("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES " +
-				"WHERE TABLE_NAME = {0} AND " +
-				"TABLE_SCHEMA = {1}")
-				.SqlFormat(tableName, dbCmd.Database);
+			var sql = String.Format("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES " +
+				"WHERE TABLE_NAME = '{0}' AND " +
+				"TABLE_SCHEMA = '{1}'",tableName, dbCmd.Database);
 
 			//if (!string.IsNullOrEmpty(schemaName))
 			//    sql += " AND TABLE_SCHEMA = {0}".SqlFormat(schemaName);

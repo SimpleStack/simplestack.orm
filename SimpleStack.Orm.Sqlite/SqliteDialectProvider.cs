@@ -203,8 +203,8 @@ namespace SimpleStack.Orm.Sqlite
         /// <returns>true if it succeeds, false if it fails.</returns>
         public override bool DoesTableExist(IDbConnection dbCmd, string tableName)
         {
-            var sql = "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name = {0}"
-                .SqlFormat(tableName);
+            var sql = String.Format("SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name = '{0}'"
+                ,tableName);
 
             var result = dbCmd.ExecuteScalar<int>(sql);
 

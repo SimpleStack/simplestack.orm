@@ -67,11 +67,11 @@ namespace SimpleStack.Orm
 
 		string GetParameterName(int parameterCount);
 
-		/// <summary>Gets quoted value.</summary>
-		/// <param name="value">    The value.</param>
-		/// <param name="fieldType">Type of the field.</param>
-		/// <returns>The quoted value.</returns>
-		string GetQuotedValue(object value, Type fieldType);
+		///// <summary>Gets quoted value.</summary>
+		///// <param name="value">    The value.</param>
+		///// <param name="fieldType">Type of the field.</param>
+		///// <returns>The quoted value.</returns>
+		//string GetQuotedValue(object value, Type fieldType);
 
 		/// <summary>Creates a connection.</summary>
 		/// <param name="connectionString">Connection string.</param>

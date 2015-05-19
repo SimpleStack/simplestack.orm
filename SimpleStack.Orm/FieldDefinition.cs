@@ -95,11 +95,11 @@ namespace SimpleStack.Orm
         /// <summary>Gets quoted value.</summary>
         /// <param name="fromInstance">from instance.</param>
         /// <returns>The quoted value.</returns>
-        public string GetQuotedValue(object fromInstance)
-        {
-            var value = GetValue(fromInstance);
-            return Config.DialectProvider.GetQuotedValue(value, FieldType);
-        }
+		//public string GetQuotedValue(object fromInstance)
+		//{
+		//	var value = GetValue(fromInstance);
+		//	return Config.DialectProvider.GetQuotedValue(value, FieldType);
+		//}
 
         /// <summary>Gets or sets the sequence.</summary>
         /// <value>The sequence.</value>

@@ -190,16 +190,16 @@ namespace SimpleStack.Orm.PostgreSQL
         /// <returns>true if it succeeds, false if it fails.</returns>
 		public override bool DoesTableExist(IDbConnection dbCmd, string tableName)
 		{
-			var sql = "SELECT COUNT(*) FROM pg_class WHERE relname = {0}"
-				.SqlFormat(tableName);
+			var sql = String.Format("SELECT COUNT(*) FROM pg_class WHERE relname = '{0}'"
+				,tableName);
 			var conn = dbCmd;
 			if (conn != null)
 			{
 				var builder = new NpgsqlConnectionStringBuilder(conn.ConnectionString);
 				// If a search path (schema) is specified, and there is only one, then assume the CREATE TABLE directive should apply to that schema.
 				if (!String.IsNullOrEmpty(builder.SearchPath) && !builder.SearchPath.Contains(","))
-					sql = "SELECT COUNT(*) FROM pg_class JOIN pg_catalog.pg_namespace n ON n.oid = pg_class.relnamespace WHERE relname = {0} AND nspname = {1}"
-						  .SqlFormat(tableName, builder.SearchPath);
+					sql = String.Format("SELECT COUNT(*) FROM pg_class JOIN pg_catalog.pg_namespace n ON n.oid = pg_class.relnamespace WHERE relname = '{0}' AND nspname = '{1}'"
+						  ,tableName, builder.SearchPath);
 			}
 			var result = dbCmd.ExecuteScalar<long>(sql);
 
@@ -210,34 +210,34 @@ namespace SimpleStack.Orm.PostgreSQL
         /// <exception cref="Exception">Thrown when an exception error condition occurs.</exception>
         /// <param name="objWithProperties">The object with properties.</param>
         /// <returns>objWithProperties as a string.</returns>
-		public override string ToExecuteProcedureStatement(object objWithProperties)
-		{
-			var sbColumnValues = new StringBuilder();
+		//public override string ToExecuteProcedureStatement(object objWithProperties)
+		//{
+		//	var sbColumnValues = new StringBuilder();
 
-			var tableType = objWithProperties.GetType();
-			var modelDef = GetModel(tableType);
+		//	var tableType = objWithProperties.GetType();
+		//	var modelDef = GetModel(tableType);
 
-			foreach (var fieldDef in modelDef.FieldDefinitions)
-			{
-				if (sbColumnValues.Length > 0) sbColumnValues.Append(",");
-				try
-				{
-					sbColumnValues.Append(fieldDef.GetQuotedValue(objWithProperties));
-				}
-				catch (Exception)
-				{
-					throw;
-				}
-			}
+		//	foreach (var fieldDef in modelDef.FieldDefinitions)
+		//	{
+		//		if (sbColumnValues.Length > 0) sbColumnValues.Append(",");
+		//		try
+		//		{
+		//			sbColumnValues.Append(fieldDef.GetQuotedValue(objWithProperties));
+		//		}
+		//		catch (Exception)
+		//		{
+		//			throw;
+		//		}
+		//	}
 
-			var sql = string.Format("{0} {1}{2}{3};",
-				GetQuotedTableName(modelDef),
-				sbColumnValues.Length > 0 ? "(" : "",
-				sbColumnValues,
-				sbColumnValues.Length > 0 ? ")" : "");
+		//	var sql = string.Format("{0} {1}{2}{3};",
+		//		GetQuotedTableName(modelDef),
+		//		sbColumnValues.Length > 0 ? "(" : "",
+		//		sbColumnValues,
+		//		sbColumnValues.Length > 0 ? ")" : "");
 
-			return sql;
-		}
+		//	return sql;
+		//}
 
         /// <summary>Gets quoted table name.</summary>
         /// <param name="modelDef">The model definition.</param>
@@ -278,15 +278,15 @@ namespace SimpleStack.Orm.PostgreSQL
         /// <typeparam name="T">Generic type parameter.</typeparam>
         /// <param name="source">Source for the.</param>
         /// <returns>source as a string.</returns>
-		internal string ToArray<T>(T[] source)
-		{
-			var values = new StringBuilder();
-			foreach (var value in source)
-			{
-				if (values.Length > 0) values.Append(",");
-				values.Append(base.GetQuotedValue(value, typeof(T)));
-			}
-			return "ARRAY[" + values + "]";
-		}
+		//internal string ToArray<T>(T[] source)
+		//{
+		//	var values = new StringBuilder();
+		//	foreach (var value in source)
+		//	{
+		//		if (values.Length > 0) values.Append(",");
+		//		values.Append(base.GetQuotedValue(value, typeof(T)));
+		//	}
+		//	return "ARRAY[" + values + "]";
+		//}
 	}
 }

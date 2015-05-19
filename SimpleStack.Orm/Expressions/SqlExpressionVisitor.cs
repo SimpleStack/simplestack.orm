@@ -356,21 +356,27 @@ namespace SimpleStack.Orm.Expressions
 
 		/// <summary>Havings the given predicate.</summary>
 		/// <returns>A SqlExpressionVisitor&lt;T&gt;</returns>
-		public virtual SqlExpressionVisitor<T> Having()
-		{
-			return Having(string.Empty);
-		}
+		//public virtual SqlExpressionVisitor<T> Having()
+		//{
+		//	return Having(string.Empty);
+		//}
 
 		/// <summary>Havings the given predicate.</summary>
 		/// <param name="sqlFilter">   A filter specifying the SQL.</param>
 		/// <param name="filterParams">Options for controlling the filter.</param>
 		/// <returns>A SqlExpressionVisitor&lt;T&gt;</returns>
-		public virtual SqlExpressionVisitor<T> Having(string sqlFilter, params object[] filterParams)
-		{
-			_havingExpression = !string.IsNullOrEmpty(sqlFilter) ? sqlFilter.SqlFormat(filterParams) : string.Empty;
-			if (!string.IsNullOrEmpty(_havingExpression)) _havingExpression = "HAVING " + _havingExpression;
-			return this;
-		}
+		//public virtual SqlExpressionVisitor<T> Having(string sqlFilter, params object[] filterParams)
+		//{
+		//	_havingExpression = !string.IsNullOrEmpty(sqlFilter) ? 
+		//		sqlFilter.SqlFormat(filterParams) : 
+		//		string.Empty;
+
+		//	if (!string.IsNullOrEmpty(_havingExpression))
+		//	{
+		//		_havingExpression = "HAVING " + _havingExpression;
+		//	}
+		//	return this;
+		//}
 
 		/// <summary>Havings the given predicate.</summary>
 		/// <param name="predicate">The predicate.</param>

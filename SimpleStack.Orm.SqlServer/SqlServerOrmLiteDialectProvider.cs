@@ -135,48 +135,48 @@ namespace SimpleStack.Orm.SqlServer
 		/// <param name="value">    The value.</param>
 		/// <param name="fieldType">Type of the field.</param>
 		/// <returns>The quoted value.</returns>
-		public override string GetQuotedValue(object value, Type fieldType)
-		{
-			if (value == null) return "NULL";
+		//public override string GetQuotedValue(object value, Type fieldType)
+		//{
+		//	if (value == null) return "NULL";
 
-			if (fieldType == typeof(Guid))
-			{
-				var guidValue = (Guid)value;
-				return string.Format("CAST('{0}' AS UNIQUEIDENTIFIER)", guidValue);
-			}
-			if (fieldType == typeof(DateTime))
-			{
-				var dateValue = (DateTime)value;
-				if (_ensureUtc && dateValue.Kind == DateTimeKind.Local)
-					dateValue = dateValue.ToUniversalTime();
-				const string iso8601Format = "yyyyMMdd HH:mm:ss.fff";
-				return base.GetQuotedValue(dateValue.ToString(iso8601Format, CultureInfo.InvariantCulture), typeof(string));
-			}
-			if (fieldType == typeof(DateTimeOffset))
-			{
-				var dateValue = (DateTimeOffset)value;
-				const string iso8601Format = "yyyyMMdd HH:mm:ss.fff zzz";
-				return base.GetQuotedValue(dateValue.ToString(iso8601Format, CultureInfo.InvariantCulture), typeof(string));
-			}
-			if (fieldType == typeof(bool))
-			{
-				var boolValue = (bool)value;
-				return base.GetQuotedValue(boolValue ? 1 : 0, typeof(int));
-			}
-			if (fieldType == typeof(string))
-			{
-				return GetQuotedParam(value.ToString());
-			}
+		//	if (fieldType == typeof(Guid))
+		//	{
+		//		var guidValue = (Guid)value;
+		//		return string.Format("CAST('{0}' AS UNIQUEIDENTIFIER)", guidValue);
+		//	}
+		//	if (fieldType == typeof(DateTime))
+		//	{
+		//		var dateValue = (DateTime)value;
+		//		if (_ensureUtc && dateValue.Kind == DateTimeKind.Local)
+		//			dateValue = dateValue.ToUniversalTime();
+		//		const string iso8601Format = "yyyyMMdd HH:mm:ss.fff";
+		//		return base.GetQuotedValue(dateValue.ToString(iso8601Format, CultureInfo.InvariantCulture), typeof(string));
+		//	}
+		//	if (fieldType == typeof(DateTimeOffset))
+		//	{
+		//		var dateValue = (DateTimeOffset)value;
+		//		const string iso8601Format = "yyyyMMdd HH:mm:ss.fff zzz";
+		//		return base.GetQuotedValue(dateValue.ToString(iso8601Format, CultureInfo.InvariantCulture), typeof(string));
+		//	}
+		//	if (fieldType == typeof(bool))
+		//	{
+		//		var boolValue = (bool)value;
+		//		return base.GetQuotedValue(boolValue ? 1 : 0, typeof(int));
+		//	}
+		//	if (fieldType == typeof(string))
+		//	{
+		//		return GetQuotedParam(value.ToString());
+		//	}
 
-			if (fieldType == typeof(byte[]))
-			{
-				return "0x" + BitConverter.ToString((byte[])value).Replace("-", "");
-			}
+		//	if (fieldType == typeof(byte[]))
+		//	{
+		//		return "0x" + BitConverter.ToString((byte[])value).Replace("-", "");
+		//	}
 
-			return base.GetQuotedValue(value, fieldType);
+		//	return base.GetQuotedValue(value, fieldType);
 
 
-		}
+		//}
 
 		/// <summary>true to use date time 2.</summary>
 		protected bool _useDateTime2;
@@ -215,8 +215,8 @@ namespace SimpleStack.Orm.SqlServer
 		/// <returns>true if it succeeds, false if it fails.</returns>
 		public override bool DoesTableExist(IDbConnection dbCmd, string tableName)
 		{
-			var sql = "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = {0}"
-				.SqlFormat(tableName);
+			var sql = String.Format("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = '{0}'"
+				,tableName);
 
 			//if (!string.IsNullOrEmpty(schemaName))
 			//    sql += " AND TABLE_SCHEMA = {0}".SqlFormat(schemaName);

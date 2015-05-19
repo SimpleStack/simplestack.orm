@@ -71,30 +71,30 @@ namespace SimpleStack.Orm
 		/// <param name="sqlText">  The sqlText to act on.</param>
 		/// <param name="sqlParams">Options for controlling the SQL.</param>
 		/// <returns>A string.</returns>
-		public static string SqlFormat(this string sqlText, params object[] sqlParams)
-		{
-			var escapedParams = new List<string>();
-			foreach (var sqlParam in sqlParams)
-			{
-				if (sqlParam == null)
-				{
-					escapedParams.Add("NULL");
-				}
-				else
-				{
-					//var sqlInValues = sqlParam as SqlInValues;
-					//if (sqlInValues != null)
-					//{
-					//	escapedParams.Add(sqlInValues.ToSqlInString());
-					//}
-					//else
-					//{
-						escapedParams.Add(Config.DialectProvider.GetQuotedValue(sqlParam, sqlParam.GetType()));
-					//}
-				}
-			}
-			return string.Format(sqlText, escapedParams.ToArray());
-		}
+		//public static string SqlFormat(this string sqlText, params object[] sqlParams)
+		//{
+		//	var escapedParams = new List<string>();
+		//	foreach (var sqlParam in sqlParams)
+		//	{
+		//		if (sqlParam == null)
+		//		{
+		//			escapedParams.Add("NULL");
+		//		}
+		//		else
+		//		{
+		//			//var sqlInValues = sqlParam as SqlInValues;
+		//			//if (sqlInValues != null)
+		//			//{
+		//			//	escapedParams.Add(sqlInValues.ToSqlInString());
+		//			//}
+		//			//else
+		//			//{
+		//			escapedParams.Add(Config.DialectProvider.GetQuotedValue(sqlParam, sqlParam.GetType()));
+		//			//}
+		//		}
+		//	}
+		//	return string.Format(sqlText, escapedParams.ToArray());
+		//}
 
 
 
