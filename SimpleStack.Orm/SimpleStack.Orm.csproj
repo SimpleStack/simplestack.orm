@@ -72,7 +72,8 @@
     <Compile Include="OrmLiteConnection.cs" />
     <Compile Include="OrmLiteTransaction.cs" />
     <Compile Include="SqlMapperAsync.cs" />
-    <Compile Include="SqlMapperLink.cs" />
+    <Compile Include="SqlMapperLinqAsync.cs" />
+    <Compile Include="SqlMapperLinq.cs" />
     <Compile Include="Expressions\Sql.cs" />
     <Compile Include="Expressions\SqlExpressionVisitor.cs" />
     <Compile Include="DialectProviderBase.cs" />
