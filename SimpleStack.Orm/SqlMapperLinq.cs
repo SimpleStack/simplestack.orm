@@ -10,7 +10,7 @@ using SimpleStack.Orm.Expressions;
 
 namespace SimpleStack.Orm
 {
-	public static partial class SqlMapperLink
+	public static partial class SqlMapperLinq
 	{
 		/// <summary>An IDbConnection extension method that selects.</summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
