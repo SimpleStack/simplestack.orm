@@ -8,113 +8,131 @@ using SimpleStack.Orm.Expressions;
 
 namespace SimpleStack.Orm.Sqlite
 {
-    /// <summary>A sqlite ORM lite dialect provider base.</summary>
-    public class SqliteDialectProvider : DialectProviderBase<SqliteDialectProvider>
-    {
-        /// <summary>
-        /// Initializes a new instance of the NServiceKit.OrmLite.Sqlite.SqliteOrmLiteDialectProviderBase
-        /// class.
-        /// </summary>
-        public SqliteDialectProvider()
-        {
-            base.DateTimeColumnDefinition = base.StringColumnDefinition;
-            base.BoolColumnDefinition = base.IntColumnDefinition;
-            base.GuidColumnDefinition = "CHAR(32)";
-            base.SelectIdentitySql = "SELECT last_insert_rowid()";
+	/// <summary>A sqlite ORM lite dialect provider base.</summary>
+	public class SqliteDialectProvider : DialectProviderBase<SqliteDialectProvider>
+	{
+		/// <summary>
+		/// Initializes a new instance of the NServiceKit.OrmLite.Sqlite.SqliteOrmLiteDialectProviderBase
+		/// class.
+		/// </summary>
+		public SqliteDialectProvider()
+		{
+			base.DateTimeColumnDefinition = base.StringColumnDefinition;
+			base.BoolColumnDefinition = base.IntColumnDefinition;
+			base.GuidColumnDefinition = "GUID";
+			base.SelectIdentitySql = "SELECT last_insert_rowid()";
 
-            base.InitColumnTypeMap();
+			base.InitColumnTypeMap();
 
-            // add support for DateTimeOffset
-            DbTypeMap.Set<DateTimeOffset>(DbType.DateTimeOffset, StringColumnDefinition);
-            DbTypeMap.Set<DateTimeOffset?>(DbType.DateTimeOffset, StringColumnDefinition);
-        }
+			// add support for DateTimeOffset
+			DbTypeMap.Set<DateTimeOffset>(DbType.DateTimeOffset, StringColumnDefinition);
+			DbTypeMap.Set<DateTimeOffset?>(DbType.DateTimeOffset, StringColumnDefinition);
+		}
 
-        /// <summary>Gets or sets the password.</summary>
-        /// <value>The password.</value>
-        public static string Password { get; set; }
+		/// <summary>Gets or sets the password.</summary>
+		/// <value>The password.</value>
+		public string Password { get; set; }
 
-        /// <summary>Gets or sets a value indicating whether the UTF 8 encoded.</summary>
-        /// <value>true if UTF 8 encoded, false if not.</value>
-        public static bool UTF8Encoded { get; set; }
+		/// <summary>Gets or sets a value indicating whether the UTF 8 encoded.</summary>
+		/// <value>true if UTF 8 encoded, false if not.</value>
+		public bool UTF8Encoded { get; set; }
 
-        /// <summary>Gets or sets a value indicating whether the parse via framework.</summary>
-        /// <value>true if parse via framework, false if not.</value>
-        public static bool ParseViaFramework { get; set; }
+		public bool BinaryGUID { get; set; }
 
-        /// <summary>Creates full text create table statement.</summary>
-        /// <param name="objectWithProperties">The object with properties.</param>
-        /// <returns>The new full text create table statement.</returns>
-        public static string CreateFullTextCreateTableStatement(object objectWithProperties)
-        {
-            var sbColumns = new StringBuilder();
-            foreach (var propertyInfo in objectWithProperties.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
-            {
-                var columnDefinition = (sbColumns.Length == 0)
-                    ? string.Format("{0} TEXT PRIMARY KEY", propertyInfo.Name)
-                    : string.Format(", {0} TEXT", propertyInfo.Name);
+		public bool Compress { get; set; }
 
-                sbColumns.AppendLine(columnDefinition);
-            }
+		public bool DateTimeFormatAsTicks { get; set; }
 
-            var tableName = objectWithProperties.GetType().Name;
-            var sql = string.Format("CREATE VIRTUAL TABLE \"{0}\" USING FTS3 ({1});", tableName, sbColumns);
+		///// <summary>Gets or sets a value indicating whether the parse via framework.</summary>
+		///// <value>true if parse via framework, false if not.</value>
+		//public static bool ParseViaFramework { get; set; }
 
-            return sql;
-        }
+		/// <summary>Creates full text create table statement.</summary>
+		/// <param name="objectWithProperties">The object with properties.</param>
+		/// <returns>The new full text create table statement.</returns>
+		public static string CreateFullTextCreateTableStatement(object objectWithProperties)
+		{
+			var sbColumns = new StringBuilder();
+			foreach (var propertyInfo in objectWithProperties.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
+			{
+				var columnDefinition = (sbColumns.Length == 0)
+					? string.Format("{0} TEXT PRIMARY KEY", propertyInfo.Name)
+					: string.Format(", {0} TEXT", propertyInfo.Name);
 
-        /// <summary>Creates a connection.</summary>
-        /// <param name="connectionString">The connection string.</param>
-        /// <param name="options">         Options for controlling the operation.</param>
-        /// <returns>The new connection.</returns>
-        public override IDbConnection CreateIDbConnection(string connectionString)
-        {
-            var isFullConnectionString = connectionString.Contains(";");
-            var connString = new StringBuilder();
-            if (!isFullConnectionString)
-            {
-                if (connectionString != ":memory:")
-                {
-                    var existingDir = Path.GetDirectoryName(connectionString);
-                    if (!string.IsNullOrEmpty(existingDir) && !Directory.Exists(existingDir))
-                    {
-                        Directory.CreateDirectory(existingDir);
-                    }
-                }
-                connString.AppendFormat(@"Data Source={0};Version=3;New=True;Compress=True;", connectionString.Trim());
+				sbColumns.AppendLine(columnDefinition);
+			}
 
-            }
-            else
-            {
-                connString.Append(connectionString);
-            }
-            if (!string.IsNullOrEmpty(Password))
-            {
-                connString.AppendFormat("Password={0};", Password);
-            }
-            if (UTF8Encoded)
-            {
-                connString.Append("UseUTF16Encoding=True;");
-            }
+			var tableName = objectWithProperties.GetType().Name;
+			var sql = string.Format("CREATE VIRTUAL TABLE \"{0}\" USING FTS3 ({1});", tableName, sbColumns);
+
+			return sql;
+		}
+
+		/// <summary>Creates a connection.</summary>
+		/// <param name="connectionString">The connection string.</param>
+		/// <param name="options">         Options for controlling the operation.</param>
+		/// <returns>The new connection.</returns>
+		public override IDbConnection CreateIDbConnection(string connectionString)
+		{
+			var isFullConnectionString = connectionString.Contains(";");
+			var connString = new StringBuilder();
+			if (!isFullConnectionString)
+			{
+				if (connectionString != ":memory:")
+				{
+					var existingDir = Path.GetDirectoryName(connectionString);
+					if (!string.IsNullOrEmpty(existingDir) && !Directory.Exists(existingDir))
+					{
+						Directory.CreateDirectory(existingDir);
+					}
+				}
+				connString.AppendFormat(@"Data Source={0};Version=3;New=True;", connectionString.Trim());
+
+			}
+			else
+			{
+				connString.Append(connectionString);
+			}
+			if (!string.IsNullOrEmpty(Password))
+			{
+				connString.AppendFormat("Password={0};", Password);
+			}
+			if (UTF8Encoded)
+			{
+				connString.Append("UseUTF16Encoding=True;");
+			}
+			if (Compress)
+			{
+				connString.Append("Compress=True;");
+			}
+			if (BinaryGUID)
+			{
+				connString.Append("BinaryGUID=True;");
+			}
+			if (DateTimeFormatAsTicks)
+			{
+				connString.Append("DateTimeFormat=Ticks;");
+			}
 
 			return new System.Data.SQLite.SQLiteConnection(connString.ToString());
-        }
+		}
 
-        /// <summary>Gets quoted table name.</summary>
-        /// <param name="modelDef">The model definition.</param>
-        /// <returns>The quoted table name.</returns>
-        public override string GetQuotedTableName(ModelDefinition modelDef)
-        {
-            if (!modelDef.IsInSchema)
-                return base.GetQuotedTableName(modelDef);
+		/// <summary>Gets quoted table name.</summary>
+		/// <param name="modelDef">The model definition.</param>
+		/// <returns>The quoted table name.</returns>
+		public override string GetQuotedTableName(ModelDefinition modelDef)
+		{
+			if (!modelDef.IsInSchema)
+				return base.GetQuotedTableName(modelDef);
 
-            return string.Format("\"{0}_{1}\"", modelDef.Schema, modelDef.ModelName);
-        }
+			return string.Format("\"{0}_{1}\"", modelDef.Schema, modelDef.ModelName);
+		}
 
-        /// <summary>Convert database value.</summary>
-        /// <exception cref="Exception">Thrown when an exception error condition occurs.</exception>
-        /// <param name="value">The value.</param>
-        /// <param name="type"> The type.</param>
-        /// <returns>The database converted value.</returns>
+		/// <summary>Convert database value.</summary>
+		/// <exception cref="Exception">Thrown when an exception error condition occurs.</exception>
+		/// <param name="value">The value.</param>
+		/// <param name="type"> The type.</param>
+		/// <returns>The database converted value.</returns>
 		//public override object ConvertDbValue(object value, Type type)
 		//{
 		//	if (value == null || value is DBNull) return null;
@@ -153,10 +171,10 @@ namespace SimpleStack.Orm.Sqlite
 		//	}
 		//}
 
-        /// <summary>Gets quoted value.</summary>
-        /// <param name="value">    The value.</param>
-        /// <param name="fieldType">Type of the field.</param>
-        /// <returns>The quoted value.</returns>
+		/// <summary>Gets quoted value.</summary>
+		/// <param name="value">    The value.</param>
+		/// <param name="fieldType">Type of the field.</param>
+		/// <returns>The quoted value.</returns>
 		//public override string GetQuotedValue(object value, Type fieldType)
 		//{
 		//	if (value == null) return "NULL";
@@ -189,45 +207,45 @@ namespace SimpleStack.Orm.Sqlite
 		//	return base.GetQuotedValue(value, fieldType);
 		//}
 
-        /// <summary>Expression visitor.</summary>
-        /// <typeparam name="T">Generic type parameter.</typeparam>
-        /// <returns>A SqlExpressionVisitor&lt;T&gt;</returns>
-        public override SqlExpressionVisitor<T> ExpressionVisitor<T>()
-        {
-            return new SqliteExpressionVisitor<T>();
-        }
+		/// <summary>Expression visitor.</summary>
+		/// <typeparam name="T">Generic type parameter.</typeparam>
+		/// <returns>A SqlExpressionVisitor&lt;T&gt;</returns>
+		public override SqlExpressionVisitor<T> ExpressionVisitor<T>()
+		{
+			return new SqliteExpressionVisitor<T>();
+		}
 
-        /// <summary>Query if 'dbCmd' does table exist.</summary>
-        /// <param name="dbCmd">    The database command.</param>
-        /// <param name="tableName">Name of the table.</param>
-        /// <returns>true if it succeeds, false if it fails.</returns>
-        public override bool DoesTableExist(IDbConnection dbCmd, string tableName)
-        {
-            var sql = String.Format("SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name = '{0}'"
-                ,tableName);
+		/// <summary>Query if 'dbCmd' does table exist.</summary>
+		/// <param name="dbCmd">    The database command.</param>
+		/// <param name="tableName">Name of the table.</param>
+		/// <returns>true if it succeeds, false if it fails.</returns>
+		public override bool DoesTableExist(IDbConnection dbCmd, string tableName)
+		{
+			var sql = String.Format("SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name = '{0}'"
+				, tableName);
 
-            var result = dbCmd.ExecuteScalar<int>(sql);
+			var result = dbCmd.ExecuteScalar<int>(sql);
 
-            return result > 0;
-        }
+			return result > 0;
+		}
 
-        /// <summary>Gets column definition.</summary>
-        /// <param name="fieldName">    Name of the field.</param>
-        /// <param name="fieldType">    Type of the field.</param>
-        /// <param name="isPrimaryKey"> true if this object is primary key.</param>
-        /// <param name="autoIncrement">true to automatically increment.</param>
-        /// <param name="isNullable">   true if this object is nullable.</param>
-        /// <param name="fieldLength">  Length of the field.</param>
-        /// <param name="scale">        The scale.</param>
-        /// <param name="defaultValue"> The default value.</param>
-        /// <returns>The column definition.</returns>
-        public override string GetColumnDefinition(string fieldName, Type fieldType, bool isPrimaryKey, bool autoIncrement, bool isNullable, int? fieldLength, int? scale, string defaultValue)
-        {
-            // http://www.sqlite.org/lang_createtable.html#rowid
-            var ret = base.GetColumnDefinition(fieldName, fieldType, isPrimaryKey, autoIncrement, isNullable, fieldLength, scale, defaultValue);
-            if (isPrimaryKey)
-                return ret.Replace(" BIGINT ", " INTEGER ");
-            return ret;
-        }
-    }
+		/// <summary>Gets column definition.</summary>
+		/// <param name="fieldName">    Name of the field.</param>
+		/// <param name="fieldType">    Type of the field.</param>
+		/// <param name="isPrimaryKey"> true if this object is primary key.</param>
+		/// <param name="autoIncrement">true to automatically increment.</param>
+		/// <param name="isNullable">   true if this object is nullable.</param>
+		/// <param name="fieldLength">  Length of the field.</param>
+		/// <param name="scale">        The scale.</param>
+		/// <param name="defaultValue"> The default value.</param>
+		/// <returns>The column definition.</returns>
+		public override string GetColumnDefinition(string fieldName, Type fieldType, bool isPrimaryKey, bool autoIncrement, bool isNullable, int? fieldLength, int? scale, string defaultValue)
+		{
+			// http://www.sqlite.org/lang_createtable.html#rowid
+			var ret = base.GetColumnDefinition(fieldName, fieldType, isPrimaryKey, autoIncrement, isNullable, fieldLength, scale, defaultValue);
+			if (isPrimaryKey)
+				return ret.Replace(" BIGINT ", " INTEGER ");
+			return ret;
+		}
+	}
 }
