@@ -149,39 +149,39 @@ namespace SimpleStack.Orm.MySQL
         /// <summary>Converts a tableType to a create table statement.</summary>
         /// <param name="tableType">Type of the table.</param>
         /// <returns>tableType as a string.</returns>
-        public override string ToCreateTableStatement(Type tableType)
-        {
-            var sbColumns = new StringBuilder();
-            var sbConstraints = new StringBuilder();
+		//public override string ToCreateTableStatement(Type tableType)
+		//{
+		//	var sbColumns = new StringBuilder();
+		//	var sbConstraints = new StringBuilder();
 
-            var modelDef = GetModel(tableType);
-            foreach (var fieldDef in modelDef.FieldDefinitions)
-            {
-                if (sbColumns.Length != 0) sbColumns.Append(", \n  ");
+		//	var modelDef = GetModel(tableType);
+		//	foreach (var fieldDef in modelDef.FieldDefinitions)
+		//	{
+		//		if (sbColumns.Length != 0) sbColumns.Append(", \n  ");
 
-                sbColumns.Append(GetColumnDefinition(fieldDef));
+		//		sbColumns.Append(GetColumnDefinition(fieldDef));
 
-                if (fieldDef.ForeignKey == null) continue;
+		//		if (fieldDef.ForeignKey == null) continue;
 
-                var refModelDef = GetModel(fieldDef.ForeignKey.ReferenceType);
-                sbConstraints.AppendFormat(
-                    ", \n\n  CONSTRAINT {0} FOREIGN KEY ({1}) REFERENCES {2} ({3})",
-                    GetQuotedName(fieldDef.ForeignKey.GetForeignKeyName(modelDef, refModelDef, NamingStrategy, fieldDef)),
-                    GetQuotedColumnName(fieldDef.FieldName),
-                    GetQuotedTableName(refModelDef),
-                    GetQuotedColumnName(refModelDef.PrimaryKey.FieldName));
+		//		var refModelDef = GetModel(fieldDef.ForeignKey.ReferenceType);
+		//		sbConstraints.AppendFormat(
+		//			", \n\n  CONSTRAINT {0} FOREIGN KEY ({1}) REFERENCES {2} ({3})",
+		//			GetQuotedName(fieldDef.ForeignKey.GetForeignKeyName(modelDef, refModelDef, NamingStrategy, fieldDef)),
+		//			GetQuotedColumnName(fieldDef.FieldName),
+		//			GetQuotedTableName(refModelDef),
+		//			GetQuotedColumnName(refModelDef.PrimaryKey.FieldName));
 
-                if (!string.IsNullOrEmpty(fieldDef.ForeignKey.OnDelete))
-                    sbConstraints.AppendFormat(" ON DELETE {0}", fieldDef.ForeignKey.OnDelete);
+		//		if (!string.IsNullOrEmpty(fieldDef.ForeignKey.OnDelete))
+		//			sbConstraints.AppendFormat(" ON DELETE {0}", fieldDef.ForeignKey.OnDelete);
 
-                if (!string.IsNullOrEmpty(fieldDef.ForeignKey.OnUpdate))
-                    sbConstraints.AppendFormat(" ON UPDATE {0}", fieldDef.ForeignKey.OnUpdate);
-            }
-            var sql = new StringBuilder(string.Format(
-                "CREATE TABLE {0} \n(\n  {1}{2} \n); \n", GetQuotedTableName(modelDef), sbColumns, sbConstraints));
+		//		if (!string.IsNullOrEmpty(fieldDef.ForeignKey.OnUpdate))
+		//			sbConstraints.AppendFormat(" ON UPDATE {0}", fieldDef.ForeignKey.OnUpdate);
+		//	}
+		//	var sql = new StringBuilder(string.Format(
+		//		"CREATE TABLE {0} \n(\n  {1}{2} \n); \n", GetQuotedTableName(modelDef), sbColumns, sbConstraints));
 
-            return sql.ToString();
-        }
+		//	return sql.ToString();
+		//}
 
         /// <summary>Gets column definition.</summary>
         /// <param name="fieldDefinition">The field definition.</param>

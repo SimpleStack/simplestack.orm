@@ -41,6 +41,7 @@ namespace SimpleStack.Orm
 		public string DateTimeColumnDefinition = "DATETIME";
 
 		/// <summary>The database type map.</summary>
+		[Obsolete]
 		protected DbTypes<TDialect> DbTypeMap = new DbTypes<TDialect>();
 
 		/// <summary>The decimal column definition.</summary>
@@ -242,13 +243,29 @@ namespace SimpleStack.Orm
 		{
 			string fieldDefinition;
 
+			SqlMapper.ITypeHandler typeHandler = null;
+			var dbType = SqlMapper.LookupDbType(fieldType, fieldName, false, out typeHandler);
+			var typeHandlerColumnType = typeHandler as ITypeHandlerColumnType;
+			if (typeHandlerColumnType != null)
+			{
+				fieldType = typeHandlerColumnType.ColumnType;
+			}
+
 			if (fieldType == typeof(string))
 			{
 				fieldDefinition = string.Format(StringLengthColumnDefinitionFormat,
 					fieldLength.GetValueOrDefault(DefaultStringLength));
 			}
-			else
+			else if (fieldType.IsEnum)
 			{
+				if (!DbTypeMap.ColumnTypeMap.TryGetValue(typeof (Enum), out fieldDefinition) &&
+				    !DbTypeMap.ColumnTypeMap.TryGetValue(fieldType, out fieldDefinition))
+				{
+					fieldDefinition = GetUndefinedColumnDefinition(fieldType, fieldLength);
+				}
+			}
+			else
+			{	
 				if (!DbTypeMap.ColumnTypeMap.TryGetValue(fieldType, out fieldDefinition))
 				{
 					fieldDefinition = GetUndefinedColumnDefinition(fieldType, fieldLength);
@@ -260,9 +277,9 @@ namespace SimpleStack.Orm
 
 			if (isPrimaryKey)
 			{
-				sql.Append(" PRIMARY KEY");
 				if (autoIncrement)
 				{
+					sql.Append(" PRIMARY KEY");
 					sql.Append(" ").Append(AutoIncrementDefinition);
 				}
 			}
@@ -494,6 +511,7 @@ namespace SimpleStack.Orm
 		{
 			var sbColumns = new StringBuilder();
 			var sbConstraints = new StringBuilder();
+			var sbPrimaryKeys = new StringBuilder();
 
 			var modelDef = tableType.GetModelDefinition();
 			foreach (var fieldDef in modelDef.FieldDefinitions)
@@ -512,21 +530,34 @@ namespace SimpleStack.Orm
 
 				sbColumns.Append(columnDefinition);
 
-				if (fieldDef.ForeignKey == null) continue;
+				if (fieldDef.IsPrimaryKey && !fieldDef.AutoIncrement)
+				{
+					sbPrimaryKeys.Append(sbPrimaryKeys.Length == 0 ? ", PRIMARY KEY(" : ",");
+					sbPrimaryKeys.Append(GetQuotedColumnName(fieldDef.FieldName));
+				}
 
-				var refModelDef = fieldDef.ForeignKey.ReferenceType.GetModelDefinition();
-				sbConstraints.AppendFormat(
-					", \n\n  CONSTRAINT {0} FOREIGN KEY ({1}) REFERENCES {2} ({3})",
-					GetQuotedName(fieldDef.ForeignKey.GetForeignKeyName(modelDef, refModelDef, NamingStrategy, fieldDef)),
-					GetQuotedColumnName(fieldDef.FieldName),
-					GetQuotedTableName(refModelDef),
-					GetQuotedColumnName(refModelDef.PrimaryKey.FieldName));
+				if (fieldDef.ForeignKey != null)
+				{
+					var refModelDef = fieldDef.ForeignKey.ReferenceType.GetModelDefinition();
+					sbConstraints.AppendFormat(
+						", \n\n  CONSTRAINT {0} FOREIGN KEY ({1}) REFERENCES {2} ({3})",
+						GetQuotedName(fieldDef.ForeignKey.GetForeignKeyName(modelDef, refModelDef, NamingStrategy, fieldDef)),
+						GetQuotedColumnName(fieldDef.FieldName),
+						GetQuotedTableName(refModelDef),
+						GetQuotedColumnName(refModelDef.PrimaryKey.FieldName));
 
-				sbConstraints.Append(GetForeignKeyOnDeleteClause(fieldDef.ForeignKey));
-				sbConstraints.Append(GetForeignKeyOnUpdateClause(fieldDef.ForeignKey));
+					sbConstraints.Append(GetForeignKeyOnDeleteClause(fieldDef.ForeignKey));
+					sbConstraints.Append(GetForeignKeyOnUpdateClause(fieldDef.ForeignKey));
+				}
 			}
+
+			if (sbPrimaryKeys.Length > 0)
+			{
+				sbPrimaryKeys.Append(")");
+			}
+
 			var sql = new StringBuilder(string.Format(
-				"CREATE TABLE {0} \n(\n  {1}{2} \n); \n", GetQuotedTableName(modelDef), sbColumns, sbConstraints));
+				"CREATE TABLE {0} \n(\n  {1}{2}{3} \n); \n", GetQuotedTableName(modelDef), sbColumns, sbPrimaryKeys, sbConstraints));
 
 			return sql.ToString();
 		}
@@ -568,7 +599,7 @@ namespace SimpleStack.Orm
 		public virtual DbType GetColumnDbType(Type valueType)
 		{
 			if (valueType.IsEnum)
-				return DbTypeMap.ColumnDbTypeMap[typeof(string)];
+				return DbTypeMap.ColumnDbTypeMap[typeof(int)];
 
 			return DbTypeMap.ColumnDbTypeMap[valueType];
 		}
@@ -579,7 +610,14 @@ namespace SimpleStack.Orm
 		public virtual string GetColumnTypeDefinition(Type fieldType)
 		{
 			string fieldDefinition;
+
 			DbTypeMap.ColumnTypeMap.TryGetValue(fieldType, out fieldDefinition);
+
+			if (fieldDefinition == null && fieldType.IsEnum)
+			{
+				DbTypeMap.ColumnTypeMap.TryGetValue(typeof(Enum), out fieldDefinition);
+			}
+
 			return fieldDefinition ?? GetUndefinedColumnDefinition(fieldType, null);
 		}
 
@@ -711,8 +749,8 @@ namespace SimpleStack.Orm
 			DbTypeMap.Set<DateTime?>(DbType.DateTime, DateTimeColumnDefinition);
 			DbTypeMap.Set<TimeSpan>(DbType.Time, TimeColumnDefinition);
 			DbTypeMap.Set<TimeSpan?>(DbType.Time, TimeColumnDefinition);
-			DbTypeMap.Set<DateTimeOffset>(DbType.Time, TimeColumnDefinition);
-			DbTypeMap.Set<DateTimeOffset?>(DbType.Time, TimeColumnDefinition);
+			DbTypeMap.Set<DateTimeOffset>(DbType.DateTimeOffset, DateTimeColumnDefinition);
+			DbTypeMap.Set<DateTimeOffset?>(DbType.DateTimeOffset, DateTimeColumnDefinition);
 
 			DbTypeMap.Set<byte>(DbType.Byte, IntColumnDefinition);
 			DbTypeMap.Set<byte?>(DbType.Byte, IntColumnDefinition);
@@ -743,6 +781,7 @@ namespace SimpleStack.Orm
 			DbTypeMap.Set<byte[]>(DbType.Binary, BlobColumnDefinition);
 
 			DbTypeMap.Set<object>(DbType.Object, StringColumnDefinition);
+			DbTypeMap.Set<Enum>(DbType.Int32, IntColumnDefinition);
 		}
 
 		/// <summary>Determine if we should quote value.</summary>
@@ -1037,5 +1076,10 @@ namespace SimpleStack.Orm
 		}
 
 		#endregion DDL
+
+		public virtual string GetDropTableStatement(ModelDefinition modelDef)
+		{
+			return "DROP TABLE " + Config.DialectProvider.GetQuotedTableName(modelDef);
+		}
 	}
 }

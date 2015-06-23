@@ -131,7 +131,7 @@ namespace Dapper
 		public CommandDefinition(string commandText, object parameters = null, IDbTransaction transaction = null, int? commandTimeout = null,
 			CommandType? commandType = null, CommandFlags flags = CommandFlags.Buffered
 #if ASYNC
-            , CancellationToken cancellationToken = default(CancellationToken)
+, CancellationToken cancellationToken = default(CancellationToken)
 #endif
 )
 #endif
@@ -143,7 +143,7 @@ namespace Dapper
 			this.commandType = commandType;
 			this.flags = flags;
 #if ASYNC
-            this.cancellationToken = cancellationToken;
+			this.cancellationToken = cancellationToken;
 #endif
 		}
 
@@ -154,11 +154,11 @@ namespace Dapper
 		}
 
 #if ASYNC
-        private readonly CancellationToken cancellationToken;
-        /// <summary>
-        /// For asynchronous operations, the cancellation-token
-        /// </summary>
-        public CancellationToken CancellationToken { get { return cancellationToken; } }
+		private readonly CancellationToken cancellationToken;
+		/// <summary>
+		/// For asynchronous operations, the cancellation-token
+		/// </summary>
+		public CancellationToken CancellationToken { get { return cancellationToken; } }
 #endif
 
 		internal IDbCommand SetupCommand(IDbConnection cnn, Action<IDbCommand, object> paramReader)
@@ -1270,11 +1270,11 @@ this IDbConnection cnn, string sql, object param = null, IDbTransaction transact
 			if (multiExec != null)
 			{
 #if ASYNC
-                if((command.Flags & CommandFlags.Pipelined) != 0)
-                {
-                    // this includes all the code for concurrent/overlapped query
-                    return ExecuteMultiImplAsync(cnn, command, multiExec).Result;
-                }
+				if ((command.Flags & CommandFlags.Pipelined) != 0)
+				{
+					// this includes all the code for concurrent/overlapped query
+					return ExecuteMultiImplAsync(cnn, command, multiExec).Result;
+				}
 #endif
 				bool isFirst = true;
 				int total = 0;

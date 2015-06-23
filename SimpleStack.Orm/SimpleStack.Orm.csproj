@@ -69,6 +69,7 @@
     <Compile Include="Expressions\ExpressionVisitor.cs" />
     <Compile Include="Expressions\ParameterRebinder.cs" />
     <Compile Include="Expressions\PredicateBuilder.cs" />
+    <Compile Include="ITypeHandlerColumnType.cs" />
     <Compile Include="OrmLiteConnection.cs" />
     <Compile Include="OrmLiteTransaction.cs" />
     <Compile Include="SqlMapperAsync.cs" />

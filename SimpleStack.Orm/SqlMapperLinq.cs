@@ -298,6 +298,13 @@ namespace SimpleStack.Orm
 			return dbConn.ExecuteScalar<int>(where.ToDeleteRowStatement(), where.Parameters);
 		}
 
+		//TODO: Vdaron delete an item
+		public static int Delete<T>(this IDbConnection dbConn, T obj)
+		{
+			//return dbConn.ExecuteScalar<int>(where.ToDeleteRowStatement(), where.Parameters);
+			return 0;
+		}
+
 		public static int Delete<T>(this IDbConnection dbConn)
 		{
 			return dbConn.ExecuteScalar<int>(Config.DialectProvider.ExpressionVisitor<T>().ToDeleteRowStatement());
@@ -379,7 +386,6 @@ namespace SimpleStack.Orm
 		{
 			try
 			{
-
 				var dialectProvider = Config.DialectProvider;
 				var tableName = dialectProvider.NamingStrategy.GetTableName(modelDef.ModelName);
 
@@ -390,7 +396,7 @@ namespace SimpleStack.Orm
 					{
 						dbCmd.Execute(dropTableFks);
 					}
-					dbCmd.Execute("DROP TABLE " + Config.DialectProvider.GetQuotedTableName(modelDef));
+					dbCmd.Execute(Config.DialectProvider.GetDropTableStatement(modelDef));
 				}
 			}
 			catch (Exception ex)

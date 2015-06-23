@@ -14,6 +14,9 @@ using NUnit.Framework;
 
 namespace SimpleStack.Orm.Tests
 {
+	//TODO: vdaron : Multiple Primarykey create table
+	//TODO: vdaron => DateTimeOffset column types
+
 	[TestFixture]
     public abstract partial class ExpressionTests
 	{
@@ -183,12 +186,18 @@ namespace SimpleStack.Orm.Tests
 	{
 		protected override void SetupDialectProvider()
 		{
-			Config.DialectProvider = new SqliteDialectProvider();
+			Config.DialectProvider = new SqliteDialectProvider
+			{
+				BinaryGUID = false,
+				Compress = true,
+				UTF8Encoded = true,
+				DateTimeFormatAsTicks = false
+			};
 		}
 
 		protected override string ConnectionString
 		{
-			get { return ":memory:"; }
+			get { return @"Data Source=e:\mydb.db;Version=3;New=True;"; }
 		}
 	}
 }

@@ -256,6 +256,8 @@ namespace SimpleStack.Orm
 		/// <returns>The drop foreign key constraints.</returns>
 		string GetDropForeignKeyConstraints(ModelDefinition modelDef);
 
+
+		string GetDropTableStatement(ModelDefinition modelDef);
 		#region DDL
 		/// <summary>Converts this object to an add column statement.</summary>
 		/// <param name="modelType">Type of the model.</param>
