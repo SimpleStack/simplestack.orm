@@ -55,6 +55,16 @@ namespace SimpleStack.Orm
 			return await dbConn.QueryAsync<T>(Config.DialectProvider.ExpressionVisitor<T>().ToSelectStatement());
 		}
 
+		/// <summary>An IDbConnection extension method that selects based on a JoinSqlBuilder.</summary>
+		/// <typeparam name="T">Generic type parameter.</typeparam>
+		/// <param name="dbConn">    The dbConn to act on.</param>
+		/// <param name="expression">The expression.</param>
+		/// <returns>A List&lt;T&gt;</returns>
+		public static async Task<IEnumerable<T>> SelectAsync<T, V>(this IDbConnection dbConn, JoinSqlBuilder<T, V> sqlBuilder)
+		{
+			return await dbConn.QueryAsync<T>(sqlBuilder.ToSql(), sqlBuilder.Parameters);
+		}
+
 		/// <summary>An IDbConnection extension method that firsts.</summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		/// <param name="dbConn">   The dbConn to act on.</param>

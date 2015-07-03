@@ -54,6 +54,16 @@ namespace SimpleStack.Orm
 			return dbConn.Query<T>(Config.DialectProvider.ExpressionVisitor<T>().ToSelectStatement(), null, buffered: buffered);
 		}
 
+		/// <summary>An IDbConnection extension method that selects based on a JoinSqlBuilder.</summary>
+		/// <typeparam name="T">Generic type parameter.</typeparam>
+		/// <param name="dbConn">    The dbConn to act on.</param>
+		/// <param name="expression">The expression.</param>
+		/// <returns>A List&lt;T&gt;</returns>
+		public static IEnumerable<T> Select<T, V>(this IDbConnection dbConn, JoinSqlBuilder<T, V> sqlBuilder, bool buffered = true)
+		{
+			return dbConn.Query<T>(sqlBuilder.ToSql(), sqlBuilder.Parameters, buffered: buffered);
+		}
+
 		/// <summary>An IDbConnection extension method that firsts.</summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		/// <param name="dbConn">   The dbConn to act on.</param>
