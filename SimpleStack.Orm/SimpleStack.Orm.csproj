@@ -70,6 +70,7 @@
     <Compile Include="Expressions\ParameterRebinder.cs" />
     <Compile Include="Expressions\PredicateBuilder.cs" />
     <Compile Include="ITypeHandlerColumnType.cs" />
+    <Compile Include="JoinSqlBuilder.cs" />
     <Compile Include="OrmLiteConnection.cs" />
     <Compile Include="OrmLiteTransaction.cs" />
     <Compile Include="SqlMapperAsync.cs" />

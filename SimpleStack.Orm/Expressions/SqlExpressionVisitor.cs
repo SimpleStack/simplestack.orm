@@ -74,6 +74,12 @@ namespace SimpleStack.Orm.Expressions
 		/// <value>true if prefix field with table name, false if not.</value>
 		public bool PrefixFieldWithTableName { get; set; }
 
+		/// <summary>
+		/// Gets or sets a value indicating whether the where statement without where string.
+		/// </summary>
+		/// <value>true if where statement without where string, false if not.</value>
+		public bool WhereStatementWithoutWhereString { get; set; }
+
 		/// <summary>Gets the separator.</summary>
 		/// <value>The separator.</value>
 		protected string Sep
@@ -181,6 +187,15 @@ namespace SimpleStack.Orm.Expressions
 		public IDictionary<string, object> Parameters
 		{
 			get { return _parameters; }
+		}
+
+		internal void CopyExistingParameters(IDictionary<string, object> parameters)
+		{
+			if (parameters == null)
+				return;
+
+			foreach(var p in parameters)
+				_parameters.Add(p);
 		}
 
 		public virtual SqlExpressionVisitor<T> Distinct(bool distinct = true)
@@ -322,7 +337,9 @@ namespace SimpleStack.Orm.Expressions
 			_sep = " ";
 			_whereExpression = Visit(_underlyingExpression).ToString();
 			if (!string.IsNullOrEmpty(_whereExpression))
-				_whereExpression = "WHERE " + _whereExpression;
+			{
+				_whereExpression = (WhereStatementWithoutWhereString ? String.Empty : "WHERE ") + _whereExpression;
+			}
 		}
 
 		/// <summary>Group by.</summary>

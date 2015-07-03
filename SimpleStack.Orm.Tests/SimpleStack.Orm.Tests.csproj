@@ -52,6 +52,7 @@
     <Compile Include="ExpressionChainingUseCases.cs" />
     <Compile Include="ExpressionTests.cs" />
     <Compile Include="ExpressionVisitorTests.cs" />
+    <Compile Include="JoinSqlBuilderTests.cs" />
     <Compile Include="LogicalExpressions.cs" />
     <Compile Include="MultiplicativeExpressionTests.cs" />
     <Compile Include="PrimaryExpressionTests.cs" />
