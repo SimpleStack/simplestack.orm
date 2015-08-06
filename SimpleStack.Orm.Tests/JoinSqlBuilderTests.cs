@@ -98,15 +98,14 @@ namespace SimpleStack.Orm.Tests
 		[Test()]
 		public void FieldNameLeftJoinTest()
 		{
-			Config.DialectProvider = new SqliteDialectProvider();
-			var joinQuery = new JoinSqlBuilder<User, User>().LeftJoin<User, Address>(x => x.Id, x => x.UserId).ToSql();
+			var joinQuery = new JoinSqlBuilder<User, User>(new SqliteDialectProvider()).LeftJoin<User, Address>(x => x.Id, x => x.UserId).ToSql();
 			var expected =
 				"SELECT \"User\".\"Id\",\"User\".\"Name\",\"User\".\"Age\" \nFROM \"User\" \n LEFT OUTER JOIN  \"Address\" ON \"User\".\"Id\" = \"Address\".\"UserId\"  \n";
 
 			Assert.AreEqual(expected, joinQuery);
 
 			joinQuery =
-				new JoinSqlBuilder<WithAliasUser, WithAliasUser>().LeftJoin<WithAliasUser, WithAliasAddress>(x => x.Id,
+				new JoinSqlBuilder<WithAliasUser, WithAliasUser>(new SqliteDialectProvider()).LeftJoin<WithAliasUser, WithAliasAddress>(x => x.Id,
 					x => x.UserId).ToSql();
 			expected =
 				"SELECT \"Users\".\"Id\",\"Users\".\"Nickname\",\"Users\".\"Agealias\" \nFROM \"Users\" \n LEFT OUTER JOIN  \"Addresses\" ON \"Users\".\"Id\" = \"Addresses\".\"UserId\"  \n";
@@ -114,7 +113,7 @@ namespace SimpleStack.Orm.Tests
 			Assert.AreEqual(expected, joinQuery);
 
 
-			joinQuery = new JoinSqlBuilder<User, User>().LeftJoin<User, WithAliasAddress>(x => x.Id, x => x.UserId).ToSql();
+			joinQuery = new JoinSqlBuilder<User, User>(new SqliteDialectProvider()).LeftJoin<User, WithAliasAddress>(x => x.Id, x => x.UserId).ToSql();
 			expected =
 				"SELECT \"User\".\"Id\",\"User\".\"Name\",\"User\".\"Age\" \nFROM \"User\" \n LEFT OUTER JOIN  \"Addresses\" ON \"User\".\"Id\" = \"Addresses\".\"UserId\"  \n";
 
@@ -125,9 +124,7 @@ namespace SimpleStack.Orm.Tests
 		[Test()]
 		public void DoubleWhereLeftJoinTest()
 		{
-			Config.DialectProvider = new SqliteDialectProvider();
-
-			var joinQuery = new JoinSqlBuilder<User, User>().LeftJoin<User, WithAliasAddress>(x => x.Id, x => x.UserId
+			var joinQuery = new JoinSqlBuilder<User, User>(new SqliteDialectProvider()).LeftJoin<User, WithAliasAddress>(x => x.Id, x => x.UserId
 				, sourceWhere: x => x.Age > 18
 				, destinationWhere: x => x.Country == "Italy");
 			var expected =
@@ -142,9 +139,8 @@ namespace SimpleStack.Orm.Tests
 		[Test()]
 		public void SelectCountDistinctTest()
 		{
-			Config.DialectProvider = new SqliteDialectProvider();
 			var joinQuery =
-				new JoinSqlBuilder<User, User>().LeftJoin<User, Address>(x => x.Id, x => x.UserId)
+				new JoinSqlBuilder<User, User>(new SqliteDialectProvider()).LeftJoin<User, Address>(x => x.Id, x => x.UserId)
 					.SelectCountDistinct<User>(x => x.Id).ToSql();
 			var expected =
 				"SELECT  COUNT(DISTINCT \"User\".\"Id\")  \nFROM \"User\" \n LEFT OUTER JOIN  \"Address\" ON \"User\".\"Id\" = \"Address\".\"UserId\"  \n";
@@ -155,9 +151,8 @@ namespace SimpleStack.Orm.Tests
 		[Test()]
 		public void SelectCountTest()
 		{
-			Config.DialectProvider = new SqliteDialectProvider();
 			var joinQuery =
-				new JoinSqlBuilder<User, User>().LeftJoin<User, Address>(x => x.Id, x => x.UserId)
+				new JoinSqlBuilder<User, User>(new SqliteDialectProvider()).LeftJoin<User, Address>(x => x.Id, x => x.UserId)
 					.SelectCount<User>(x => x.Id).ToSql();
 			var expected =
 				"SELECT  COUNT(\"User\".\"Id\")  \nFROM \"User\" \n LEFT OUTER JOIN  \"Address\" ON \"User\".\"Id\" = \"Address\".\"UserId\"  \n";

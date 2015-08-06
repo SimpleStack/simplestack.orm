@@ -17,9 +17,9 @@ namespace SimpleStack.Orm
 		/// <param name="dbConn">   The dbConn to act on.</param>
 		/// <param name="predicate">The predicate.</param>
 		/// <returns>A List&lt;T&gt;</returns>
-		public static IEnumerable<T> Select<T>(this IDbConnection dbConn, Expression<Func<T, bool>> predicate, bool buffered = true)
+		public static IEnumerable<T> Select<T>(this OrmConnection dbConn, Expression<Func<T, bool>> predicate, bool buffered = true)
 		{
-			var ev = Config.DialectProvider.ExpressionVisitor<T>();
+			var ev = dbConn.DialectProvider.ExpressionVisitor<T>();
 			return dbConn.Query<T>(ev.Where(predicate).ToSelectStatement(), ev.Parameters, buffered: buffered);
 		}
 
@@ -28,9 +28,9 @@ namespace SimpleStack.Orm
 		/// <param name="dbConn">    The dbConn to act on.</param>
 		/// <param name="expression">The expression.</param>
 		/// <returns>A List&lt;T&gt;</returns>
-		public static IEnumerable<T> Select<T>(this IDbConnection dbConn, Func<SqlExpressionVisitor<T>, SqlExpressionVisitor<T>> expression, bool buffered = true)
+		public static IEnumerable<T> Select<T>(this OrmConnection dbConn, Func<SqlExpressionVisitor<T>, SqlExpressionVisitor<T>> expression, bool buffered = true)
 		{
-			var ev = Config.DialectProvider.ExpressionVisitor<T>();
+			var ev = dbConn.DialectProvider.ExpressionVisitor<T>();
 			return dbConn.Query<T>(expression(ev).ToSelectStatement(), ev.Parameters, buffered: buffered);
 		}
 
@@ -39,7 +39,7 @@ namespace SimpleStack.Orm
 		/// <param name="dbConn">    The dbConn to act on.</param>
 		/// <param name="expression">The expression.</param>
 		/// <returns>A List&lt;T&gt;</returns>
-		public static IEnumerable<T> Select<T>(this IDbConnection dbConn, SqlExpressionVisitor<T> expression, bool buffered = true)
+		public static IEnumerable<T> Select<T>(this OrmConnection dbConn, SqlExpressionVisitor<T> expression, bool buffered = true)
 		{
 			return dbConn.Query<T>(expression.ToSelectStatement(), expression.Parameters, buffered: buffered);
 		}
@@ -49,9 +49,9 @@ namespace SimpleStack.Orm
 		/// <param name="dbConn">    The dbConn to act on.</param>
 		/// <param name="expression">The expression.</param>
 		/// <returns>A List&lt;T&gt;</returns>
-		public static IEnumerable<T> Select<T>(this IDbConnection dbConn, bool buffered = true)
+		public static IEnumerable<T> Select<T>(this OrmConnection dbConn, bool buffered = true)
 		{
-			return dbConn.Query<T>(Config.DialectProvider.ExpressionVisitor<T>().ToSelectStatement(), null, buffered: buffered);
+			return dbConn.Query<T>(dbConn.DialectProvider.ExpressionVisitor<T>().ToSelectStatement(), null, buffered: buffered);
 		}
 
 		/// <summary>An IDbConnection extension method that selects based on a JoinSqlBuilder.</summary>
@@ -59,7 +59,7 @@ namespace SimpleStack.Orm
 		/// <param name="dbConn">    The dbConn to act on.</param>
 		/// <param name="expression">The expression.</param>
 		/// <returns>A List&lt;T&gt;</returns>
-		public static IEnumerable<T> Select<T, V>(this IDbConnection dbConn, JoinSqlBuilder<T, V> sqlBuilder, bool buffered = true)
+		public static IEnumerable<T> Select<T, V>(this OrmConnection dbConn, JoinSqlBuilder<T, V> sqlBuilder, bool buffered = true)
 		{
 			return dbConn.Query<T>(sqlBuilder.ToSql(), sqlBuilder.Parameters, buffered: buffered);
 		}
@@ -69,9 +69,9 @@ namespace SimpleStack.Orm
 		/// <param name="dbConn">   The dbConn to act on.</param>
 		/// <param name="predicate">The predicate.</param>
 		/// <returns>A T.</returns>
-		public static T First<T>(this IDbConnection dbConn, Expression<Func<T, bool>> predicate)
+		public static T First<T>(this OrmConnection dbConn, Expression<Func<T, bool>> predicate)
 		{
-			var ev = Config.DialectProvider.ExpressionVisitor<T>();
+			var ev = dbConn.DialectProvider.ExpressionVisitor<T>();
 			return dbConn.Select(ev.Where(predicate).Limit(1)).First();
 		}
 
@@ -80,7 +80,7 @@ namespace SimpleStack.Orm
 		/// <param name="dbConn">    The dbConn to act on.</param>
 		/// <param name="expression">The expression.</param>
 		/// <returns>A T.</returns>
-		public static T First<T>(this IDbConnection dbConn, SqlExpressionVisitor<T> expression)
+		public static T First<T>(this OrmConnection dbConn, SqlExpressionVisitor<T> expression)
 		{
 			return dbConn.Select(expression.Limit(1)).First();
 		}
@@ -90,9 +90,9 @@ namespace SimpleStack.Orm
 		/// <param name="dbConn">   The dbConn to act on.</param>
 		/// <param name="predicate">The predicate.</param>
 		/// <returns>A T.</returns>
-		public static T FirstOrDefault<T>(this IDbConnection dbConn, Expression<Func<T, bool>> predicate)
+		public static T FirstOrDefault<T>(this OrmConnection dbConn, Expression<Func<T, bool>> predicate)
 		{
-			var ev = Config.DialectProvider.ExpressionVisitor<T>();
+			var ev = dbConn.DialectProvider.ExpressionVisitor<T>();
 			return dbConn.Select(ev.Where(predicate).Limit(1)).FirstOrDefault();
 		}
 
@@ -101,7 +101,7 @@ namespace SimpleStack.Orm
 		/// <param name="dbConn">    The dbConn to act on.</param>
 		/// <param name="expression">The expression.</param>
 		/// <returns>A T.</returns>
-		public static T FirstOrDefault<T>(this IDbConnection dbConn, SqlExpressionVisitor<T> expression)
+		public static T FirstOrDefault<T>(this OrmConnection dbConn, SqlExpressionVisitor<T> expression)
 		{
 			return dbConn.Select(expression.Limit(1)).FirstOrDefault();
 		}
@@ -112,10 +112,10 @@ namespace SimpleStack.Orm
 		/// <param name="dbConn">The dbConn to act on.</param>
 		/// <param name="field"> The field.</param>
 		/// <returns>The scalar.</returns>
-		public static TKey GetScalar<T, TKey>(this IDbConnection dbConn, Expression<Func<T, TKey>> field)
+		public static TKey GetScalar<T, TKey>(this OrmConnection dbConn, Expression<Func<T, TKey>> field)
 		{
 			//int maxAgeUnder50 = db.Scalar<Person, int>(x => Sql.Max(x.Age));
-			var ev = Config.DialectProvider.ExpressionVisitor<T>();
+			var ev = dbConn.DialectProvider.ExpressionVisitor<T>();
 			return dbConn.ExecuteScalar<TKey>(ev.Select(field).ToSelectStatement(), ev.Parameters);
 		}
 
@@ -126,16 +126,16 @@ namespace SimpleStack.Orm
 		/// <param name="field">    The field.</param>
 		/// <param name="predicate">The predicate.</param>
 		/// <returns>The scalar.</returns>
-		public static TKey GetScalar<T, TKey>(this IDbConnection dbConn, Expression<Func<T, TKey>> field, Expression<Func<T, bool>> predicate)
+		public static TKey GetScalar<T, TKey>(this OrmConnection dbConn, Expression<Func<T, TKey>> field, Expression<Func<T, bool>> predicate)
 		{
 			//int maxAgeUnder50 = db.Scalar<Person, int>(x => Sql.Max(x.Age), x => x.Age < 50);
-			var ev = Config.DialectProvider.ExpressionVisitor<T>();
+			var ev = dbConn.DialectProvider.ExpressionVisitor<T>();
 			return dbConn.ExecuteScalar<TKey>(ev.Where(predicate).Select(field).ToSelectStatement(), ev.Parameters);
 		}
 
-		public static long Count<T>(this IDbConnection dbConn, Func<SqlExpressionVisitor<T>, SqlExpressionVisitor<T>> expression)
+		public static long Count<T>(this OrmConnection dbConn, Func<SqlExpressionVisitor<T>, SqlExpressionVisitor<T>> expression)
 		{
-			var ev = Config.DialectProvider.ExpressionVisitor<T>();
+			var ev = dbConn.DialectProvider.ExpressionVisitor<T>();
 			return dbConn.ExecuteScalar<long>(expression(ev).ToCountStatement(), ev.Parameters);
 		}
 		/// <summary>
@@ -145,7 +145,7 @@ namespace SimpleStack.Orm
 		/// <param name="dbConn">    The dbConn to act on.</param>
 		/// <param name="expression">The expression.</param>
 		/// <returns>A long.</returns>
-		public static long Count<T>(this IDbConnection dbConn, SqlExpressionVisitor<T> expression)
+		public static long Count<T>(this OrmConnection dbConn, SqlExpressionVisitor<T> expression)
 		{
 			return dbConn.ExecuteScalar<long>(expression.ToCountStatement(), expression.Parameters);
 		}
@@ -157,9 +157,9 @@ namespace SimpleStack.Orm
 		/// <param name="dbConn">    The dbConn to act on.</param>
 		/// <param name="expression">The expression.</param>
 		/// <returns>A long.</returns>
-		public static long Count<T>(this IDbConnection dbConn, Expression<Func<T, bool>> expression)
+		public static long Count<T>(this OrmConnection dbConn, Expression<Func<T, bool>> expression)
 		{
-			var ev = Config.DialectProvider.ExpressionVisitor<T>();
+			var ev = dbConn.DialectProvider.ExpressionVisitor<T>();
 			return dbConn.Count(ev.Where(expression));
 		}
 
@@ -169,9 +169,9 @@ namespace SimpleStack.Orm
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		/// <param name="dbConn">The dbConn to act on.</param>
 		/// <returns>A long.</returns>
-		public static long Count<T>(this IDbConnection dbConn)
+		public static long Count<T>(this OrmConnection dbConn)
 		{
-			return dbConn.Count(Config.DialectProvider.ExpressionVisitor<T>());
+			return dbConn.Count(dbConn.DialectProvider.ExpressionVisitor<T>());
 		}
 
 		/// <summary>An IDbConnection extension method that updates the only.</summary>
@@ -180,11 +180,11 @@ namespace SimpleStack.Orm
 		/// <param name="model">     The model.</param>
 		/// <param name="onlyFields">The only fields.</param>
 		/// <returns>An int.</returns>
-		public static int Update<T>(this IDbConnection dbConn,
+		public static int Update<T>(this OrmConnection dbConn,
 			T model,
 			Func<SqlExpressionVisitor<T>, SqlExpressionVisitor<T>> onlyFields)
 		{
-			return dbConn.Update(model, onlyFields(Config.DialectProvider.ExpressionVisitor<T>()));
+			return dbConn.Update(model, onlyFields(dbConn.DialectProvider.ExpressionVisitor<T>()));
 		}
 
 		/// <summary>An IDbConnection extension method that updates the only.</summary>
@@ -193,11 +193,11 @@ namespace SimpleStack.Orm
 		/// <param name="model">     The model.</param>
 		/// <param name="expression">The only fields.</param>
 		/// <returns>An int.</returns>
-		public static int Update<T>(this IDbConnection dbConn, 
+		public static int Update<T>(this OrmConnection dbConn, 
 			T model, 
 			SqlExpressionVisitor<T> expression)
 		{
-			var cmd = Config.DialectProvider.ToUpdateRowStatement(model, expression);
+			var cmd = dbConn.DialectProvider.ToUpdateRowStatement(model, expression);
 			return dbConn.ExecuteScalar<int>(cmd);
 		}
 
@@ -209,7 +209,7 @@ namespace SimpleStack.Orm
 		/// <param name="onlyFields">The only fields.</param>
 		/// <param name="where">     The where.</param>
 		/// <returns>An int.</returns>
-		public static int Update<T, TKey>(this IDbConnection dbConn,
+		public static int Update<T, TKey>(this OrmConnection dbConn,
 			T obj,
 			Expression<Func<T, TKey>> onlyFields = null,
 			Expression<Func<T, bool>> where = null)
@@ -217,7 +217,7 @@ namespace SimpleStack.Orm
 			if (onlyFields == null)
 				throw new ArgumentNullException("onlyFields");
 
-			var ev = Config.DialectProvider.ExpressionVisitor<T>();
+			var ev = dbConn.DialectProvider.ExpressionVisitor<T>();
 			ev.Update(onlyFields);
 			ev.Where(where);
 			return dbConn.Update(obj, ev);
@@ -229,31 +229,31 @@ namespace SimpleStack.Orm
 		/// <param name="updateOnly">The update only.</param>
 		/// <param name="where">     The where.</param>
 		/// <returns>An int.</returns>
-		public static int Update<T>(this IDbConnection dbConn, 
+		public static int Update<T>(this OrmConnection dbConn, 
 			object updateOnly, 
 			Expression<Func<T, bool>> where = null)
 		{
-			var ev = Config.DialectProvider.ExpressionVisitor<T>();
+			var ev = dbConn.DialectProvider.ExpressionVisitor<T>();
 			ev.Where(where);
 
-			var cmd = Config.DialectProvider.ToUpdateRowStatement(updateOnly, ev);
+			var cmd = dbConn.DialectProvider.ToUpdateRowStatement(updateOnly, ev);
 			return dbConn.ExecuteScalar<int>(cmd);
 		}
 
-		public static void Insert<T>(this IDbConnection dbConn, T obj)
+		public static void Insert<T>(this OrmConnection dbConn, T obj)
 		{
-			dbConn.ExecuteScalar(Config.DialectProvider.ToInsertRowStatement(obj));
+			dbConn.ExecuteScalar(dbConn.DialectProvider.ToInsertRowStatement(obj));
 		}
 
 		/// <summary>An IDbConnection extension method that inserts all.</summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		/// <param name="dbConn">The dbConn to act on.</param>
 		/// <param name="objs">  The objects.</param>
-		public static void Insert<T>(this IDbConnection dbConn, IEnumerable<T> objs)
+		public static void Insert<T>(this OrmConnection dbConn, IEnumerable<T> objs)
 		{
 			foreach (T t in objs)
 			{
-				dbConn.ExecuteScalar(Config.DialectProvider.ToInsertRowStatement<T>(t));
+				dbConn.ExecuteScalar(dbConn.DialectProvider.ToInsertRowStatement<T>(t));
 			}
 		}
 
@@ -262,9 +262,9 @@ namespace SimpleStack.Orm
 		/// <param name="dbConn">    The dbConn to act on.</param>
 		/// <param name="obj">       The object.</param>
 		/// <param name="onlyFields">The only fields.</param>
-		public static void InsertOnly<T>(this IDbConnection dbConn, T obj, Func<SqlExpressionVisitor<T>, SqlExpressionVisitor<T>> onlyFields) where T : new()
+		public static void InsertOnly<T>(this OrmConnection dbConn, T obj, Func<SqlExpressionVisitor<T>, SqlExpressionVisitor<T>> onlyFields) where T : new()
 		{
-			var ev = Config.DialectProvider.ExpressionVisitor<T>();
+			var ev = dbConn.DialectProvider.ExpressionVisitor<T>();
 			dbConn.InsertOnly(obj, onlyFields(ev));
 		}
 
@@ -273,10 +273,10 @@ namespace SimpleStack.Orm
 		/// <param name="dbConn">    The dbConn to act on.</param>
 		/// <param name="obj">       The object.</param>
 		/// <param name="onlyFields">The only fields.</param>
-		public static void InsertOnly<T>(this IDbConnection dbConn, T obj, SqlExpressionVisitor<T> onlyFields) where T : new()
+		public static void InsertOnly<T>(this OrmConnection dbConn, T obj, SqlExpressionVisitor<T> onlyFields) where T : new()
 		{
-			var ev = Config.DialectProvider.ExpressionVisitor<T>();
-			var sql = Config.DialectProvider.ToInsertRowStatement(new[] { obj }, ev.InsertFields);
+			var ev = dbConn.DialectProvider.ExpressionVisitor<T>();
+			var sql = dbConn.DialectProvider.ToInsertRowStatement(new[] { obj }, ev.InsertFields);
 			dbConn.Execute(sql);
 		}
 
@@ -285,9 +285,9 @@ namespace SimpleStack.Orm
 		/// <param name="dbConn">The dbConn to act on.</param>
 		/// <param name="where"> The where.</param>
 		/// <returns>An int.</returns>
-		public static int Delete<T>(this IDbConnection dbConn, Expression<Func<T, bool>> where)
+		public static int Delete<T>(this OrmConnection dbConn, Expression<Func<T, bool>> where)
 		{
-			var ev = Config.DialectProvider.ExpressionVisitor<T>();
+			var ev = dbConn.DialectProvider.ExpressionVisitor<T>();
 			return dbConn.Delete<T>(ev.Where(where));
 		}
 
@@ -296,9 +296,9 @@ namespace SimpleStack.Orm
 		/// <param name="dbConn">The dbConn to act on.</param>
 		/// <param name="where"> The where.</param>
 		/// <returns>An int.</returns>
-		public static int Delete<T>(this IDbConnection dbConn, Func<SqlExpressionVisitor<T>, SqlExpressionVisitor<T>> where)
+		public static int Delete<T>(this OrmConnection dbConn, Func<SqlExpressionVisitor<T>, SqlExpressionVisitor<T>> where)
 		{
-			return dbConn.Delete<T>(where(Config.DialectProvider.ExpressionVisitor<T>()));
+			return dbConn.Delete<T>(where(dbConn.DialectProvider.ExpressionVisitor<T>()));
 		}
 
 		/// <summary>An IDbConnection extension method that deletes this object.</summary>
@@ -306,28 +306,28 @@ namespace SimpleStack.Orm
 		/// <param name="dbConn">The dbConn to act on.</param>
 		/// <param name="where"> The where.</param>
 		/// <returns>An int.</returns>
-		public static int Delete<T>(this IDbConnection dbConn, SqlExpressionVisitor<T> where)
+		public static int Delete<T>(this OrmConnection dbConn, SqlExpressionVisitor<T> where)
 		{
 			return dbConn.ExecuteScalar<int>(where.ToDeleteRowStatement(), where.Parameters);
 		}
 
 		//TODO: Vdaron delete an item
-		public static int Delete<T>(this IDbConnection dbConn, T obj)
+		public static int Delete<T>(this OrmConnection dbConn, T obj)
 		{
 			//return dbConn.ExecuteScalar<int>(where.ToDeleteRowStatement(), where.Parameters);
 			return 0;
 		}
 
-		public static int Delete<T>(this IDbConnection dbConn)
+		public static int Delete<T>(this OrmConnection dbConn)
 		{
-			return dbConn.ExecuteScalar<int>(Config.DialectProvider.ExpressionVisitor<T>().ToDeleteRowStatement());
+			return dbConn.ExecuteScalar<int>(dbConn.DialectProvider.ExpressionVisitor<T>().ToDeleteRowStatement());
 		}
 
 		/// <summary>Alias for CreateTableIfNotExists.</summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		/// <param name="dbConn">   The dbConn to act on.</param>
 		/// <param name="overwrite">true to overwrite, false to preserve.</param>
-		public static void CreateTable<T>(this IDbConnection dbConn, bool dropIfExists)
+		public static void CreateTable<T>(this OrmConnection dbConn, bool dropIfExists)
 			where T : new()
 		{
 			var tableType = typeof(T);
@@ -335,20 +335,20 @@ namespace SimpleStack.Orm
 		}
 		/// <summary>An IDbCommand extension method that creates a table.</summary>
 		/// <exception cref="Exception">Thrown when an exception error condition occurs.</exception>
-		/// <param name="dbCmd">    The dbCmd to act on.</param>
+		/// <param name="dbConn">    The dbCmd to act on.</param>
 		/// <param name="overwrite">true to overwrite, false to preserve.</param>
 		/// <param name="modelType">Type of the model.</param>
-		private static void CreateTable(this IDbConnection dbCmd, bool overwrite, Type modelType)
+		private static void CreateTable(this OrmConnection dbConn, bool overwrite, Type modelType)
 		{
 			var modelDef = modelType.GetModelDefinition();
 
-			var dialectProvider = Config.DialectProvider;
+			var dialectProvider = dbConn.DialectProvider;
 			var tableName = dialectProvider.NamingStrategy.GetTableName(modelDef.ModelName);
-			var tableExists = dialectProvider.DoesTableExist(dbCmd, tableName);
+			var tableExists = dialectProvider.DoesTableExist(dbConn, tableName);
 
 			if (overwrite && tableExists)
 			{
-				DropTable(dbCmd, modelDef);
+				DropTable(dbConn, modelDef);
 				tableExists = false;
 			}
 
@@ -356,12 +356,12 @@ namespace SimpleStack.Orm
 			{
 				if (!tableExists)
 				{
-					dbCmd.Execute(dialectProvider.ToCreateTableStatement(modelType));
+					dbConn.Execute(dialectProvider.ToCreateTableStatement(modelType));
 
 					var sqlIndexes = dialectProvider.ToCreateIndexStatements(modelType);
 					foreach (var sqlIndex in sqlIndexes)
 					{
-						dbCmd.Execute(sqlIndex);
+						dbConn.Execute(sqlIndex);
 					}
 
 					var sequenceList = dialectProvider.SequenceList(modelType);
@@ -369,10 +369,10 @@ namespace SimpleStack.Orm
 					{
 						foreach (var seq in sequenceList)
 						{
-							if (dialectProvider.DoesSequenceExist(dbCmd, seq) == false)
+							if (dialectProvider.DoesSequenceExist(dbConn, seq) == false)
 							{
 								var seqSql = dialectProvider.ToCreateSequenceStatement(modelType, seq);
-								dbCmd.Execute(seqSql);
+								dbConn.Execute(seqSql);
 							}
 						}
 					}
@@ -381,7 +381,7 @@ namespace SimpleStack.Orm
 						var sequences = dialectProvider.ToCreateSequenceStatements(modelType);
 						foreach (var seq in sequences)
 						{
-							dbCmd.Execute(seq);
+							dbConn.Execute(seq);
 						}
 					}
 				}
@@ -393,23 +393,23 @@ namespace SimpleStack.Orm
 		}
 
 		/// <summary>Drop table.</summary>
-		/// <param name="dbCmd">   The dbCmd to act on.</param>
+		/// <param name="dbConn">   The dbCmd to act on.</param>
 		/// <param name="modelDef">The model definition.</param>
-		private static void DropTable(IDbConnection dbCmd, ModelDefinition modelDef)
+		private static void DropTable(OrmConnection dbConn, ModelDefinition modelDef)
 		{
 			try
 			{
-				var dialectProvider = Config.DialectProvider;
+				var dialectProvider = dbConn.DialectProvider;
 				var tableName = dialectProvider.NamingStrategy.GetTableName(modelDef.ModelName);
 
-				if (Config.DialectProvider.DoesTableExist(dbCmd, tableName))
+				if (dbConn.DialectProvider.DoesTableExist(dbConn, tableName))
 				{
-					var dropTableFks = Config.DialectProvider.GetDropForeignKeyConstraints(modelDef);
+					var dropTableFks = dbConn.DialectProvider.GetDropForeignKeyConstraints(modelDef);
 					if (!string.IsNullOrEmpty(dropTableFks))
 					{
-						dbCmd.Execute(dropTableFks);
+						dbConn.Execute(dropTableFks);
 					}
-					dbCmd.Execute(Config.DialectProvider.GetDropTableStatement(modelDef));
+					dbConn.Execute(dbConn.DialectProvider.GetDropTableStatement(modelDef));
 				}
 			}
 			catch (Exception ex)

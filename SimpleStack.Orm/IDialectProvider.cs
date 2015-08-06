@@ -77,7 +77,7 @@ namespace SimpleStack.Orm
 		/// <param name="connectionString">Connection string.</param>
 		/// <param name="options"> Options for controlling the operation.</param>
 		/// <returns>The new connection.</returns>
-		OrmLiteConnection CreateConnection(string connectionString);
+		OrmConnection CreateConnection(string connectionString);
 
 		/// <summary>Gets quoted table name.</summary>
 		/// <param name="modelDef">The model definition.</param>

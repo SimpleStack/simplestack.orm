@@ -124,7 +124,7 @@ namespace SimpleStack.Orm.MySQL
         /// <returns>A SqlExpressionVisitor&lt;T&gt;</returns>
         public override SqlExpressionVisitor<T> ExpressionVisitor<T> ()
 		{
-			return new MySqlExpressionVisitor<T>();
+			return new MySqlExpressionVisitor<T>(this);
 		}
 
         /// <summary>Query if 'dbCmd' does table exist.</summary>

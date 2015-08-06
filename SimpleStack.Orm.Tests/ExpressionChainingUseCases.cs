@@ -73,10 +73,10 @@ namespace SimpleStack.Orm.Tests
 		[Test]
 		public void Can_Chain_Expressions_Using_And()
 		{
-			IDbConnection db = OpenDbConnection();
+			var db = OpenDbConnection();
 			db.Insert<Person>(People);
 
-			var visitor = Config.DialectProvider.ExpressionVisitor<Person>();
+			var visitor = db.DialectProvider.ExpressionVisitor<Person>();
 
 			visitor.Where(x => x.FirstName.StartsWith("Jim")).And(x => x.LastName.StartsWith("Hen"));
 			var results = db.Select(visitor).ToArray();
@@ -94,10 +94,10 @@ namespace SimpleStack.Orm.Tests
 		[Test]
 		public void Can_Chain_expressions_Using_Or()
 		{
-			IDbConnection db = OpenDbConnection();
+			var db = OpenDbConnection();
 			db.Insert<Person>(People);
 
-			var visitor = Config.DialectProvider.ExpressionVisitor<Person>();
+			var visitor = db.DialectProvider.ExpressionVisitor<Person>();
 
 			visitor.Where(x => x.FirstName.StartsWith("Jim")).Or(x => x.LastName.StartsWith("Cob"));
 
@@ -116,10 +116,10 @@ namespace SimpleStack.Orm.Tests
 		[Test]
 		public void When_chaining_expressions_using_Where_it_behaves_like_And()
 		{
-			IDbConnection db = OpenDbConnection();
+			var db = OpenDbConnection();
 			db.Insert<Person>(People);
 
-			var visitor = Config.DialectProvider.ExpressionVisitor<Person>();
+			var visitor = db.DialectProvider.ExpressionVisitor<Person>();
 
 			visitor.Where(x => x.FirstName.StartsWith("Jim"));
 			visitor.Where(x => x.LastName.StartsWith("Hen"));
@@ -142,10 +142,10 @@ namespace SimpleStack.Orm.Tests
 		[Test]
 		public void Can_Chain_Order_Expressions_using_ThenBy()
 		{
-			IDbConnection db = OpenDbConnection();
+			var db = OpenDbConnection();
 			db.Insert<Person>(People);
 
-			var visitor = Config.DialectProvider.ExpressionVisitor<Person>();
+			var visitor = db.DialectProvider.ExpressionVisitor<Person>();
 			visitor.OrderBy(x => x.Age);
 			visitor.ThenBy(x => x.FirstName);
 

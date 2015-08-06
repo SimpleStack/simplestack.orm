@@ -59,7 +59,7 @@ namespace SimpleStack.Orm
 
         /// <summary>Gets or sets the SQL select all from table.</summary>
         /// <value>The SQL select all from table.</value>
-        public string SqlSelectAllFromTable { get; set; }
+        //public string SqlSelectAllFromTable { get; set; }
 
         /// <summary>Gets the primary key.</summary>
         /// <value>The primary key.</value>

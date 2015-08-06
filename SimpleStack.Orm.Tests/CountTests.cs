@@ -68,7 +68,7 @@ namespace SimpleStack.Orm.Tests
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		/// <param name="db">The database.</param>
 		/// <returns>An int.</returns>
-		long Count<T>(IDbConnection db) where T : IHasId<int>, new()
+		long Count<T>(OrmConnection db) where T : IHasId<int>, new()
 		{
 			T request = new T();
 			return db.GetScalar<T, long>(e => Sql.Count(request.Id));
@@ -78,7 +78,7 @@ namespace SimpleStack.Orm.Tests
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		/// <param name="db">The database.</param>
 		/// <returns>The total number of by column.</returns>
-		long CountByColumn<T>(IDbConnection db) where T : IHasCountColumn, new()
+		long CountByColumn<T>(OrmConnection db) where T : IHasCountColumn, new()
 		{
 			T request = new T();
 			return db.GetScalar<T, long?>(e => Sql.Count(request.CountColumn)).Value;
@@ -89,7 +89,7 @@ namespace SimpleStack.Orm.Tests
 		/// <param name="db">       The database.</param>
 		/// <param name="predicate">The predicate.</param>
 		/// <returns>An int.</returns>
-		int Count<T>(IDbConnection db, Expression<Func<T, bool>> predicate) where T : IHasId<int>, new()
+		int Count<T>(OrmConnection db, Expression<Func<T, bool>> predicate) where T : IHasId<int>, new()
 		{
 			return db.GetScalar<T, int>(e => Sql.Count(e.Id), predicate);
 		}
@@ -99,7 +99,7 @@ namespace SimpleStack.Orm.Tests
 		/// <param name="db">       The database.</param>
 		/// <param name="predicate">The predicate.</param>
 		/// <returns>The total number of by column.</returns>
-		int CountByColumn<T>(IDbConnection db, Expression<Func<T, bool>> predicate) where T : IHasCountColumn, new()
+		int CountByColumn<T>(OrmConnection db, Expression<Func<T, bool>> predicate) where T : IHasCountColumn, new()
 		{
 			return db.GetScalar<T, int?>(e => Sql.Count(e.CountColumn), predicate).Value;
 		}

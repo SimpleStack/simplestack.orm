@@ -72,8 +72,9 @@
     <Compile Include="Expressions\PredicateBuilder.cs" />
     <Compile Include="ITypeHandlerColumnType.cs" />
     <Compile Include="JoinSqlBuilder.cs" />
-    <Compile Include="OrmLiteConnection.cs" />
-    <Compile Include="OrmLiteTransaction.cs" />
+    <Compile Include="OrmCommand.cs" />
+    <Compile Include="OrmConnection.cs" />
+    <Compile Include="OrmTransaction.cs" />
     <Compile Include="SqlMapperAsync.cs" />
     <Compile Include="SqlMapperLinqAsync.cs" />
     <Compile Include="SqlMapperLinq.cs" />

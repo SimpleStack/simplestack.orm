@@ -159,7 +159,7 @@ namespace SimpleStack.Orm.Tests
 		{
 			SetupContext();
 
-			var visitor = Config.DialectProvider.ExpressionVisitor<TestType2>();
+			var visitor = _dialectProvider.ExpressionVisitor<TestType2>();
 			visitor.Where(q => Sql.In(q.TextCol, "asdf", "qwer"));
 			var target = OpenDbConnection().Select(visitor);
 			Assert.AreEqual(2, target.Count());
@@ -171,7 +171,7 @@ namespace SimpleStack.Orm.Tests
 		{
 			SetupContext();
 
-			var visitor = Config.DialectProvider.ExpressionVisitor<TestType2>();
+			var visitor = _dialectProvider.ExpressionVisitor<TestType2>();
 			visitor.Where(q => Sql.In(q.Id, 1, 2, 3));
 			var target = OpenDbConnection().Select(visitor);
 			Assert.AreEqual(3, target.Count());
@@ -183,7 +183,7 @@ namespace SimpleStack.Orm.Tests
 		{
 			SetupContext();
 
-			var visitor = Config.DialectProvider.ExpressionVisitor<TestType2>();
+			var visitor = _dialectProvider.ExpressionVisitor<TestType2>();
 			visitor.Where(q => Sql.In(q.Id, new[] { 1, 2, 3 }));
 			var target = OpenDbConnection().Select(visitor);
 			Assert.AreEqual(3, target.Count());
@@ -195,7 +195,7 @@ namespace SimpleStack.Orm.Tests
 		{
 			SetupContext();
 
-			var visitor = Config.DialectProvider.ExpressionVisitor<TestType2>();
+			var visitor = _dialectProvider.ExpressionVisitor<TestType2>();
 			visitor.Where(q => Sql.In(q.Id, new object[] { 1, 2, 3 }));
 			var target = OpenDbConnection().Select(visitor);
 			Assert.AreEqual(3, target.Count());
@@ -216,7 +216,7 @@ namespace SimpleStack.Orm.Tests
 		{
 			SetupContext();
 			var value = "ASDF";
-			var visitor = Config.DialectProvider.ExpressionVisitor<TestType2>();
+			var visitor = _dialectProvider.ExpressionVisitor<TestType2>();
 			visitor.Where(q => q.TextCol.ToUpper().StartsWith(value));
 			var target = OpenDbConnection().Select(visitor);
 			Assert.AreEqual(2, target.Count());
@@ -229,11 +229,11 @@ namespace SimpleStack.Orm.Tests
 			SetupContext();
 			var vals = new object[] { TestEnum.Val0, TestEnum.Val1 };
 
-			var visitor1 = Config.DialectProvider.ExpressionVisitor<TestType2>();
+			var visitor1 = _dialectProvider.ExpressionVisitor<TestType2>();
 			visitor1.Where(q => vals.Contains(q.EnumCol) || vals.Contains(q.EnumCol));
 			var sql1 = visitor1.ToSelectStatement();
 
-			var visitor2 = Config.DialectProvider.ExpressionVisitor<TestType2>();
+			var visitor2 = _dialectProvider.ExpressionVisitor<TestType2>();
 			visitor2.Where(q => Sql.In(q.EnumCol, vals) || Sql.In(q.EnumCol, vals));
 			var sql2 = visitor2.ToSelectStatement();
 
@@ -247,11 +247,11 @@ namespace SimpleStack.Orm.Tests
 			SetupContext();
 			var vals = new int[] { (int)TestEnum.Val0, (int)TestEnum.Val1 };
 
-			var visitor1 = Config.DialectProvider.ExpressionVisitor<TestType2>();
+			var visitor1 = _dialectProvider.ExpressionVisitor<TestType2>();
 			visitor1.Where(q => vals.Contains((int)q.EnumCol) || vals.Contains((int)q.EnumCol));
 			var sql1 = visitor1.ToSelectStatement();
 
-			var visitor2 = Config.DialectProvider.ExpressionVisitor<TestType2>();
+			var visitor2 = _dialectProvider.ExpressionVisitor<TestType2>();
 			visitor2.Where(q => Sql.In(q.EnumCol, vals) || Sql.In(q.EnumCol, vals));
 			var sql2 = visitor2.ToSelectStatement();
 

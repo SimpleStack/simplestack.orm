@@ -166,9 +166,9 @@ namespace SimpleStack.Orm
 					modelDef.FieldDefinitions.Add(fieldDefinition);
 			}
 
-			modelDef.SqlSelectAllFromTable = String.Format("SELECT {0} FROM {1} ",
-				Config.DialectProvider.GetColumnNames(modelDef),
-				Config.DialectProvider.GetQuotedTableName(modelDef));
+			//modelDef.SqlSelectAllFromTable = String.Format("SELECT {0} FROM {1} ",
+			//	Config.DialectProvider.GetColumnNames(modelDef),
+			//	Config.DialectProvider.GetQuotedTableName(modelDef));
 
 			Dictionary<Type, ModelDefinition> snapshot, newCache;
 			do

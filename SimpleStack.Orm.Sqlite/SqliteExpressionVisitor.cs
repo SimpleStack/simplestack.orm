@@ -91,5 +91,8 @@ namespace SimpleStack.Orm.Sqlite
 
 		//	return new PartialSqlString(statement);
 		//}
+	    public SqliteExpressionVisitor(IDialectProvider dialectProvider) : base(dialectProvider)
+	    {
+	    }
     }
 }

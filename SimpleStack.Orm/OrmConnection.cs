@@ -4,36 +4,33 @@ using System.Data.SqlClient;
 
 namespace SimpleStack.Orm
 {
-	public class OrmLiteConnection : IDbConnection
+	public class OrmConnection : IDbConnection
 	{
+		public IDialectProvider DialectProvider { get; }
+
+		public int CommandTimeout { get; set; }
+
 		/// <summary>Gets the transaction.</summary>
 		/// <value>The transaction.</value>
-		public OrmLiteTransaction Transaction { get; internal set; }
-
-		/// <summary>The database connection.</summary>
-		private IDbConnection dbConnection;
+		public OrmTransaction Transaction { get; internal set; }
 
 		/// <summary>true if this object is open.</summary>
-		private bool isOpen;
+		private bool _isOpen;
 
 		/// <summary>
-		/// Initializes a new instance of the NServiceKit.OrmLite.OrmLiteConnection class.
+		/// Initializes a new instance of the OrmLiteConnection class.
 		/// </summary>
-		/// <param name="factory">The factory.</param>
-		public OrmLiteConnection(IDbConnection connection)
+		/// <param name="connection"></param>
+		/// <param name="dialectProvider"></param>
+		public OrmConnection(IDbConnection connection, IDialectProvider dialectProvider)
 		{
-			dbConnection = connection;
+			DialectProvider = dialectProvider;
+			DbConnection = connection;
 		}
 
 		/// <summary>Gets the database connection.</summary>
 		/// <value>The database connection.</value>
-		public IDbConnection DbConnection
-		{
-			get
-			{
-				return dbConnection;
-			}
-		}
+		public IDbConnection DbConnection { get; private set; }
 
 		/// <summary>
 		/// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged
@@ -51,9 +48,9 @@ namespace SimpleStack.Orm
 				if (DbConnection != null)
 				{
 					DbConnection.Dispose();
-					dbConnection = null;
+					DbConnection = null;
 				}
-				isOpen = false;
+				_isOpen = false;
 			}
 		}
 
@@ -61,7 +58,7 @@ namespace SimpleStack.Orm
 		/// <returns>An object representing the new transaction.</returns>
 		public IDbTransaction BeginTransaction()
 		{
-			Transaction = new OrmLiteTransaction(this, DbConnection.BeginTransaction());
+			Transaction = new OrmTransaction(this, DbConnection.BeginTransaction());
 			return Transaction;
 		}
 
@@ -74,7 +71,7 @@ namespace SimpleStack.Orm
 		/// ### <param name="il">One of the <see cref="T:System.Data.IsolationLevel" /> values.</param>
 		public IDbTransaction BeginTransaction(IsolationLevel isolationLevel)
 		{
-			Transaction = new OrmLiteTransaction(this, DbConnection.BeginTransaction(isolationLevel));
+			Transaction = new OrmTransaction(this, DbConnection.BeginTransaction(isolationLevel));
 			return Transaction;
 		}
 
@@ -82,6 +79,7 @@ namespace SimpleStack.Orm
 		public void Close()
 		{
 			DbConnection.Close();
+			_isOpen = false;
 		}
 
 		/// <summary>Changes the current database for an open Connection object.</summary>
@@ -95,12 +93,12 @@ namespace SimpleStack.Orm
 		/// <returns>A Command object associated with the connection.</returns>
 		public IDbCommand CreateCommand()
 		{
-			var cmd = DbConnection.CreateCommand();
+			var cmd = new OrmCommand(DbConnection.CreateCommand());
 			if (Transaction != null)
 			{
 				cmd.Transaction = Transaction.trans;
 			}
-			cmd.CommandTimeout = Config.CommandTimeout;
+			cmd.CommandTimeout = CommandTimeout;
 			return cmd;
 		}
 
@@ -110,11 +108,11 @@ namespace SimpleStack.Orm
 		/// </summary>
 		public void Open()
 		{
-			if (isOpen) 
+			if (_isOpen)
 				return;
 
 			DbConnection.Open();
-			isOpen = true;
+			_isOpen = true;
 		}
 
 		/// <summary>Gets or sets the string used to open a database.</summary>
@@ -132,10 +130,7 @@ namespace SimpleStack.Orm
 		/// <value>
 		/// The time (in seconds) to wait for a connection to open. The default value is 15 seconds.
 		/// </value>
-		public int ConnectionTimeout
-		{
-			get { return DbConnection.ConnectionTimeout; }
-		}
+		public int ConnectionTimeout => DbConnection.ConnectionTimeout;
 
 		/// <summary>
 		/// Gets the name of the current database or the database to be used after a connection is opened.
@@ -144,16 +139,10 @@ namespace SimpleStack.Orm
 		/// The name of the current database or the name of the database to be used once a connection is
 		/// open. The default value is an empty string.
 		/// </value>
-		public string Database
-		{
-			get { return DbConnection.Database; }
-		}
+		public string Database => DbConnection.Database;
 
 		/// <summary>Gets the current state of the connection.</summary>
 		/// <value>One of the <see cref="T:System.Data.ConnectionState" /> values.</value>
-		public ConnectionState State
-		{
-			get { return DbConnection.State; }
-		}
+		public ConnectionState State => DbConnection.State;
 	}
 }

@@ -206,7 +206,7 @@ namespace SimpleStack.Orm.SqlServer
 		/// <returns>A SqlExpressionVisitor&lt;T&gt;</returns>
 		public override SqlExpressionVisitor<T> ExpressionVisitor<T>()
 		{
-			return new SqlServerExpressionVisitor<T>();
+			return new SqlServerExpressionVisitor<T>(this);
 		}
 
 		/// <summary>Query if 'dbCmd' does table exist.</summary>
@@ -385,7 +385,7 @@ namespace SimpleStack.Orm.SqlServer
 			//todo: review needed only check against sql server 2008 R2
 
 			var selectExpression = visitor.SelectExpression.Remove(visitor.SelectExpression.IndexOf("FROM")).Trim(); //0
-			var tableName = Config.DialectProvider.GetQuotedTableName(visitor.ModelDefinition).Trim(); //2
+			var tableName = GetQuotedTableName(visitor.ModelDefinition).Trim(); //2
 			var statement = string.Format("{0} {1} {2}", visitor.WhereExpression, visitor.GroupByExpression, visitor.HavingExpression).Trim();
 
 			var retVal = string.Format(
@@ -416,7 +416,7 @@ namespace SimpleStack.Orm.SqlServer
 			if (modelDefinition.PrimaryKey == null)
 				throw new ApplicationException("Malformed model, no PrimaryKey defined");
 
-			return String.Format("ORDER BY {0}", Config.DialectProvider.GetQuotedColumnName(modelDefinition.PrimaryKey.FieldName));
+			return String.Format("ORDER BY {0}", GetQuotedColumnName(modelDefinition.PrimaryKey.FieldName));
 		}
 
 		public override string GetLimitExpression(int? skip, int? rows)

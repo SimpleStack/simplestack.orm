@@ -8,6 +8,10 @@ namespace SimpleStack.Orm.MySQL
 	/// <typeparam name="T">Generic type parameter.</typeparam>
 	public class MySqlExpressionVisitor<T> : SqlExpressionVisitor<T>
 	{
+		public MySqlExpressionVisitor(IDialectProvider dialectProvider) : base(dialectProvider)
+		{
+		}
+
 		/// <summary>Visit column access method.</summary>
 		/// <param name="m">The MethodCallExpression to process.</param>
 		/// <returns>An object.</returns>

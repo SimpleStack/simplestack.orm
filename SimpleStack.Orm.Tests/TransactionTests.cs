@@ -256,7 +256,7 @@ namespace SimpleStack.Orm.Tests
 				db.Insert(new ModelWithIdAndName(1));
 
 				using (var scope = new TransactionScope())
-				using (var db2 = Config.DialectProvider.CreateConnection(ConnectionString))
+				using (var db2 = _dialectProvider.CreateConnection(ConnectionString))
 				{
 					db2.Open();
 
@@ -282,7 +282,7 @@ namespace SimpleStack.Orm.Tests
 				db.Insert(new ModelWithIdAndName(1));
 
 				using (var scope = new TransactionScope())
-				using (var db2 = Config.DialectProvider.CreateConnection(ConnectionString))
+				using (var db2 = _dialectProvider.CreateConnection(ConnectionString))
 				{
 					db2.Open();
 
@@ -309,7 +309,7 @@ namespace SimpleStack.Orm.Tests
 				db1.Insert(new ModelWithIdAndName(1));
 
 				using (var scope = new TransactionScope())
-				using(var db = Config.DialectProvider.CreateConnection(ConnectionString))
+				using(var db = _dialectProvider.CreateConnection(ConnectionString))
 				{
 					db.Open();
 

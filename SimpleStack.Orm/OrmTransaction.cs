@@ -2,28 +2,26 @@
 
 namespace SimpleStack.Orm
 {
-	public class OrmLiteTransaction : IDbTransaction
+	public class OrmTransaction : IDbTransaction
 	{
 		/// <summary>The previous transaction.</summary>
-		private readonly OrmLiteTransaction prevTrans;
+		private readonly OrmTransaction prevTrans;
 
 		/// <summary>The transaction.</summary>
 		internal readonly IDbTransaction trans;
 
 		/// <summary>The database.</summary>
-		private readonly IDbConnection db;
+		private readonly OrmConnection db;
 
 		/// <summary>
 		/// Initializes a new instance of the NServiceKit.OrmLite.OrmLiteTransaction class.
 		/// </summary>
 		/// <param name="db">   The database.</param>
 		/// <param name="trans">The transaction.</param>
-		public OrmLiteTransaction(IDbConnection db, IDbTransaction trans)
+		internal OrmTransaction(OrmConnection db, IDbTransaction trans)
 		{
 			this.db = db;
 			this.trans = trans;
-			prevTrans = Config.TSTransaction;
-			Config.TSTransaction = this;
 		}
 
 		/// <summary>
@@ -39,19 +37,7 @@ namespace SimpleStack.Orm
 		{
 			if (disposing)
 			{
-				try
-				{
-					trans.Dispose();
-				}
-				finally
-				{
-					Config.TSTransaction = prevTrans;
-					var ormLiteDbConn = this.db as OrmLiteConnection;
-					if (ormLiteDbConn != null)
-					{
-						ormLiteDbConn.Transaction = prevTrans;
-					}
-				}
+				trans.Dispose();
 			}
 		}
 

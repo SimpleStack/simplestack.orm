@@ -1,12 +1,16 @@
 using SimpleStack.Orm.Expressions;
 
-namespace NServiceKit.OrmLite.PostgreSQL
+namespace SimpleStack.Orm.PostgreSQL
 {
     /// <summary>A postgre SQL expression visitor.</summary>
     /// <typeparam name="T">Generic type parameter.</typeparam>
 	public class PostgreSQLExpressionVisitor<T>:SqlExpressionVisitor<T>
 	{
-        /// <summary>Gets the limit expression.</summary>
+	    public PostgreSQLExpressionVisitor(IDialectProvider dialectProvider) : base(dialectProvider)
+	    {
+	    }
+
+	    /// <summary>Gets the limit expression.</summary>
         /// <value>The limit expression.</value>
 		public override string LimitExpression{
 			get{

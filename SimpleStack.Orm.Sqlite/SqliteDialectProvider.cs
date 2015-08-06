@@ -212,7 +212,7 @@ namespace SimpleStack.Orm.Sqlite
 		/// <returns>A SqlExpressionVisitor&lt;T&gt;</returns>
 		public override SqlExpressionVisitor<T> ExpressionVisitor<T>()
 		{
-			return new SqliteExpressionVisitor<T>();
+			return new SqliteExpressionVisitor<T>(this);
 		}
 
 		/// <summary>Query if 'dbCmd' does table exist.</summary>

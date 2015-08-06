@@ -172,9 +172,9 @@ namespace SimpleStack.Orm
 		/// <summary>Creates a connection.</summary>
 		/// <param name="connectionString">Connection String.</param>
 		/// <returns>The new connection.</returns>
-		public OrmLiteConnection CreateConnection(string connectionString)
+		public OrmConnection CreateConnection(string connectionString)
 		{
-			return new OrmLiteConnection(CreateIDbConnection(connectionString));
+			return new OrmConnection(CreateIDbConnection(connectionString),this);
 		}
 
 		public abstract IDbConnection CreateIDbConnection(string connectionString);
@@ -377,7 +377,7 @@ namespace SimpleStack.Orm
 					sbColumnValues.Append(',');
 				}
 
-				string paramName = Config.DialectProvider.GetParameterName(parameters.Count);
+				string paramName = GetParameterName(parameters.Count);
 				sbColumnValues.Append(paramName);
 				parameters.Add(paramName, fieldDef.GetValue(objWithProperties));
 				isFirstField = false;
@@ -477,7 +477,7 @@ namespace SimpleStack.Orm
 					{
 						sql.Append(",");
 					}
-					var paramName = Config.DialectProvider.GetParameterName(parameters.Count);
+					var paramName = GetParameterName(parameters.Count);
 					sql.AppendFormat("{0} = {1}", GetQuotedColumnName(fieldDef.FieldName), paramName);
 					parameters.Add(paramName, fieldDef.GetValue(objWithProperties));
 				}
@@ -691,7 +691,12 @@ namespace SimpleStack.Orm
 		/// <returns>The column names.</returns>
 		public virtual string GetColumnNames(ModelDefinition modelDef)
 		{
-			return modelDef.GetColumnNames();
+			var sqlColumns = new StringBuilder();
+			modelDef.FieldDefinitions.ForEach(x =>
+				sqlColumns.AppendFormat("{0}{1} ", sqlColumns.Length > 0 ? "," : "",
+				  GetQuotedColumnName(x.FieldName)));
+
+			return sqlColumns.ToString();
 		}
 
 		/// <summary>Converts a tableType to a create sequence statements.</summary>
@@ -1126,7 +1131,7 @@ namespace SimpleStack.Orm
 
 		public virtual string GetDropTableStatement(ModelDefinition modelDef)
 		{
-			return "DROP TABLE " + Config.DialectProvider.GetQuotedTableName(modelDef);
+			return "DROP TABLE " + GetQuotedTableName(modelDef);
 		}
 	}
 }

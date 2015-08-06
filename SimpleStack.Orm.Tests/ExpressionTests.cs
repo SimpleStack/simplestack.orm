@@ -20,6 +20,8 @@ namespace SimpleStack.Orm.Tests
 	[TestFixture]
     public abstract partial class ExpressionTests
 	{
+		private readonly IDialectProvider _dialectProvider;
+
 		public class EnumAsStringTypeHandler<T> : SqlMapper.ITypeHandler
 		{
 			public void SetValue(IDbDataParameter parameter, object value)
@@ -48,7 +50,13 @@ namespace SimpleStack.Orm.Tests
 			}
 		}
 
-		private OrmLiteConnection _conn;
+		private OrmConnection _conn;
+
+		protected ExpressionTests(IDialectProvider dialectProvider)
+		{
+			_dialectProvider = dialectProvider;
+		}
+
 		[SetUp]
 		public void Setup()
 		{
@@ -57,8 +65,7 @@ namespace SimpleStack.Orm.Tests
 				_conn.Dispose();
 				_conn = null;
 			}
-
-			SetupDialectProvider();
+			
 			OpenDbConnection().CreateTable<TestType>(true);
 			OpenDbConnection().CreateTable<Person>(true);
 
@@ -67,15 +74,13 @@ namespace SimpleStack.Orm.Tests
 			SqlMapper.ResetTypeHandlers();
 		}
 
-		protected abstract void SetupDialectProvider();
-
 		protected abstract string ConnectionString { get; }
 
-		protected IDbConnection OpenDbConnection()
+		protected OrmConnection OpenDbConnection()
 		{
 			if (_conn?.DbConnection == null)
 			{
-				_conn = Config.DialectProvider.CreateConnection(ConnectionString);
+				_conn = _dialectProvider.CreateConnection(ConnectionString);
 				_conn.Open();
 			}
 			return _conn;
@@ -148,57 +153,40 @@ namespace SimpleStack.Orm.Tests
 			}
 		}
 
-		protected override void SetupDialectProvider()
+		public PostgreSQLTests() : base(new TestDialectProvier())
 		{
-			Config.DialectProvider = new TestDialectProvier();
 		}
 
-		protected override string ConnectionString
-		{
-			get { return "server=localhost;user=postgres;password=depfac$2000;database=test;Enlist=true"; }
-		}
+		protected override string ConnectionString => "server=localhost;user=postgres;password=depfac$2000;database=test;Enlist=true";
 	}
 	public class MySQLTests : ExpressionTests
 	{
-		protected override void SetupDialectProvider()
-		{
-			Config.DialectProvider = new MySqlDialectProvider();
-		}
+		protected override string ConnectionString => "server=localhost;user=root;password=depfac$2000;database=df_core_test";
 
-		protected override string ConnectionString
+		public MySQLTests() : base(new MySqlDialectProvider())
 		{
-			get { return "server=localhost;user=root;password=depfac$2000;database=df_core_test"; }
 		}
 	}
 	public class SQLServerTests : ExpressionTests
 	{
-		protected override void SetupDialectProvider()
+		public SQLServerTests() : base(new SqlServerDialectProvider())
 		{
-			Config.DialectProvider = new SqlServerDialectProvider();
 		}
 
-		protected override string ConnectionString
-		{
-			get { return @"server=.\SqlExpress;Trusted_Connection=true;database=testdb"; }
-		}
+		protected override string ConnectionString => @"server=.\SqlExpress;Trusted_Connection=true;database=testdb";
 	}
 	public class SQLLiteTests : ExpressionTests
 	{
-		protected override void SetupDialectProvider()
+		public SQLLiteTests() : base(new SqliteDialectProvider
 		{
-			Config.DialectProvider = new SqliteDialectProvider
-			{
-				BinaryGUID = false,
-				Compress = true,
-				UTF8Encoded = true,
-				DateTimeFormatAsTicks = false
-			};
+			BinaryGUID = false,
+			Compress = true,
+			UTF8Encoded = true,
+			DateTimeFormatAsTicks = false
+		})
+		{
 		}
 
-		protected override string ConnectionString
-		{
-			get { return @"Data Source=e:\mydb.db;Version=3;New=True;"; }
-			//get { return @":memory:"; }
-		}
+		protected override string ConnectionString => @"Data Source=e:\mydb.db;Version=3;New=True;";
 	}
 }

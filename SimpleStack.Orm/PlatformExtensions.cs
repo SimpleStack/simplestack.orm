@@ -48,24 +48,24 @@ namespace SimpleStack.Orm
 		/// <summary>A ModelDefinition extension method that gets column names.</summary>
 		/// <param name="tableType">The tableType to act on.</param>
 		/// <returns>The column names.</returns>
-		internal static string GetColumnNames(this Type tableType)
-		{
-			var modelDefinition = tableType.GetModelDefinition();
-			return GetColumnNames(modelDefinition);
-		}
+		//internal static string GetColumnNames(this Type tableType)
+		//{
+		//	var modelDefinition = tableType.GetModelDefinition();
+		//	return GetColumnNames(modelDefinition);
+		//}
 
 		/// <summary>A ModelDefinition extension method that gets column names.</summary>
 		/// <param name="modelDef">The modelDef to act on.</param>
 		/// <returns>The column names.</returns>
-		public static string GetColumnNames(this ModelDefinition modelDef)
-		{
-			var sqlColumns = new StringBuilder();
-			modelDef.FieldDefinitions.ForEach(x =>
-				sqlColumns.AppendFormat("{0}{1} ", sqlColumns.Length > 0 ? "," : "",
-				  Config.DialectProvider.GetQuotedColumnName(x.FieldName)));
+		//public static string GetColumnNames(this ModelDefinition modelDef)
+		//{
+		//	var sqlColumns = new StringBuilder();
+		//	modelDef.FieldDefinitions.ForEach(x =>
+		//		sqlColumns.AppendFormat("{0}{1} ", sqlColumns.Length > 0 ? "," : "",
+		//		  Config.DialectProvider.GetQuotedColumnName(x.FieldName)));
 
-			return sqlColumns.ToString();
-		}
+		//	return sqlColumns.ToString();
+		//}
 
 		/// <summary>A string extension method that SQL format.</summary>
 		/// <param name="sqlText">  The sqlText to act on.</param>

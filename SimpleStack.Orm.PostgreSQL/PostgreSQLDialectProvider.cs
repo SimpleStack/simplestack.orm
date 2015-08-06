@@ -5,7 +5,6 @@ using System.Text;
 using Dapper;
 using SimpleStack.Orm.Expressions;
 using Npgsql;
-using NServiceKit.OrmLite.PostgreSQL;
 
 namespace SimpleStack.Orm.PostgreSQL
 {
@@ -175,7 +174,7 @@ namespace SimpleStack.Orm.PostgreSQL
 		/// <returns>A SqlExpressionVisitor&lt;T&gt;</returns>
 		public override SqlExpressionVisitor<T> ExpressionVisitor<T>()
 		{
-			return new PostgreSQLExpressionVisitor<T>();
+			return new PostgreSQLExpressionVisitor<T>(this);
 		}
 
 		/// <summary>Query if 'dbCmd' does table exist.</summary>
@@ -270,7 +269,7 @@ namespace SimpleStack.Orm.PostgreSQL
 
 		public override string GetDropTableStatement(ModelDefinition modelDef)
 		{
-			return "DROP TABLE " + Config.DialectProvider.GetQuotedTableName(modelDef) + " CASCADE";
+			return "DROP TABLE " + GetQuotedTableName(modelDef) + " CASCADE";
 		}
 	}
 }

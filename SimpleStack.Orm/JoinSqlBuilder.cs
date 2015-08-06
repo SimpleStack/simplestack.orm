@@ -11,6 +11,7 @@ namespace SimpleStack.Orm
 	/// <typeparam name="TBasePoco">Type of the base poco.</typeparam>
 	public class JoinSqlBuilder<TNewPoco, TBasePoco>
 	{
+		private readonly IDialectProvider _dialectProvider;
 		private IDictionary<string,object> _parameters = new Dictionary<string, object>();
 
 		/// <summary>List of joins.</summary>
@@ -44,8 +45,9 @@ namespace SimpleStack.Orm
 		/// Initializes a new instance of the NServiceKit.OrmLite.JoinSqlBuilder&lt;TNewPoco,
 		/// TBasePoco&gt; class.
 		/// </summary>
-		public JoinSqlBuilder()
+		public JoinSqlBuilder(IDialectProvider dialectProvider)
 		{
+			_dialectProvider = dialectProvider;
 			basePocoType = typeof(TBasePoco);
 			baseSchema = GetSchema(basePocoType);
 			baseTableName = basePocoType.GetModelDefinition().ModelName;
@@ -98,9 +100,9 @@ namespace SimpleStack.Orm
 			foreach (var item in pocoType.GetModelDefinition().FieldDefinitions)
 			{
 				if (withTablePrefix)
-					result.Add(string.Format("{0}.{1}", Config.DialectProvider.GetQuotedTableName(tableName), Config.DialectProvider.GetQuotedColumnName(item.FieldName)));
+					result.Add(string.Format("{0}.{1}", _dialectProvider.GetQuotedTableName(tableName), _dialectProvider.GetQuotedColumnName(item.FieldName)));
 				else
-					result.Add(string.Format("{0}", Config.DialectProvider.GetQuotedColumnName(item.FieldName)));
+					result.Add(string.Format("{0}", _dialectProvider.GetQuotedColumnName(item.FieldName)));
 			}
 			return result;
 		}
@@ -143,9 +145,9 @@ namespace SimpleStack.Orm
 				var fieldName = pocoType.GetModelDefinition().FieldDefinitions.First(f => f.Name == m.Member.Name).FieldName;
 
 				if (withTablePrefix)
-					lst.Add(string.Format("{0}.{1}{2}", Config.DialectProvider.GetQuotedTableName(tableName), Config.DialectProvider.GetQuotedColumnName(fieldName), string.IsNullOrEmpty(alias) ? string.Empty : string.Format(" AS {0}", Config.DialectProvider.GetQuotedColumnName(alias))));
+					lst.Add(string.Format("{0}.{1}{2}", _dialectProvider.GetQuotedTableName(tableName), _dialectProvider.GetQuotedColumnName(fieldName), string.IsNullOrEmpty(alias) ? string.Empty : string.Format(" AS {0}", _dialectProvider.GetQuotedColumnName(alias))));
 				else
-					lst.Add(string.Format("{0}{1}", Config.DialectProvider.GetQuotedColumnName(fieldName), string.IsNullOrEmpty(alias) ? string.Empty : string.Format(" AS {0}", Config.DialectProvider.GetQuotedColumnName(alias))));
+					lst.Add(string.Format("{0}{1}", _dialectProvider.GetQuotedColumnName(fieldName), string.IsNullOrEmpty(alias) ? string.Empty : string.Format(" AS {0}", _dialectProvider.GetQuotedColumnName(alias))));
 				return;
 			}
 			throw new Exception("Only Members are allowed");
@@ -369,7 +371,7 @@ namespace SimpleStack.Orm
 			{
 				throw new Exception("Either the source or destination table should be associated ");
 			}
-			var ev = Config.DialectProvider.ExpressionVisitor<T>();
+			var ev = _dialectProvider.ExpressionVisitor<T>();
 			ev.WhereStatementWithoutWhereString = true;
 			ev.PrefixFieldWithTableName = true;
 			ev.Where(where);
@@ -575,7 +577,7 @@ namespace SimpleStack.Orm
 			
 			if (sourceWhere != null)
 			{
-				var ev = Config.DialectProvider.ExpressionVisitor<TSourceTable>();
+				var ev = _dialectProvider.ExpressionVisitor<TSourceTable>();
 				ev.CopyExistingParameters(_parameters);
 				ev.WhereStatementWithoutWhereString = true;
 				ev.PrefixFieldWithTableName = true;
@@ -590,7 +592,7 @@ namespace SimpleStack.Orm
 
 			if (destinationWhere != null)
 			{
-				var ev = Config.DialectProvider.ExpressionVisitor<TDestinationTable>();
+				var ev = _dialectProvider.ExpressionVisitor<TDestinationTable>();
 				ev.CopyExistingParameters(_parameters);
 				ev.WhereStatementWithoutWhereString = true;
 				ev.PrefixFieldWithTableName = true;
@@ -682,15 +684,15 @@ namespace SimpleStack.Orm
 
 				foreach (var fi in modelDef.FieldDefinitions)
 				{
-					colSB.AppendFormat("{0}{1}", colSB.Length > 0 ? "," : "", (String.IsNullOrEmpty(fi.BelongToModelName) ? (Config.DialectProvider.GetQuotedTableName(modelDef.ModelName)) : (Config.DialectProvider.GetQuotedTableName(fi.BelongToModelName))) + "." + Config.DialectProvider.GetQuotedColumnName(fi.FieldName));
+					colSB.AppendFormat("{0}{1}", colSB.Length > 0 ? "," : "", (String.IsNullOrEmpty(fi.BelongToModelName) ? (_dialectProvider.GetQuotedTableName(modelDef.ModelName)) : (_dialectProvider.GetQuotedTableName(fi.BelongToModelName))) + "." + _dialectProvider.GetQuotedColumnName(fi.FieldName));
 				}
 				if (colSB.Length == 0)
-					colSB.AppendFormat("\"{0}{1}\".*", baseSchema, Config.DialectProvider.GetQuotedTableName(baseTableName));
+					colSB.AppendFormat("\"{0}{1}\".*", baseSchema, _dialectProvider.GetQuotedTableName(baseTableName));
 			}
 
 			sb.Append(colSB.ToString() + " \n");
 
-			sb.AppendFormat("FROM {0}{1} \n", baseSchema, Config.DialectProvider.GetQuotedTableName(baseTableName));
+			sb.AppendFormat("FROM {0}{1} \n", baseSchema, _dialectProvider.GetQuotedTableName(baseTableName));
 			int i = 0;
 			foreach (var join in joinList)
 			{
@@ -710,17 +712,17 @@ namespace SimpleStack.Orm
 
 				if (join.JoinType == JoinType.CROSS)
 				{
-					sb.AppendFormat(" {0}{1} ON {2} = {3}  \n", join.RefTypeSchema, Config.DialectProvider.GetQuotedTableName(join.RefTypeTableName));
+					sb.AppendFormat(" {0}{1} ON {2} = {3}  \n", join.RefTypeSchema, _dialectProvider.GetQuotedTableName(join.RefTypeTableName));
 				}
 				else
 				{
 					if (join.JoinType != JoinType.SELF)
 					{
-						sb.AppendFormat(" {0}{1} ON {2} = {3}  \n", join.RefTypeSchema, Config.DialectProvider.GetQuotedTableName(join.RefTypeTableName), join.Class1ColumnName, join.Class2ColumnName);
+						sb.AppendFormat(" {0}{1} ON {2} = {3}  \n", join.RefTypeSchema, _dialectProvider.GetQuotedTableName(join.RefTypeTableName), join.Class1ColumnName, join.Class2ColumnName);
 					}
 					else
 					{
-						sb.AppendFormat(" {0}{1} AS {2} ON {2}.{3} = \"{1}\".{4}  \n", join.RefTypeSchema, Config.DialectProvider.GetQuotedTableName(join.RefTypeTableName), Config.DialectProvider.GetQuotedTableName(join.RefTypeTableName) + "_" + i.ToString(), join.Class1ColumnName, join.Class2ColumnName);
+						sb.AppendFormat(" {0}{1} AS {2} ON {2}.{3} = \"{1}\".{4}  \n", join.RefTypeSchema, _dialectProvider.GetQuotedTableName(join.RefTypeTableName), _dialectProvider.GetQuotedTableName(join.RefTypeTableName) + "_" + i.ToString(), join.Class1ColumnName, join.Class2ColumnName);
 					}
 				}
 			}

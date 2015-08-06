@@ -15,6 +15,8 @@ namespace SimpleStack.Orm.Expressions
 	/// <typeparam name="T">Generic type parameter.</typeparam>
 	public abstract class SqlExpressionVisitor<T>
 	{
+		protected IDialectProvider DialectProvider { get; }
+
 		private readonly IDictionary<string, object> _parameters = new Dictionary<string, object>();
 
 		/// <summary>The order by properties.</summary>
@@ -62,8 +64,9 @@ namespace SimpleStack.Orm.Expressions
 		/// <summary>
 		///     Initializes a new instance of the NServiceKit.OrmLite.SqlExpressionVisitor&lt;T&gt; class.
 		/// </summary>
-		protected SqlExpressionVisitor()
+		protected SqlExpressionVisitor(IDialectProvider dialectProvider)
 		{
+			DialectProvider = dialectProvider;
 			_modelDef = typeof(T).GetModelDefinition();
 			PrefixFieldWithTableName = false;
 		}
@@ -138,7 +141,7 @@ namespace SimpleStack.Orm.Expressions
 		{
 			get
 			{
-				return Config.DialectProvider.GetLimitExpression(Skip, Rows);
+				return DialectProvider.GetLimitExpression(Skip, Rows);
 			}
 		}
 
@@ -603,7 +606,7 @@ namespace SimpleStack.Orm.Expressions
 		/// <returns>This object as a string.</returns>
 		public virtual string ToDeleteRowStatement()
 		{
-			return Config.DialectProvider.ToDeleteRowStatement(this);
+			return DialectProvider.ToDeleteRowStatement(this);
 		}
 
 		/// <summary>Converts this object to an update statement.</summary>
@@ -613,7 +616,7 @@ namespace SimpleStack.Orm.Expressions
 		public virtual string ToUpdateStatement(T item, bool excludeDefaults = false)
 		{
 			var setFields = new StringBuilder();
-			var dialectProvider = Config.DialectProvider;
+			var dialectProvider = DialectProvider;
 
 			foreach (var fieldDef in _modelDef.FieldDefinitions)
 			{
@@ -640,14 +643,14 @@ namespace SimpleStack.Orm.Expressions
 		/// <returns>This object as a string.</returns>
 		public virtual string ToSelectStatement()
 		{
-			return Config.DialectProvider.ToSelectStatement(this);
+			return DialectProvider.ToSelectStatement(this);
 		}
 
 		/// <summary>Converts this object to a count statement.</summary>
 		/// <returns>This object as a string.</returns>
 		public virtual string ToCountStatement()
 		{
-			return Config.DialectProvider.ToCountStatement(this);
+			return DialectProvider.ToCountStatement(this);
 		}
 
 		/// <summary>Visits the given exponent.</summary>
@@ -837,12 +840,12 @@ namespace SimpleStack.Orm.Expressions
 				if (propertyInfo.PropertyType.IsEnum)
 					return
 						new EnumMemberAccess(
-							(PrefixFieldWithTableName ? Config.DialectProvider.GetQuotedTableName(_modelDef.ModelName) + "." : "") +
+							(PrefixFieldWithTableName ? DialectProvider.GetQuotedTableName(_modelDef.ModelName) + "." : "") +
 							GetQuotedColumnName(m.Member.Name), propertyInfo.PropertyType);
 
 				return
 					new PartialSqlString((PrefixFieldWithTableName
-						? Config.DialectProvider.GetQuotedTableName(_modelDef.ModelName) + "."
+						? DialectProvider.GetQuotedTableName(_modelDef.ModelName) + "."
 						: "") + GetQuotedColumnName(m.Member.Name));
 			}
 
@@ -1057,7 +1060,7 @@ namespace SimpleStack.Orm.Expressions
 			{
 				var fd = _modelDef.FieldDefinitions.FirstOrDefault(x => x.Name == memberName);
 				var fn = fd != default(FieldDefinition) ? fd.FieldName : memberName;
-				return Config.DialectProvider.GetQuotedColumnName(fn);
+				return DialectProvider.GetQuotedColumnName(fn);
 			}
 			return memberName;
 		}
@@ -1085,7 +1088,7 @@ namespace SimpleStack.Orm.Expressions
 			var fd =
 				_modelDef.FieldDefinitions.
 					FirstOrDefault(x =>
-						Config.DialectProvider.
+						DialectProvider.
 							GetQuotedColumnName(x.FieldName) == quotedExp.ToString());
 			return (fd != default(FieldDefinition));
 		}
@@ -1126,9 +1129,9 @@ namespace SimpleStack.Orm.Expressions
 			_selectExpression = string.Format("SELECT {0}{1} \nFROM {2}",
 				(IsDistinct ? "DISTINCT " : String.Empty),
 				(_fields.Count == 0)
-					? Config.DialectProvider.GetColumnNames(_modelDef)
+					? DialectProvider.GetColumnNames(_modelDef)
 					: _fields.Aggregate((x, y) => x + ", " + y),
-				Config.DialectProvider.GetQuotedTableName(_modelDef));
+				DialectProvider.GetQuotedTableName(_modelDef));
 		}
 
 		/// <summary>Gets all fields.</summary>
@@ -1263,7 +1266,7 @@ namespace SimpleStack.Orm.Expressions
 					break;
 				case "As":
 					statement = string.Format("{0} As {1}", quotedColName,
-						Config.DialectProvider.GetQuotedColumnName(RemoveQuoteFromAlias(args[0].ToString())));
+						DialectProvider.GetQuotedColumnName(RemoveQuoteFromAlias(args[0].ToString())));
 					break;
 				case "Sum":
 				case "Count":
@@ -1358,7 +1361,7 @@ namespace SimpleStack.Orm.Expressions
 		/// <returns></returns>
 		protected string AddParameter(object param)
 		{
-			string paramName = Config.DialectProvider.GetParameterName(_parameters.Count);
+			string paramName = DialectProvider.GetParameterName(_parameters.Count);
 			_parameters.Add(paramName, param);
 			return paramName;
 		}
