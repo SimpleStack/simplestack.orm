@@ -48,7 +48,7 @@ namespace SimpleStack.Orm.Tests
 			}
 		}
 
-		private IDbConnection _conn;
+		private OrmLiteConnection _conn;
 		[SetUp]
 		public void Setup()
 		{
@@ -73,7 +73,7 @@ namespace SimpleStack.Orm.Tests
 
 		protected IDbConnection OpenDbConnection()
 		{
-			if (_conn == null || _conn.State != ConnectionState.Open)
+			if (_conn?.DbConnection == null)
 			{
 				_conn = Config.DialectProvider.CreateConnection(ConnectionString);
 				_conn.Open();
@@ -198,6 +198,7 @@ namespace SimpleStack.Orm.Tests
 		protected override string ConnectionString
 		{
 			get { return @"Data Source=e:\mydb.db;Version=3;New=True;"; }
+			//get { return @":memory:"; }
 		}
 	}
 }

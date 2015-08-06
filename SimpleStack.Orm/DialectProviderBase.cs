@@ -343,7 +343,8 @@ namespace SimpleStack.Orm
 			return sql.ToString();
 		}
 
-		public virtual CommandDefinition ToInsertRowStatement<T>(IEnumerable<T> objsWithProperties, ICollection<string> insertFields = null)// where T : new()
+		public virtual CommandDefinition ToInsertRowStatement<T>(T objWithProperties, ICollection<string> insertFields = null)
+			// where T : new()
 		{
 			if (insertFields == null)
 				insertFields = new List<string>();
@@ -351,61 +352,107 @@ namespace SimpleStack.Orm
 			var sbColumnNames = new StringBuilder();
 			var sbColumnValues = new StringBuilder();
 
-			ModelDefinition modelDef = null;
-			List<FieldDefinition> fieldDefs = null;
+			ModelDefinition modelDef = objWithProperties.GetType().GetModelDefinition();
+			List<FieldDefinition> fieldDefs = modelDef.FieldDefinitions
+				.Where(fieldDef => !fieldDef.IsComputed)
+				.Where(fieldDef => !fieldDef.AutoIncrement)
+				.Where(fieldDef => insertFields.Count <= 0 || insertFields.Contains(fieldDef.Name)).ToList();
 
 			var parameters = new Dictionary<string, object>();
 
-			var mustLoadColumnNames = true;
-			foreach (var obj in objsWithProperties)
+			sbColumnValues.Append('(');
+			
+			var isFirstField = true;
+			foreach (var fieldDef in fieldDefs)
 			{
-				if (modelDef == null)
+				if (!isFirstField)
 				{
-					modelDef = obj.GetType().GetModelDefinition();
-					fieldDefs = modelDef.FieldDefinitions
-						.Where(fieldDef => !fieldDef.IsComputed)
-						.Where(fieldDef => !fieldDef.AutoIncrement)
-						.Where(fieldDef => insertFields.Count <= 0 || insertFields.Contains(fieldDef.Name)).ToList();
+					sbColumnNames.Append(',');
 				}
+				sbColumnNames.Append(GetQuotedColumnName(fieldDef.FieldName));
 
-				if (!mustLoadColumnNames)
+
+				if (!isFirstField)
 				{
 					sbColumnValues.Append(',');
 				}
-				sbColumnValues.Append('(');
 
-
-				var isFirstField = true;
-				foreach (var fieldDef in fieldDefs)
-				{
-					if (mustLoadColumnNames)
-					{
-						if (!isFirstField)
-						{
-							sbColumnNames.Append(',');
-						}
-						sbColumnNames.Append(GetQuotedColumnName(fieldDef.FieldName));
-					}
-
-					if (!isFirstField)
-					{
-						sbColumnValues.Append(',');
-					}
-
-					string paramName = Config.DialectProvider.GetParameterName(parameters.Count);
-					sbColumnValues.Append(paramName);
-					parameters.Add(paramName, fieldDef.GetValue(obj));
-					isFirstField = false;
-				}
-				sbColumnValues.Append(')');
-				mustLoadColumnNames = false;
+				string paramName = Config.DialectProvider.GetParameterName(parameters.Count);
+				sbColumnValues.Append(paramName);
+				parameters.Add(paramName, fieldDef.GetValue(objWithProperties));
+				isFirstField = false;
 			}
+			sbColumnValues.Append(')');
 
 			var sql = string.Format("INSERT INTO {0} ({1}) VALUES {2}", GetQuotedTableName(modelDef), sbColumnNames,
 				sbColumnValues);
 
 			return new CommandDefinition(sql, parameters);
 		}
+
+		//public virtual CommandDefinition ToInsertRowStatement<T>(IEnumerable<T> objsWithProperties, ICollection<string> insertFields = null)// where T : new()
+		//{
+		//	if (insertFields == null)
+		//		insertFields = new List<string>();
+
+		//	var sbColumnNames = new StringBuilder();
+		//	var sbColumnValues = new StringBuilder();
+
+		//	ModelDefinition modelDef = null;
+		//	List<FieldDefinition> fieldDefs = null;
+
+		//	var parameters = new Dictionary<string, object>();
+
+		//	var mustLoadColumnNames = true;
+		//	foreach (var obj in objsWithProperties)
+		//	{
+		//		if (modelDef == null)
+		//		{
+		//			modelDef = obj.GetType().GetModelDefinition();
+		//			fieldDefs = modelDef.FieldDefinitions
+		//				.Where(fieldDef => !fieldDef.IsComputed)
+		//				.Where(fieldDef => !fieldDef.AutoIncrement)
+		//				.Where(fieldDef => insertFields.Count <= 0 || insertFields.Contains(fieldDef.Name)).ToList();
+		//		}
+
+		//		if (!mustLoadColumnNames)
+		//		{
+		//			sbColumnValues.Append(',');
+		//		}
+		//		sbColumnValues.Append('(');
+
+
+		//		var isFirstField = true;
+		//		foreach (var fieldDef in fieldDefs)
+		//		{
+		//			if (mustLoadColumnNames)
+		//			{
+		//				if (!isFirstField)
+		//				{
+		//					sbColumnNames.Append(',');
+		//				}
+		//				sbColumnNames.Append(GetQuotedColumnName(fieldDef.FieldName));
+		//			}
+
+		//			if (!isFirstField)
+		//			{
+		//				sbColumnValues.Append(',');
+		//			}
+
+		//			string paramName = Config.DialectProvider.GetParameterName(parameters.Count);
+		//			sbColumnValues.Append(paramName);
+		//			parameters.Add(paramName, fieldDef.GetValue(obj));
+		//			isFirstField = false;
+		//		}
+		//		sbColumnValues.Append(')');
+		//		mustLoadColumnNames = false;
+		//	}
+
+		//	var sql = string.Format("INSERT INTO {0} ({1}) VALUES {2}", GetQuotedTableName(modelDef), sbColumnNames,
+		//		sbColumnValues);
+
+		//	return new CommandDefinition(sql, parameters);
+		//}
 
 		/// <summary>Converts this object to an update row statement.</summary>
 		/// <exception cref="Exception">Thrown when an exception error condition occurs.</exception>

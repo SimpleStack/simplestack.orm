@@ -24,7 +24,7 @@ namespace SimpleStack.Orm.MySQL
         /// </summary>
         public MySqlDialectProvider()
         {
-            base.AutoIncrementDefinition = "AUTO_INCREMENT";
+			base.AutoIncrementDefinition = "AUTO_INCREMENT";
             base.IntColumnDefinition = "int(11)";
             base.BoolColumnDefinition = "tinyint(1)";
             base.TimeColumnDefinition = "time";

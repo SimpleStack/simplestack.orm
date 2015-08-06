@@ -245,18 +245,20 @@ namespace SimpleStack.Orm
 			return await dbConn.ExecuteScalarAsync<int>(cmd);
 		}
 
-		public static async Task<int> InsertAsync<T>(this IDbConnection dbConn, params T[] objs)
-		{
-			return await dbConn.ExecuteScalarAsync<int>(Config.DialectProvider.ToInsertRowStatement(objs));
-		}
-
 		/// <summary>An IDbConnection extension method that inserts all.</summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		/// <param name="dbConn">The dbConn to act on.</param>
 		/// <param name="objs">  The objects.</param>
 		public static async Task<int> InsertAsync<T>(this IDbConnection dbConn, IEnumerable<T> objs)
 		{
-			return await dbConn.ExecuteScalarAsync<int>(Config.DialectProvider.ToInsertRowStatement(objs));
+			int count = 0;
+			foreach (T t in objs)
+			{
+				await dbConn.ExecuteScalarAsync<int>(Config.DialectProvider.ToInsertRowStatement<T>(t));
+				count++;
+			}
+
+			return count;
 		}
 
 		/// <summary>An IDbConnection extension method that inserts an only.</summary>

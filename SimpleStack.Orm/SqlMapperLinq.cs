@@ -240,9 +240,9 @@ namespace SimpleStack.Orm
 			return dbConn.ExecuteScalar<int>(cmd);
 		}
 
-		public static void Insert<T>(this IDbConnection dbConn, params T[] objs)
+		public static void Insert<T>(this IDbConnection dbConn, T obj)
 		{
-			dbConn.ExecuteScalar(Config.DialectProvider.ToInsertRowStatement(objs));
+			dbConn.ExecuteScalar(Config.DialectProvider.ToInsertRowStatement(obj));
 		}
 
 		/// <summary>An IDbConnection extension method that inserts all.</summary>
@@ -251,7 +251,10 @@ namespace SimpleStack.Orm
 		/// <param name="objs">  The objects.</param>
 		public static void Insert<T>(this IDbConnection dbConn, IEnumerable<T> objs)
 		{
-			dbConn.ExecuteScalar(Config.DialectProvider.ToInsertRowStatement(objs));
+			foreach (T t in objs)
+			{
+				dbConn.ExecuteScalar(Config.DialectProvider.ToInsertRowStatement<T>(t));
+			}
 		}
 
 		/// <summary>An IDbConnection extension method that inserts an only.</summary>

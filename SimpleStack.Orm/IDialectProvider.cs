@@ -119,7 +119,7 @@ namespace SimpleStack.Orm
 		/// <param name="objWithProperties">The object with properties.</param>
 		/// <param name="InsertFields">     The insert fields.</param>
 		/// <returns>The given data converted to a string.</returns>
-		CommandDefinition ToInsertRowStatement<T>(IEnumerable<T> objsWithProperties, ICollection<string> insertFields = null);// where T : new();
+		CommandDefinition ToInsertRowStatement<T>(T objWithProperties, ICollection<string> insertFields = null);// where T : new();
 
 		/// <summary>Converts this object to an update row statement.</summary>
 		/// <param name="objWithProperties">The object with properties.</param>

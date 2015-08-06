@@ -55,6 +55,7 @@
     <Compile Include="JoinSqlBuilderTests.cs" />
     <Compile Include="LogicalExpressions.cs" />
     <Compile Include="MultiplicativeExpressionTests.cs" />
+    <Compile Include="PerfTests.cs" />
     <Compile Include="PrimaryExpressionTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RelationalExpressionTests.cs" />

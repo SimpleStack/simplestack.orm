@@ -74,7 +74,7 @@ namespace SimpleStack.Orm.Tests
 		public void Can_Chain_Expressions_Using_And()
 		{
 			IDbConnection db = OpenDbConnection();
-			db.Insert(People);
+			db.Insert<Person>(People);
 
 			var visitor = Config.DialectProvider.ExpressionVisitor<Person>();
 
@@ -95,7 +95,7 @@ namespace SimpleStack.Orm.Tests
 		public void Can_Chain_expressions_Using_Or()
 		{
 			IDbConnection db = OpenDbConnection();
-			db.Insert(People);
+			db.Insert<Person>(People);
 
 			var visitor = Config.DialectProvider.ExpressionVisitor<Person>();
 
@@ -117,7 +117,7 @@ namespace SimpleStack.Orm.Tests
 		public void When_chaining_expressions_using_Where_it_behaves_like_And()
 		{
 			IDbConnection db = OpenDbConnection();
-			db.Insert(People);
+			db.Insert<Person>(People);
 
 			var visitor = Config.DialectProvider.ExpressionVisitor<Person>();
 
@@ -143,7 +143,7 @@ namespace SimpleStack.Orm.Tests
 		public void Can_Chain_Order_Expressions_using_ThenBy()
 		{
 			IDbConnection db = OpenDbConnection();
-			db.Insert(People);
+			db.Insert<Person>(People);
 
 			var visitor = Config.DialectProvider.ExpressionVisitor<Person>();
 			visitor.OrderBy(x => x.Age);
