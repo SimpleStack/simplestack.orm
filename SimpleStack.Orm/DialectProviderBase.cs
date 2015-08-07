@@ -551,16 +551,46 @@ namespace SimpleStack.Orm
 				GetQuotedTableName(visitor.ModelDefinition), visitor.WhereExpression);
 		}
 
+		public virtual string ToCompleteCreateTableStatement(ModelDefinition modelDefinition)
+		{
+			StringBuilder result = new StringBuilder();
+
+			result.AppendFormat("{0};\n", ToCreateTableStatement(modelDefinition));
+
+			foreach (var sqlIndex in ToCreateIndexStatements(modelDefinition))
+			{
+				result.AppendFormat("{0};\n", sqlIndex);
+			}
+
+			var sequenceList = SequenceList(modelDefinition);
+
+			if (sequenceList.Count > 0)
+			{
+				foreach (var sequence in sequenceList)
+				{
+					result.AppendFormat("{0};\n", ToCreateSequenceStatement(modelDefinition, sequence));
+				}
+			}
+			else
+			{
+				foreach (var seq in ToCreateSequenceStatements(modelDefinition))
+				{
+					result.AppendFormat("{0};\n", seq);
+				}
+			}
+
+			return result.ToString();
+		}
+
 		/// <summary>Converts a tableType to a create table statement.</summary>
-		/// <param name="tableType">Type of the table.</param>
+		/// <param name="modelDef">Model Definition.</param>
 		/// <returns>tableType as a string.</returns>
-		public virtual string ToCreateTableStatement(Type tableType)
+		public virtual string ToCreateTableStatement(ModelDefinition modelDef)
 		{
 			var sbColumns = new StringBuilder();
 			var sbConstraints = new StringBuilder();
 			var sbPrimaryKeys = new StringBuilder();
-
-			var modelDef = tableType.GetModelDefinition();
+			
 			foreach (var fieldDef in modelDef.FieldDefinitions)
 			{
 				if (sbColumns.Length != 0) sbColumns.Append(", \n  ");
@@ -610,13 +640,12 @@ namespace SimpleStack.Orm
 		}
 
 		/// <summary>Converts a tableType to a create index statements.</summary>
-		/// <param name="tableType">Type of the table.</param>
+		/// <param name="modelDef">Model Definition.</param>
 		/// <returns>tableType as a List&lt;string&gt;</returns>
-		public virtual List<string> ToCreateIndexStatements(Type tableType)
+		public virtual List<string> ToCreateIndexStatements(ModelDefinition modelDef)
 		{
 			var sqlIndexes = new List<string>();
 
-			var modelDef = tableType.GetModelDefinition();
 			foreach (var fieldDef in modelDef.FieldDefinitions)
 			{
 				if (!fieldDef.IsIndexed) continue;
@@ -700,26 +729,26 @@ namespace SimpleStack.Orm
 		}
 
 		/// <summary>Converts a tableType to a create sequence statements.</summary>
-		/// <param name="tableType">Type of the table.</param>
+		/// <param name="modelDef">Model Definition.</param>
 		/// <returns>tableType as a List&lt;string&gt;</returns>
-		public virtual List<string> ToCreateSequenceStatements(Type tableType)
+		public virtual List<string> ToCreateSequenceStatements(ModelDefinition modelDef)
 		{
 			return new List<string>();
 		}
 
 		/// <summary>Converts this object to a create sequence statement.</summary>
-		/// <param name="tableType">   Type of the table.</param>
+		/// <param name="modelDef">Model Definition</param>
 		/// <param name="sequenceName">Name of the sequence.</param>
 		/// <returns>The given data converted to a string.</returns>
-		public virtual string ToCreateSequenceStatement(Type tableType, string sequenceName)
+		public virtual string ToCreateSequenceStatement(ModelDefinition modelDef, string sequenceName)
 		{
 			return "";
 		}
 
 		/// <summary>Sequence list.</summary>
-		/// <param name="tableType">Type of the table.</param>
+		/// <param name="modelDef">Model Definition.</param>
 		/// <returns>A List&lt;string&gt;</returns>
-		public virtual List<string> SequenceList(Type tableType)
+		public virtual List<string> SequenceList(ModelDefinition modelDef)
 		{
 			return new List<string>();
 		}
@@ -914,7 +943,7 @@ namespace SimpleStack.Orm
 		/// <param name="modelName">Name of the model.</param>
 		/// <param name="fieldName">Name of the field.</param>
 		/// <returns>The index name.</returns>
-		protected virtual string GetIndexName(bool isUnique, string modelName, string fieldName)
+		public virtual string GetIndexName(bool isUnique, string modelName, string fieldName)
 		{
 			return string.Format("{0}idx_{1}_{2}", isUnique ? "u" : "", modelName, fieldName).ToLower();
 		}

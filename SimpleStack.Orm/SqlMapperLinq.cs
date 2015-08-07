@@ -333,6 +333,38 @@ namespace SimpleStack.Orm
 			var tableType = typeof(T);
 			CreateTable(dbConn, dropIfExists, tableType);
 		}
+
+		/// <summary>Alias for CreateTableIfNotExists.</summary>
+		/// <typeparam name="T">Generic type parameter.</typeparam>
+		/// <param name="dbConn">   The dbConn to act on.</param>
+		/// <param name="overwrite">true to overwrite, false to preserve.</param>
+		public static void CreateTableIfNotExists<T>(this OrmConnection dbConn)
+			where T : new()
+		{
+			var tableType = typeof(T);
+			if (!TableExists<T>(dbConn))
+			{
+				CreateTable<T>(dbConn, false);
+			}
+		}
+
+		public static void DropTable<T>(this OrmConnection dbConn)
+		{
+			var tableModelDef = typeof(T).GetModelDefinition();
+			DropTable(dbConn, tableModelDef);
+		}
+
+		public static bool TableExists<T>(this OrmConnection dbConn)
+		{
+			var tableModelDef = typeof(T).GetModelDefinition();;
+			return dbConn.DialectProvider.DoesTableExist(dbConn, dbConn.DialectProvider.NamingStrategy.GetTableName(tableModelDef.ModelName));
+		}
+
+		public static bool TableExists(this OrmConnection dbConn, string tableName)
+		{
+			return dbConn.DialectProvider.DoesTableExist(dbConn, tableName);
+		}
+
 		/// <summary>An IDbCommand extension method that creates a table.</summary>
 		/// <exception cref="Exception">Thrown when an exception error condition occurs.</exception>
 		/// <param name="dbConn">    The dbCmd to act on.</param>
@@ -356,29 +388,29 @@ namespace SimpleStack.Orm
 			{
 				if (!tableExists)
 				{
-					dbConn.Execute(dialectProvider.ToCreateTableStatement(modelType));
+					dbConn.Execute(dialectProvider.ToCreateTableStatement(modelDef));
 
-					var sqlIndexes = dialectProvider.ToCreateIndexStatements(modelType);
+					var sqlIndexes = dialectProvider.ToCreateIndexStatements(modelDef);
 					foreach (var sqlIndex in sqlIndexes)
 					{
 						dbConn.Execute(sqlIndex);
 					}
 
-					var sequenceList = dialectProvider.SequenceList(modelType);
+					var sequenceList = dialectProvider.SequenceList(modelDef);
 					if (sequenceList.Count > 0)
 					{
 						foreach (var seq in sequenceList)
 						{
 							if (dialectProvider.DoesSequenceExist(dbConn, seq) == false)
 							{
-								var seqSql = dialectProvider.ToCreateSequenceStatement(modelType, seq);
+								var seqSql = dialectProvider.ToCreateSequenceStatement(modelDef, seq);
 								dbConn.Execute(seqSql);
 							}
 						}
 					}
 					else
 					{
-						var sequences = dialectProvider.ToCreateSequenceStatements(modelType);
+						var sequences = dialectProvider.ToCreateSequenceStatements(modelDef);
 						foreach (var seq in sequences)
 						{
 							dbConn.Execute(seq);

@@ -187,31 +187,36 @@ namespace SimpleStack.Orm
 		/// <returns>objWithProperties as a string.</returns>
 		string ToExecuteProcedureStatement(object objWithProperties);
 
-		/// <summary>Converts a tableType to a create table statement.</summary>
-		/// <param name="tableType">Type of the table.</param>
+		/// <summary>Converts a modelDefinition to a complete create table statement.</summary>
+		/// <param name="modelDef">Type of the table.</param>
 		/// <returns>tableType as a string.</returns>
-		string ToCreateTableStatement(Type tableType);
+		string ToCompleteCreateTableStatement(ModelDefinition modelDef);
+
+		/// <summary>Converts a tableType to a create table statement.</summary>
+		/// <param name="modelDefinition">Model Definition.</param>
+		/// <returns>tableType as a string.</returns>
+		string ToCreateTableStatement(ModelDefinition modelDefinition);
 
 		/// <summary>Converts a tableType to a create index statements.</summary>
-		/// <param name="tableType">Type of the table.</param>
+		/// <param name="modelDefinition">Model Definition.</param>
 		/// <returns>tableType as a List&lt;string&gt;</returns>
-		List<string> ToCreateIndexStatements(Type tableType);
+		List<string> ToCreateIndexStatements(ModelDefinition modelDefinition);
 
 		/// <summary>Converts a tableType to a create sequence statements.</summary>
-		/// <param name="tableType">Type of the table.</param>
+		/// <param name="modelDefinition">Model Definition.</param>
 		/// <returns>tableType as a List&lt;string&gt;</returns>
-		List<string> ToCreateSequenceStatements(Type tableType);
+		List<string> ToCreateSequenceStatements(ModelDefinition modelDefinition);
 
 		/// <summary>Converts this object to a create sequence statement.</summary>
-		/// <param name="tableType">   Type of the table.</param>
+		/// <param name="modelDefinition">Model Definition.</param>
 		/// <param name="sequenceName">Name of the sequence.</param>
 		/// <returns>The given data converted to a string.</returns>
-		string ToCreateSequenceStatement(Type tableType, string sequenceName);
+		string ToCreateSequenceStatement(ModelDefinition modelDefinition, string sequenceName);
 
 		/// <summary>Sequence list.</summary>
-		/// <param name="tableType">Type of the table.</param>
+		/// <param name="modelDefinition">Model Definition.</param>
 		/// <returns>A List&lt;string&gt;</returns>
-		List<string> SequenceList(Type tableType);
+		List<string> SequenceList(ModelDefinition modelDefinition);
 
 		/// <summary>Query if 'dbCmd' does table exist.</summary>
 		/// <param name="db">       The database.</param>
@@ -304,5 +309,12 @@ namespace SimpleStack.Orm
 		#endregion DDL
 
 		string GetLimitExpression(int? skip, int? rows);
+
+		/// <summary>Gets index name.</summary>
+		/// <param name="isUnique"> true if this object is unique.</param>
+		/// <param name="modelName">Name of the model.</param>
+		/// <param name="fieldName">Name of the field.</param>
+		/// <returns>The index name.</returns>
+		string GetIndexName(bool isUnique, string modelName, string fieldName);
 	}
 }
