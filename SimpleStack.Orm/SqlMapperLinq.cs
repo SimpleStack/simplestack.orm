@@ -1,4 +1,5 @@
 ﻿using System;
+using System.CodeDom;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -319,11 +320,11 @@ namespace SimpleStack.Orm
 			return this.ExecuteScalar<int>(DialectProvider.ToDeleteRowStatement(DialectProvider.ExpressionVisitor<T>()));
 		}
 
-		/// <summary>Alias for CreateTableIfNotExists.</summary>
-		/// <typeparam name="T">Generic type parameter.</typeparam>
 		public void CreateTable<T>(bool dropIfExists)
-			where T : new()
 		{
+			if(!dropIfExists && TableExists<T>())
+				throw new Exception("Table already exists");
+
 			var tableType = typeof (T);
 			CreateTable(dropIfExists, tableType);
 		}
