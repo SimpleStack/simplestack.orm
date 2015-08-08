@@ -52,6 +52,7 @@
     <Compile Include="AdditiveExpressionsTest.cs" />
     <Compile Include="ConditionalExpressionTests.cs" />
     <Compile Include="CountTests.cs" />
+    <Compile Include="DeleteTests.cs" />
     <Compile Include="EqualityExpressionTests.cs" />
     <Compile Include="ExpressionChainingUseCases.cs" />
     <Compile Include="ExpressionTests.cs" />

@@ -245,7 +245,6 @@ namespace SimpleStack.Orm
 
 		/// <summary>An IDbConnection extension method that inserts all.</summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
-		
 		/// <param name="objs">  The objects.</param>
 		public void Insert<T>(IEnumerable<T> objs)
 		{
@@ -257,7 +256,6 @@ namespace SimpleStack.Orm
 
 		/// <summary>An IDbConnection extension method that inserts an only.</summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
-		
 		/// <param name="obj">       The object.</param>
 		/// <param name="onlyFields">The only fields.</param>
 		public void InsertOnly<T>(T obj, Func<SqlExpressionVisitor<T>, SqlExpressionVisitor<T>> onlyFields) where T : new()
@@ -268,7 +266,6 @@ namespace SimpleStack.Orm
 
 		/// <summary>An IDbConnection extension method that inserts an only.</summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
-		
 		/// <param name="obj">       The object.</param>
 		/// <param name="onlyFields">The only fields.</param>
 		public void InsertOnly<T>(T obj, SqlExpressionVisitor<T> onlyFields) where T : new()
@@ -288,7 +285,6 @@ namespace SimpleStack.Orm
 
 		/// <summary>An IDbConnection extension method that deletes this object.</summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
-		
 		/// <param name="where"> The where.</param>
 		/// <returns>An int.</returns>
 		public int Delete<T>(Func<SqlExpressionVisitor<T>, SqlExpressionVisitor<T>> where)
@@ -314,6 +310,11 @@ namespace SimpleStack.Orm
 			return this.ExecuteScalar<int>(DialectProvider.ToDeleteRowStatement(obj));
 		}
 
+		/// <summary>
+		/// Delete all object of a given type
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <returns></returns>
 		public int DeleteAll<T>()
 		{
 			return this.ExecuteScalar<int>(DialectProvider.ExpressionVisitor<T>().ToDeleteRowStatement());
