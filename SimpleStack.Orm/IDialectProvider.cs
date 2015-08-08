@@ -265,6 +265,7 @@ namespace SimpleStack.Orm
 
 
 		string GetDropTableStatement(ModelDefinition modelDef);
+
 		#region DDL
 		/// <summary>Converts this object to an add column statement.</summary>
 		/// <param name="modelType">Type of the model.</param>

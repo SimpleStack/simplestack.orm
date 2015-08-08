@@ -328,6 +328,17 @@ namespace SimpleStack.Orm
 			CreateTable(dropIfExists, tableType);
 		}
 
+		public bool TableExists<T>()
+		{
+			var tableModelDef = typeof(T).GetModelDefinition();
+			return DialectProvider.DoesTableExist(this,DialectProvider.NamingStrategy.GetTableName(tableModelDef.ModelName));
+		}
+
+		public bool TableExists(string tableName)
+		{
+			return DialectProvider.DoesTableExist(this, tableName);
+		}
+
 		/// <summary>An IDbCommand extension method that creates a table.</summary>
 		/// <exception cref="Exception">Thrown when an exception error condition occurs.</exception>
 		/// <param name="overwrite">true to overwrite, false to preserve.</param>
@@ -348,29 +359,29 @@ namespace SimpleStack.Orm
 
 			if (!tableExists)
 			{
-				this.Execute(dialectProvider.ToCreateTableStatement(modelType));
+				this.Execute(dialectProvider.ToCreateTableStatement(modelDef));
 
-				var sqlIndexes = dialectProvider.ToCreateIndexStatements(modelType);
+				var sqlIndexes = dialectProvider.ToCreateIndexStatements(modelDef);
 				foreach (var sqlIndex in sqlIndexes)
 				{
 					this.Execute(sqlIndex);
 				}
 
-				var sequenceList = dialectProvider.SequenceList(modelType);
+				var sequenceList = dialectProvider.SequenceList(modelDef);
 				if (sequenceList.Count > 0)
 				{
 					foreach (var seq in sequenceList)
 					{
 						if (dialectProvider.DoesSequenceExist(this, seq) == false)
 						{
-							var seqSql = dialectProvider.ToCreateSequenceStatement(modelType, seq);
+							var seqSql = dialectProvider.ToCreateSequenceStatement(modelDef, seq);
 							this.Execute(seqSql);
 						}
 					}
 				}
 				else
 				{
-					var sequences = dialectProvider.ToCreateSequenceStatements(modelType);
+					var sequences = dialectProvider.ToCreateSequenceStatements(modelDef);
 					foreach (var seq in sequences)
 					{
 						this.Execute(seq);
