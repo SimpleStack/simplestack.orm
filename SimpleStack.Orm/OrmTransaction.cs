@@ -38,6 +38,7 @@ namespace SimpleStack.Orm
 			if (disposing)
 			{
 				trans.Dispose();
+				db.ClearCurrrentTransaction();
 			}
 		}
 
@@ -53,6 +54,7 @@ namespace SimpleStack.Orm
 		public void Commit()
 		{
 			trans.Commit();
+			db.ClearCurrrentTransaction();
 		}
 
 		/// <summary>Rolls back a transaction from a pending state.</summary>
@@ -67,14 +69,12 @@ namespace SimpleStack.Orm
 		public void Rollback()
 		{
 			trans.Rollback();
+			db.ClearCurrrentTransaction();
 		}
 
 		/// <summary>Specifies the Connection object to associate with the transaction.</summary>
 		/// <value>The Connection object to associate with the transaction.</value>
-		public IDbConnection Connection
-		{
-			get { return trans.Connection; }
-		}
+		public IDbConnection Connection => trans.Connection;
 
 		/// <summary>
 		/// Specifies the <see cref="T:System.Data.IsolationLevel" /> for this transaction.
@@ -83,9 +83,6 @@ namespace SimpleStack.Orm
 		/// The <see cref="T:System.Data.IsolationLevel" /> for this transaction. The default is
 		/// ReadCommitted.
 		/// </value>
-		public IsolationLevel IsolationLevel
-		{
-			get { return trans.IsolationLevel; }
-		}
+		public IsolationLevel IsolationLevel => trans.IsolationLevel;
 	}
 }

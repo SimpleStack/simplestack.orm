@@ -144,5 +144,11 @@ namespace SimpleStack.Orm
 		/// <summary>Gets the current state of the connection.</summary>
 		/// <value>One of the <see cref="T:System.Data.ConnectionState" /> values.</value>
 		public ConnectionState State => DbConnection.State;
+
+		internal void ClearCurrrentTransaction()
+		{
+			Transaction = null;
+		}
+
 	}
 }
