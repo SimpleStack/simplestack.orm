@@ -4,7 +4,7 @@ using System.Data.SqlClient;
 
 namespace SimpleStack.Orm
 {
-	public class OrmConnection : IDbConnection
+	public partial class OrmConnection : IDbConnection
 	{
 		public IDialectProvider DialectProvider { get; }
 

@@ -16,7 +16,6 @@ namespace SimpleStack.Orm.Tests
 			using (var db = OpenDbConnection())
 			{
 				db.CreateTable<CountTestTable>(true);
-				db.Delete<CountTestTable>();
 
 				db.Insert(new CountTestTable { Id = 1, StringValue = "Your string value" });
 
@@ -42,7 +41,6 @@ namespace SimpleStack.Orm.Tests
 			using (var db = OpenDbConnection())
 			{
 				db.CreateTable<CountTestTable>(true);
-				db.Delete<CountTestTable>();
 				db.Insert(new CountTestTable { Id = 1, StringValue = "Your string value" });
 
 				Expression<Func<CountTestTable, bool>> exp = q => q.Id == 2;

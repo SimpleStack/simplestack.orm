@@ -551,6 +551,28 @@ namespace SimpleStack.Orm
 				GetQuotedTableName(visitor.ModelDefinition), visitor.WhereExpression);
 		}
 
+		public virtual CommandDefinition ToDeleteRowStatement<T>(T objWithProperties)
+		{
+			var whereSql = new StringBuilder();
+			var modelDef = typeof(T).GetModelDefinition();
+			var fields = modelDef.FieldDefinitionsArray;
+
+			var parameters = new Dictionary<string, object>();
+
+			foreach (var fieldDef in fields.Where(fieldDef => fieldDef.IsPrimaryKey))
+			{
+				if (whereSql.Length > 0)
+				{
+					whereSql.Append(" AND ");
+				}
+				var parameterName = GetParameterName(parameters.Count);
+				whereSql.Append($"{GetQuotedColumnName(fieldDef.FieldName)} = {parameterName}");
+				parameters.Add(parameterName, fieldDef.GetValueFn(objWithProperties));
+			}
+
+			return new CommandDefinition($"DELETE FROM {GetQuotedTableName(modelDef)} WHERE {whereSql}", parameters);
+		}
+
 		public virtual string ToCompleteCreateTableStatement(ModelDefinition modelDefinition)
 		{
 			StringBuilder result = new StringBuilder();
