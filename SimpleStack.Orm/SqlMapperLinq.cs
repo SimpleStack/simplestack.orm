@@ -328,6 +328,12 @@ namespace SimpleStack.Orm
 			CreateTable(dropIfExists, tableType);
 		}
 
+		public void CreateTableIfNotExists<T>()
+		{
+			var tableType = typeof(T);
+			CreateTable(false, tableType);
+		}
+
 		public bool TableExists<T>()
 		{
 			var tableModelDef = typeof(T).GetModelDefinition();
@@ -353,7 +359,7 @@ namespace SimpleStack.Orm
 
 			if (overwrite && tableExists)
 			{
-				DropTable(this, modelDef);
+				DropTable(modelDef);
 				tableExists = false;
 			}
 
@@ -393,12 +399,12 @@ namespace SimpleStack.Orm
 		/// <summary>Drop table.</summary>
 		/// <param name="dbConn">   The dbCmd to act on.</param>
 		/// <param name="modelDef">The model definition.</param>
-		private void DropTable(OrmConnection dbConn, ModelDefinition modelDef)
+		private void DropTable(ModelDefinition modelDef)
 		{
 			var dialectProvider = DialectProvider;
 			var tableName = dialectProvider.NamingStrategy.GetTableName(modelDef.ModelName);
 
-			if (DialectProvider.DoesTableExist(dbConn, tableName))
+			if (DialectProvider.DoesTableExist(this, tableName))
 			{
 				var dropTableFks = DialectProvider.GetDropForeignKeyConstraints(modelDef);
 				if (!string.IsNullOrEmpty(dropTableFks))
