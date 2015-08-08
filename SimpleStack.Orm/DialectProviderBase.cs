@@ -296,7 +296,7 @@ namespace SimpleStack.Orm
 			return sql.ToString();
 		}
 
-		public virtual string ToCountStatement<T>(SqlExpressionVisitor<T> visitor)
+		public virtual CommandDefinition ToCountStatement<T>(SqlExpressionVisitor<T> visitor)
 		{
 			var modelDef = typeof(T).GetModelDefinition();
 			var sql = new StringBuilder();
@@ -315,10 +315,10 @@ namespace SimpleStack.Orm
 				sql.Append(" ");
 				sql.Append(visitor.LimitExpression);
 			}
-			return sql.ToString();
+			return new CommandDefinition(sql.ToString(),visitor.Parameters);
 		}
 
-		public virtual string ToSelectStatement<T>(SqlExpressionVisitor<T> visitor)
+		public virtual CommandDefinition ToSelectStatement<T>(SqlExpressionVisitor<T> visitor, CommandFlags flags)
 		{
 			var sql = new StringBuilder();
 
@@ -340,7 +340,7 @@ namespace SimpleStack.Orm
 				? String.Empty
 				: "\n" + visitor.LimitExpression);
 
-			return sql.ToString();
+			return new CommandDefinition(sql.ToString(),visitor.Parameters,flags:flags);
 		}
 
 		public virtual CommandDefinition ToInsertRowStatement<T>(T objWithProperties, ICollection<string> insertFields = null)
@@ -545,10 +545,9 @@ namespace SimpleStack.Orm
 			return new CommandDefinition(updateSql, parameters);
 		}
 
-		public virtual string ToDeleteRowStatement<T>(SqlExpressionVisitor<T> visitor)
+		public virtual CommandDefinition ToDeleteRowStatement<T>(SqlExpressionVisitor<T> visitor)
 		{
-			return string.Format("DELETE FROM {0} {1}",
-				GetQuotedTableName(visitor.ModelDefinition), visitor.WhereExpression);
+			return new CommandDefinition($"DELETE FROM {GetQuotedTableName(visitor.ModelDefinition)} {visitor.WhereExpression}",visitor.Parameters);
 		}
 
 		public virtual CommandDefinition ToDeleteRowStatement<T>(T objWithProperties)

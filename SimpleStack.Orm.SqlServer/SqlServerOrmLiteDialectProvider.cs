@@ -352,35 +352,36 @@ namespace SimpleStack.Orm.SqlServer
 								 GetQuotedParam("COLUMN"));
 		}
 
-		public override string ToSelectStatement<T>(SqlExpressionVisitor<T> visitor)
+		public override CommandDefinition ToSelectStatement<T>(SqlExpressionVisitor<T> visitor, CommandFlags flags)
 		{
 			if (!visitor.Rows.HasValue && !visitor.Skip.HasValue)
 			{
-				return base.ToSelectStatement(visitor);
+				return base.ToSelectStatement(visitor,flags);
 			}
 
 			AssertValidSkipRowValues(visitor.Skip, visitor.Rows);
 			var skip = visitor.Skip ?? 0;
 			var take = visitor.Rows ?? int.MaxValue;
 
+			var sql = base.ToSelectStatement(visitor, flags);
+
 			//Temporary hack till we come up with a more robust paging sln for SqlServer
 			if (skip == 0)
 			{
 				if (take == int.MaxValue)
-					return base.ToSelectStatement(visitor);
+					return sql;
 
-				var sql = base.ToSelectStatement(visitor);
-				if (sql == null || sql.Length < "SELECT".Length) return sql;
-				var selectType = sql.ToUpper().StartsWith("SELECT DISTINCT") ? "SELECT DISTINCT" : "SELECT";
-				sql = selectType + " TOP " + take + " " + sql.Substring(selectType.Length, sql.Length - selectType.Length);
-				return sql;
+				if (sql.CommandText.Length < "SELECT".Length) return sql;
+				var selectType = sql.CommandText.ToUpper().StartsWith("SELECT DISTINCT") ? "SELECT DISTINCT" : "SELECT";
+				var newQuery= selectType + " TOP " + take + " " + sql.CommandText.Substring(selectType.Length, sql.CommandText.Length - selectType.Length);
+				return new CommandDefinition(newQuery,sql.Parameters, sql.Transaction,sql.CommandTimeout,sql.CommandType,sql.Flags,sql.CancellationToken);
 			}
 
-			var orderBy = !String.IsNullOrEmpty(visitor.OrderByExpression)
+			var orderBy = !string.IsNullOrEmpty(visitor.OrderByExpression)
 							  ? visitor.OrderByExpression
 							  : BuildOrderByIdExpression(visitor.ModelDefinition);
 
-			visitor.OrderByExpression = String.Empty; // Required because ordering is done by Windowing function
+			visitor.OrderByExpression = string.Empty; // Required because ordering is done by Windowing function
 
 			//todo: review needed only check against sql server 2008 R2
 
@@ -397,7 +398,7 @@ namespace SimpleStack.Orm.SqlServer
 				skip,
 				skip + take);
 
-			return retVal;
+			return new CommandDefinition(retVal, sql.Parameters, sql.Transaction, sql.CommandTimeout, sql.CommandType, sql.Flags, sql.CancellationToken);
 		}
 
 		protected virtual void AssertValidSkipRowValues(int? skip, int? rows)

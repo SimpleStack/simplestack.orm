@@ -136,7 +136,7 @@ namespace SimpleStack.Orm
 		/// <summary>Converts the objWithProperties to a delete row statement.</summary>
 		/// <param name="objWithProperties">The object with properties.</param>
 		/// <returns>objWithProperties as a string.</returns>
-		string ToDeleteRowStatement<T>(SqlExpressionVisitor<T> visitor);
+		CommandDefinition ToDeleteRowStatement<T>(SqlExpressionVisitor<T> visitor);
 
 		CommandDefinition ToDeleteRowStatement<T>(T objWithProperties);
 
@@ -180,9 +180,9 @@ namespace SimpleStack.Orm
 		/// <param name="sqlFilter">    A filter specifying the SQL.</param>
 		/// <param name="filterParams"> Options for controlling the filter.</param>
 		/// <returns>The given data converted to a string.</returns>
-		string ToCountStatement<T>(SqlExpressionVisitor<T> visitor);
+		CommandDefinition ToCountStatement<T>(SqlExpressionVisitor<T> visitor);
 
-		string ToSelectStatement<T>(SqlExpressionVisitor<T> visitor);
+		CommandDefinition ToSelectStatement<T>(SqlExpressionVisitor<T> visitor, CommandFlags flags);
 
 		/// <summary>Converts the objWithProperties to an execute procedure statement.</summary>
 		/// <param name="objWithProperties">The object with properties.</param>

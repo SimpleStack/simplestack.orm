@@ -13,11 +13,12 @@ namespace SimpleStack.Orm
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		/// <param name="predicate">The predicate.</param>
 		/// <param name="buffered"></param>
+		/// <param name="flags"></param>
 		/// <returns>A List&lt;T&gt;</returns>
-		public IEnumerable<T> Select<T>(Expression<Func<T, bool>> predicate, bool buffered = true)
+		public IEnumerable<T> Select<T>(Expression<Func<T, bool>> predicate, CommandFlags flags = CommandFlags.Buffered)
 		{
 			var ev = DialectProvider.ExpressionVisitor<T>();
-			return this.Query<T>(ev.Where(predicate).ToSelectStatement(), ev.Parameters, buffered: buffered);
+			return this.Query<T>(DialectProvider.ToSelectStatement(ev.Where(predicate), flags));
 		}
 
 		/// <summary>An IDbConnection extension method that selects.</summary>
@@ -26,10 +27,10 @@ namespace SimpleStack.Orm
 		/// <param name="buffered"></param>
 		/// <returns>A List&lt;T&gt;</returns>
 		public IEnumerable<T> Select<T>(Func<SqlExpressionVisitor<T>, SqlExpressionVisitor<T>> expression,
-			bool buffered = true)
+			CommandFlags flags = CommandFlags.Buffered)
 		{
 			var ev = DialectProvider.ExpressionVisitor<T>();
-			return this.Query<T>(expression(ev).ToSelectStatement(), ev.Parameters, buffered: buffered);
+			return this.Query<T>(DialectProvider.ToSelectStatement(expression(ev),flags));
 		}
 
 		/// <summary>An IDbConnection extension method that selects.</summary>
@@ -37,18 +38,18 @@ namespace SimpleStack.Orm
 		/// <param name="expression">The expression.</param>
 		/// <param name="buffered"></param>
 		/// <returns>A List&lt;T&gt;</returns>
-		public IEnumerable<T> Select<T>(SqlExpressionVisitor<T> expression, bool buffered = true)
+		public IEnumerable<T> Select<T>(SqlExpressionVisitor<T> expression, CommandFlags flags = CommandFlags.Buffered)
 		{
-			return this.Query<T>(expression.ToSelectStatement(), expression.Parameters, buffered: buffered);
+			return this.Query<T>(DialectProvider.ToSelectStatement(expression,flags));
 		}
 
 		/// <summary>An IDbConnection extension method that selects.</summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		/// <param name="buffered"></param>
 		/// <returns>A List&lt;T&gt;</returns>
-		public IEnumerable<T> Select<T>(bool buffered = true)
+		public IEnumerable<T> Select<T>(CommandFlags flags = CommandFlags.Buffered)
 		{
-			return this.Query<T>(DialectProvider.ExpressionVisitor<T>().ToSelectStatement(), null, buffered: buffered);
+			return this.Query<T>(DialectProvider.ToSelectStatement(DialectProvider.ExpressionVisitor<T>(),flags));
 		}
 
 		/// <summary>An IDbConnection extension method that selects based on a JoinSqlBuilder.</summary>
@@ -114,7 +115,7 @@ namespace SimpleStack.Orm
 		{
 			//int maxAgeUnder50 = db.Scalar<Person, int>(x => Sql.Max(x.Age));
 			var ev = DialectProvider.ExpressionVisitor<T>();
-			return this.ExecuteScalar<TKey>(ev.Select(field).ToSelectStatement(), ev.Parameters);
+			return this.ExecuteScalar<TKey>(DialectProvider.ToSelectStatement(ev.Select(field),CommandFlags.None));
 		}
 
 		/// <summary>An IDbConnection extension method that gets a scalar.</summary>
@@ -128,32 +129,30 @@ namespace SimpleStack.Orm
 		{
 			//int maxAgeUnder50 = db.Scalar<Person, int>(x => Sql.Max(x.Age), x => x.Age < 50);
 			var ev = DialectProvider.ExpressionVisitor<T>();
-			return this.ExecuteScalar<TKey>(ev.Where(predicate).Select(field).ToSelectStatement(), ev.Parameters);
+			return this.ExecuteScalar<TKey>(DialectProvider.ToSelectStatement(ev.Where(predicate).Select(field),CommandFlags.None));
 		}
 
 		public long Count<T>(Func<SqlExpressionVisitor<T>, SqlExpressionVisitor<T>> expression)
 		{
 			var ev = DialectProvider.ExpressionVisitor<T>();
-			return this.ExecuteScalar<long>(expression(ev).ToCountStatement(), ev.Parameters);
+			return this.ExecuteScalar<long>(DialectProvider.ToCountStatement(expression(ev)));
 		}
 
 		/// <summary>
 		///    An IDbConnection extension method that counts the given database connection.
 		/// </summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
-		
 		/// <param name="expression">The expression.</param>
 		/// <returns>A long.</returns>
 		public long Count<T>(SqlExpressionVisitor<T> expression)
 		{
-			return this.ExecuteScalar<long>(expression.ToCountStatement(), expression.Parameters);
+			return this.ExecuteScalar<long>(DialectProvider.ToCountStatement(expression));
 		}
 
 		/// <summary>
 		///    An IDbConnection extension method that counts the given database connection.
 		/// </summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
-		
 		/// <param name="expression">The expression.</param>
 		/// <returns>A long.</returns>
 		public long Count<T>(Expression<Func<T, bool>> expression)
@@ -296,7 +295,7 @@ namespace SimpleStack.Orm
 		/// <returns>An int.</returns>
 		public int Delete<T>(SqlExpressionVisitor<T> where)
 		{
-			return this.ExecuteScalar<int>(where.ToDeleteRowStatement(), where.Parameters);
+			return this.ExecuteScalar<int>(DialectProvider.ToDeleteRowStatement(where));
 		}
 
 		/// <summary>
@@ -317,7 +316,7 @@ namespace SimpleStack.Orm
 		/// <returns></returns>
 		public int DeleteAll<T>()
 		{
-			return this.ExecuteScalar<int>(DialectProvider.ExpressionVisitor<T>().ToDeleteRowStatement());
+			return this.ExecuteScalar<int>(DialectProvider.ToDeleteRowStatement(DialectProvider.ExpressionVisitor<T>()));
 		}
 
 		/// <summary>Alias for CreateTableIfNotExists.</summary>

@@ -231,13 +231,13 @@ namespace SimpleStack.Orm.Tests
 
 			var visitor1 = _dialectProvider.ExpressionVisitor<TestType2>();
 			visitor1.Where(q => vals.Contains(q.EnumCol) || vals.Contains(q.EnumCol));
-			var sql1 = visitor1.ToSelectStatement();
+			var sql1 = _dialectProvider.ToSelectStatement(visitor1,CommandFlags.None);
 
 			var visitor2 = _dialectProvider.ExpressionVisitor<TestType2>();
 			visitor2.Where(q => Sql.In(q.EnumCol, vals) || Sql.In(q.EnumCol, vals));
-			var sql2 = visitor2.ToSelectStatement();
+			var sql2 = _dialectProvider.ToSelectStatement(visitor2, CommandFlags.None);
 
-			Assert.AreEqual(sql1, sql2);
+			Assert.AreEqual(sql1.CommandText, sql2.CommandText);
 		}
 
 		/// <summary>Can select using int array contains.</summary>
@@ -249,13 +249,13 @@ namespace SimpleStack.Orm.Tests
 
 			var visitor1 = _dialectProvider.ExpressionVisitor<TestType2>();
 			visitor1.Where(q => vals.Contains((int)q.EnumCol) || vals.Contains((int)q.EnumCol));
-			var sql1 = visitor1.ToSelectStatement();
+			var sql1 = _dialectProvider.ToSelectStatement(visitor1,CommandFlags.None);
 
 			var visitor2 = _dialectProvider.ExpressionVisitor<TestType2>();
 			visitor2.Where(q => Sql.In(q.EnumCol, vals) || Sql.In(q.EnumCol, vals));
-			var sql2 = visitor2.ToSelectStatement();
+			var sql2 = _dialectProvider.ToSelectStatement(visitor2, CommandFlags.None);
 
-			Assert.AreEqual(sql1, sql2);
+			Assert.AreEqual(sql1.CommandText, sql2.CommandText);
 		}
 
 		/// <summary>Method returning int.</summary>

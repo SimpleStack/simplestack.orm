@@ -602,13 +602,6 @@ namespace SimpleStack.Orm.Expressions
 			return this;
 		}
 
-		/// <summary>Converts this object to a delete row statement.</summary>
-		/// <returns>This object as a string.</returns>
-		public virtual string ToDeleteRowStatement()
-		{
-			return DialectProvider.ToDeleteRowStatement(this);
-		}
-
 		/// <summary>Converts this object to an update statement.</summary>
 		/// <param name="item">           The item.</param>
 		/// <param name="excludeDefaults">true to exclude, false to include the defaults.</param>
@@ -637,20 +630,6 @@ namespace SimpleStack.Orm.Expressions
 
 			return string.Format("UPDATE {0} SET {1} {2}",
 				dialectProvider.GetQuotedTableName(_modelDef), setFields, WhereExpression);
-		}
-
-		/// <summary>Converts this object to a select statement.</summary>
-		/// <returns>This object as a string.</returns>
-		public virtual string ToSelectStatement()
-		{
-			return DialectProvider.ToSelectStatement(this);
-		}
-
-		/// <summary>Converts this object to a count statement.</summary>
-		/// <returns>This object as a string.</returns>
-		public virtual string ToCountStatement()
-		{
-			return DialectProvider.ToCountStatement(this);
 		}
 
 		/// <summary>Visits the given exponent.</summary>
