@@ -1041,9 +1041,7 @@ namespace SimpleStack.Orm
 				fieldDef.FieldLength,
 				fieldDef.Scale,
 				fieldDef.DefaultValue);
-			return string.Format("ALTER TABLE {0} ADD COLUMN {1};",
-				GetQuotedTableName(modelType.GetModelDefinition().ModelName),
-				column);
+			return $"ALTER TABLE {GetQuotedTableName(modelType.GetModelDefinition().ModelName)} ADD COLUMN {column};";
 		}
 
 		/// <summary>Converts this object to an alter column statement.</summary>
@@ -1060,9 +1058,7 @@ namespace SimpleStack.Orm
 				fieldDef.FieldLength,
 				fieldDef.Scale,
 				fieldDef.DefaultValue);
-			return string.Format("ALTER TABLE {0} MODIFY COLUMN {1};",
-				GetQuotedTableName(modelType.GetModelDefinition().ModelName),
-				column);
+			return $"ALTER TABLE {GetQuotedTableName(modelType.GetModelDefinition().ModelName)} MODIFY COLUMN {column};";
 		}
 
 		/// <summary>Converts this object to a change column name statement.</summary>
@@ -1082,10 +1078,8 @@ namespace SimpleStack.Orm
 				fieldDef.FieldLength,
 				fieldDef.Scale,
 				fieldDef.DefaultValue);
-			return string.Format("ALTER TABLE {0} CHANGE COLUMN {1} {2};",
-				GetQuotedTableName(modelType.GetModelDefinition().ModelName),
-				GetQuotedColumnName(oldColumnName),
-				column);
+			return
+				$"ALTER TABLE {GetQuotedTableName(modelType.GetModelDefinition().ModelName)} CHANGE COLUMN {GetQuotedColumnName(oldColumnName)} {column};";
 		}
 
 		/// <summary>Converts this object to an add foreign key statement.</summary>
@@ -1109,7 +1103,7 @@ namespace SimpleStack.Orm
 			var referenceMD = ModelDefinition<TForeign>.Definition;
 			var referenceFieldName = referenceMD.GetFieldDefinition(foreignField).FieldName;
 
-			var name = GetQuotedName(String.IsNullOrEmpty(foreignKeyName)
+			var name = GetQuotedName(string.IsNullOrEmpty(foreignKeyName)
 				? "fk_" + sourceMD.ModelName + "_" + fieldName + "_" + referenceFieldName
 				: foreignKeyName);
 
@@ -1143,17 +1137,13 @@ namespace SimpleStack.Orm
 				unique ? " UNIQUE " : " ",
 				name,
 				GetQuotedTableName(sourceMD.ModelName),
-				GetQuotedColumnName(fieldName)
-				);
+				GetQuotedColumnName(fieldName));
 			return command;
 		}
 
 		public virtual string GetLimitExpression(int? skip, int? rows)
 		{
-			if (!skip.HasValue)
-				return String.Empty;
-
-			return string.Format("LIMIT {0}{1}", skip.Value, rows.HasValue ? string.Format(",{0}", rows.Value) : string.Empty);
+			return !skip.HasValue ? string.Empty : $"LIMIT {skip.Value}{(rows.HasValue ? $",{rows.Value}" : string.Empty)}";
 		}
 
 		/// <summary>Fk option to string.</summary>

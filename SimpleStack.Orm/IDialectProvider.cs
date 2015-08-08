@@ -21,19 +21,14 @@ namespace SimpleStack.Orm
 	/// <summary>Values that represent OnFkOption.</summary>
 	public enum OnFkOption
 	{
-
 		/// <summary>An enum constant representing the cascade option.</summary>
 		Cascade,
-
 		/// <summary>An enum constant representing the set null option.</summary>
 		SetNull,
-
 		/// <summary>An enum constant representing the no action option.</summary>
 		NoAction,
-
 		/// <summary>An enum constant representing the set default option.</summary>
 		SetDefault,
-
 		/// <summary>An enum constant representing the restrict option.</summary>
 		Restrict
 	}
@@ -266,7 +261,6 @@ namespace SimpleStack.Orm
 
 		string GetDropTableStatement(ModelDefinition modelDef);
 
-		#region DDL
 		/// <summary>Converts this object to an add column statement.</summary>
 		/// <param name="modelType">Type of the model.</param>
 		/// <param name="fieldDef"> The field definition.</param>
@@ -309,7 +303,6 @@ namespace SimpleStack.Orm
 		/// <returns>The given data converted to a string.</returns>
 		string ToCreateIndexStatement<T>(Expression<Func<T, object>> field,
 										 string indexName = null, bool unique = false);
-		#endregion DDL
 
 		string GetLimitExpression(int? skip, int? rows);
 
