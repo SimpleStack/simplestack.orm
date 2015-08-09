@@ -11,6 +11,12 @@ namespace SimpleStack.Orm.Tests
 {
 	public partial class ExpressionTests
 	{
+		public class NoPrimaryKey
+		{
+			public string Test { get; set; }
+			public string Test2 { get; set; }
+		}
+
 		[Test]
 		public void CanDeleteAllItems()
 		{
@@ -83,6 +89,30 @@ namespace SimpleStack.Orm.Tests
 				members = db.Select<Member>().ToArray();
 
 				Assert.AreEqual(2, members.Length);
+			}
+		}
+
+		[Test]
+		public void CanDedleteWithoutPrimaryKey()
+		{
+			using (var db = OpenDbConnection())
+			{
+				db.CreateTable<NoPrimaryKey>(true);
+
+				var npk = new NoPrimaryKey {Test = "coucou", Test2 = "Hello"};
+
+				db.Insert(npk);
+				db.Insert(new NoPrimaryKey {Test = "Hola"});
+				db.Insert(new NoPrimaryKey { Test = "Hi !" });
+				db.Insert(new NoPrimaryKey { Test = "coucou" });
+				db.Insert(new NoPrimaryKey { Test = "coucou", Test2 = "Hello" });
+				
+				Assert.AreEqual(5, db.Count<NoPrimaryKey>());
+
+				//DELETE FROM NoPrimaryKey Where Test = 'coucou' AND test2 = 'Hello'
+				db.Delete(npk);
+
+				Assert.AreEqual(3, db.Count<NoPrimaryKey>());
 			}
 		}
 

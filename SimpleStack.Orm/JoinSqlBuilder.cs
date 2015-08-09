@@ -69,7 +69,7 @@ namespace SimpleStack.Orm
 		{
 			var lst = ColumnList<T>(tableName, func, withTablePrefix);
 			if (lst == null || lst.Count != 1)
-				throw new Exception("Expression should have only one column");
+				throw new OrmException("Expression should have only one column");
 			return lst[0];
 		}
 
@@ -120,12 +120,12 @@ namespace SimpleStack.Orm
 			{
 				if (u.Method != null)
 				{
-					throw new Exception("Invalid Expression provided");
+					throw new OrmException("Invalid Expression provided");
 				}
 				PropertyList<T>(tableName, u.Operand, lst, withTablePrefix);
 				return;
 			}
-			throw new Exception("Invalid Expression provided");
+			throw new OrmException("Invalid Expression provided");
 		}
 
 		/// <summary>Process the member access.</summary>
@@ -150,7 +150,7 @@ namespace SimpleStack.Orm
 					lst.Add(string.Format("{0}{1}", _dialectProvider.GetQuotedColumnName(fieldName), string.IsNullOrEmpty(alias) ? string.Empty : string.Format(" AS {0}", _dialectProvider.GetQuotedColumnName(alias))));
 				return;
 			}
-			throw new Exception("Only Members are allowed");
+			throw new OrmException("Only Members are allowed");
 		}
 
 		/// <summary>Process the new.</summary>
@@ -163,7 +163,7 @@ namespace SimpleStack.Orm
 		private void ProcessNew<T>(string tableName, NewExpression nex, List<string> lst, bool withTablePrefix)
 		{
 			if (nex.Arguments == null || nex.Arguments.Count == 0)
-				throw new Exception("Only column list allowed");
+				throw new OrmException("Only column list allowed");
 
 			var expressionProperties = nex.Type.GetProperties();
 			for (int i = 0; i < nex.Arguments.Count; i++)
@@ -204,7 +204,7 @@ namespace SimpleStack.Orm
 					ProcessNew<T>(tableName, exp as NewExpression, lst, withTablePrefix);
 					return;
 			}
-			throw new Exception("Only columns are allowed");
+			throw new OrmException("Only columns are allowed");
 		}
 
 		public JoinSqlBuilder<TNewPoco, TBasePoco> SelectCountDistinct<T>(Expression<Func<T, object>> selectColumn)
@@ -222,7 +222,7 @@ namespace SimpleStack.Orm
 			Type associatedType = this.PreviousAssociatedType(typeof(T), typeof(T));
 			if (associatedType == null)
 			{
-				throw new Exception("Either the source or destination table should be associated ");
+				throw new OrmException("Either the source or destination table should be associated ");
 			}
 
 			this.columnList.AddRange(ColumnList(associatedType.GetModelDefinition().ModelName, selectColumns));
@@ -238,7 +238,7 @@ namespace SimpleStack.Orm
 			Type associatedType = this.PreviousAssociatedType(typeof(T), typeof(T));
 			if (associatedType == null)
 			{
-				throw new Exception("Either the source or destination table should be associated ");
+				throw new OrmException("Either the source or destination table should be associated ");
 			}
 			this.columnList.AddRange(ColumnList<T>());
 			return this;
@@ -308,7 +308,7 @@ namespace SimpleStack.Orm
 			Type associatedType = this.PreviousAssociatedType(typeof(T), typeof(T));
 			if (associatedType == null)
 			{
-				throw new Exception("Either the source or destination table should be associated ");
+				throw new OrmException("Either the source or destination table should be associated ");
 			}
 			isAggregateUsed = true;
 
@@ -317,7 +317,7 @@ namespace SimpleStack.Orm
 			var columns = ColumnList(associatedType.GetModelDefinition().ModelName, selectColumn);
 			if ((columns.Count == 0) || (columns.Count > 1))
 			{
-				throw new Exception("Expression should select only one Column ");
+				throw new OrmException("Expression should select only one Column ");
 			}
 			this.columnList.Add(string.Format(" {0}({1}{2}) ", functionName.ToUpper(), distinct ? "DISTINCT " : string.Empty, columns[0]));
 			return this;
@@ -369,7 +369,7 @@ namespace SimpleStack.Orm
 			Type associatedType = this.PreviousAssociatedType(typeof(T), typeof(T));
 			if (associatedType == null)
 			{
-				throw new Exception("Either the source or destination table should be associated ");
+				throw new OrmException("Either the source or destination table should be associated ");
 			}
 			var ev = _dialectProvider.ExpressionVisitor<T>();
 			ev.WhereStatementWithoutWhereString = true;
@@ -394,7 +394,7 @@ namespace SimpleStack.Orm
 			Type associatedType = this.PreviousAssociatedType(typeof(T), typeof(T));
 			if (associatedType == null)
 			{
-				throw new Exception("Either the source or destination table should be associated ");
+				throw new OrmException("Either the source or destination table should be associated ");
 			}
 
 			var lst = ColumnList(associatedType.GetModelDefinition().ModelName, orderByColumns);
@@ -530,7 +530,7 @@ namespace SimpleStack.Orm
 			Type associatedType = this.PreviousAssociatedType(typeof(TSourceTable), typeof(TDestinationTable));
 			if (associatedType == null)
 			{
-				throw new Exception("Either the source or destination table should be associated ");
+				throw new OrmException("Either the source or destination table should be associated ");
 			}
 
 			TJoin join = new TJoin();
@@ -649,7 +649,7 @@ namespace SimpleStack.Orm
 		{
 			if ((columnList.Count > (ignoreCurrentItem ? 0 : 1)) && (isAggregateUsed == true))
 			{
-				throw new Exception("Aggregate function cannot be used with non aggregate select columns");
+				throw new OrmException("Aggregate function cannot be used with non aggregate select columns");
 			}
 		}
 

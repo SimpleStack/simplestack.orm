@@ -486,7 +486,7 @@ namespace SimpleStack.Orm
 			var updateSql = string.Format("UPDATE {0} SET {1} {2}", GetQuotedTableName(modelDef), sql, ev.WhereExpression);
 
 			if (sql.Length == 0)
-				throw new Exception("No valid update properties provided (e.g. p => p.FirstName): " + updateSql);
+				throw new OrmException("No valid update properties provided (e.g. p => p.FirstName): " + updateSql);
 
 			return new CommandDefinition(updateSql, parameters);
 		}
@@ -558,7 +558,11 @@ namespace SimpleStack.Orm
 
 			var parameters = new Dictionary<string, object>();
 
-			foreach (var fieldDef in fields.Where(fieldDef => fieldDef.IsPrimaryKey))
+			bool hasPrimaryKey = fields.Any(x => x.IsPrimaryKey);
+
+			var queryFields = hasPrimaryKey ? fields.Where(x => x.IsPrimaryKey) : fields;
+
+			foreach (var fieldDef in queryFields)
 			{
 				if (whereSql.Length > 0)
 				{

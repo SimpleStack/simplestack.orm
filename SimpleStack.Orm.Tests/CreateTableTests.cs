@@ -37,7 +37,7 @@ namespace SimpleStack.Orm.Tests
 
 				AddMembers(db);
 
-				Assert.Throws<Exception>(() =>{db.CreateTable<Member>(false);});
+				Assert.Throws<OrmException>(() =>{db.CreateTable<Member>(false);});
 				
 				Assert.AreEqual(3, db.Count<Member>());
 			}

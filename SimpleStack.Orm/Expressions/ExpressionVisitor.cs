@@ -80,7 +80,7 @@ namespace SimpleStack.Orm.Expressions
                 case ExpressionType.ListInit:
                     return this.VisitListInit((ListInitExpression)exp);
                 default:
-                    throw new Exception(string.Format("Unhandled expression type: '{0}'", exp.NodeType));
+                    throw new OrmException(string.Format("Unhandled expression type: '{0}'", exp.NodeType));
             }
         }
 
@@ -99,7 +99,7 @@ namespace SimpleStack.Orm.Expressions
                 case MemberBindingType.ListBinding:
                     return this.VisitMemberListBinding((MemberListBinding)binding);
                 default:
-                    throw new Exception(string.Format("Unhandled binding type '{0}'", binding.BindingType));
+                    throw new OrmException(string.Format("Unhandled binding type '{0}'", binding.BindingType));
             }
         }
 

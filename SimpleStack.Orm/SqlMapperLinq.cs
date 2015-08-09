@@ -323,7 +323,7 @@ namespace SimpleStack.Orm
 		public void CreateTable<T>(bool dropIfExists)
 		{
 			if(!dropIfExists && TableExists<T>())
-				throw new Exception("Table already exists");
+				throw new OrmException("Table already exists");
 
 			var tableType = typeof (T);
 			CreateTable(dropIfExists, tableType);
