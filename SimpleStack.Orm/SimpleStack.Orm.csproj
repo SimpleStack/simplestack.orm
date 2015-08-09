@@ -77,8 +77,8 @@
     <Compile Include="OrmException.cs" />
     <Compile Include="OrmTransaction.cs" />
     <Compile Include="SqlMapperAsync.cs" />
-    <Compile Include="SqlMapperLinqAsync.cs" />
-    <Compile Include="SqlMapperLinq.cs" />
+    <Compile Include="OrmConnectionAsync.cs" />
+    <Compile Include="OrmConnectionSync.cs" />
     <Compile Include="Expressions\Sql.cs" />
     <Compile Include="Expressions\SqlExpressionVisitor.cs" />
     <Compile Include="DialectProviderBase.cs" />
