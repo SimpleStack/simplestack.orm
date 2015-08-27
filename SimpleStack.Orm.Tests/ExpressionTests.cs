@@ -157,7 +157,7 @@ namespace SimpleStack.Orm.Tests
 		{
 		}
 
-		protected override string ConnectionString => "server=localhost;user=postgres;password=depfac$2000;database=test;Enlist=true";
+		protected override string ConnectionString => "server=localhost;user id=postgres;password=depfac$2000;database=test;Enlist=true";
 	}
 	public class MySQLTests : ExpressionTests
 	{
