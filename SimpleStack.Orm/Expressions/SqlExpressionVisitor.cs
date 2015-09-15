@@ -1201,16 +1201,14 @@ namespace SimpleStack.Orm.Expressions
 		/// <returns>An object.</returns>
 		protected virtual object VisitSqlMethodCall(MethodCallExpression m)
 		{
-			var args = VisitExpressionList(m.Arguments);
-			var quotedColName = args[0];
-			args.RemoveAt(0);
+			var args = VisitSqlParameters(m.Arguments);
+			var quotedColName = args.Dequeue();
 
 			string statement;
 
 			switch (m.Method.Name)
 			{
 				case "In":
-
 					var member = Expression.Convert(m.Arguments[1], typeof(object));
 					var lambda = Expression.Lambda<Func<object>>(member);
 					var getter = lambda.Compile();
@@ -1220,20 +1218,16 @@ namespace SimpleStack.Orm.Expressions
 					var sIn = new StringBuilder();
 					foreach (var e in inArgs)
 					{
-						if (!typeof(ICollection).IsAssignableFrom(e.GetType()))
+						var listArgs = e as ICollection;
+						if (listArgs == null)
 						{
-							sIn.AppendFormat("{0}{1}",
-								sIn.Length > 0 ? "," : "",
-								AddParameter(e));
+							sIn.AppendFormat("{0}{1}",sIn.Length > 0 ? "," : string.Empty,AddParameter(e));
 						}
 						else
 						{
-							var listArgs = e as ICollection;
 							foreach (var el in listArgs)
 							{
-								sIn.AppendFormat("{0}{1}",
-									sIn.Length > 0 ? "," : "",
-									AddParameter(el));
+								sIn.AppendFormat("{0}{1}",sIn.Length > 0 ? "," : string.Empty, AddParameter(el));
 							}
 						}
 					}
@@ -1245,7 +1239,7 @@ namespace SimpleStack.Orm.Expressions
 					break;
 				case "As":
 					statement = string.Format("{0} As {1}", quotedColName,
-						DialectProvider.GetQuotedColumnName(RemoveQuoteFromAlias(args[0].ToString())));
+						DialectProvider.GetQuotedColumnName(RemoveQuoteFromAlias(args.Dequeue().ToString())));
 					break;
 				case "Sum":
 				case "Count":
@@ -1255,7 +1249,7 @@ namespace SimpleStack.Orm.Expressions
 					statement = string.Format("{0}({1}{2})",
 						m.Method.Name,
 						quotedColName,
-						args.Count == 1 ? string.Format(",{0}", args[0]) : "");
+						args.Count == 1 ? string.Format(",{0}", args.Dequeue()) : string.Empty);
 					break;
 				default:
 					throw new NotSupportedException();
@@ -1263,6 +1257,42 @@ namespace SimpleStack.Orm.Expressions
 
 			return new PartialSqlString(statement);
 		}
+
+		protected virtual Queue<object> VisitSqlParameters(ReadOnlyCollection<Expression> parameters)
+		{
+			var list = new Queue<object>();
+			foreach(var e in parameters)
+			{
+				switch (e.NodeType)
+				{
+					case ExpressionType.NewArrayInit:
+					case ExpressionType.NewArrayBounds:
+						foreach (var p in VisitNewArrayFromExpressionList(e as NewArrayExpression))
+						{
+							list.Enqueue(p);
+						}
+						break;
+					case ExpressionType.MemberAccess:
+						MemberExpression m  = e as MemberExpression;
+						var propertyInfo = m.Member as PropertyInfo;
+						if (propertyInfo != null && propertyInfo.PropertyType.IsEnum)
+							list.Enqueue(new EnumMemberAccess(
+								(PrefixFieldWithTableName ? DialectProvider.GetQuotedTableName(_modelDef.ModelName) + "." : string.Empty)
+								+ GetQuotedColumnName(m.Member.Name), propertyInfo.PropertyType));
+						else
+						{
+							list.Enqueue(new PartialSqlString((PrefixFieldWithTableName ? DialectProvider.GetQuotedTableName(_modelDef.ModelName) + "." : string.Empty)
+							                                  + GetQuotedColumnName(m.Member.Name)));
+						}
+						break;
+					default:
+						list.Enqueue(Visit(e));
+						break;
+				}
+			}
+			return list;
+		}
+
 
 		/// <summary>Visit column access method.</summary>
 		/// <exception cref="NotSupportedException">Thrown when the requested operation is not supported.</exception>

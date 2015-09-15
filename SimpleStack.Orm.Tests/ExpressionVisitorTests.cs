@@ -153,6 +153,33 @@ namespace SimpleStack.Orm.Tests
 			}
 		}
 
+		[Test]
+		public void Can_Select_Scalar_using_MAX()
+		{
+			SetupContext();
+			
+			var maxDate = OpenDbConnection().GetScalar<TestType2,DateTime>(x => Sql.Max(x.DateCol));
+			Assert.AreEqual(new DateTime(2012, 4, 1), maxDate);
+		}
+
+		[Test]
+		public void Can_Select_Scalar_using_MIN()
+		{
+			SetupContext();
+
+			var minDate = OpenDbConnection().GetScalar<TestType2, DateTime>(x => Sql.Min(x.DateCol));
+			Assert.AreEqual(new DateTime(2012, 1, 1), minDate);
+		}
+
+		[Test]
+		public void Can_Select_Scalar_using_SUM()
+		{
+			SetupContext();
+
+			var sumIds = OpenDbConnection().GetScalar<TestType2, int>(x => Sql.Sum(x.Id));
+			Assert.AreEqual(10, sumIds);
+		}
+
 		/// <summary>Can select using in.</summary>
 		[Test]
 		public void Can_Select_using_IN()

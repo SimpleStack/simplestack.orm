@@ -79,7 +79,7 @@ namespace SimpleStack.Orm.Tests
 		long CountByColumn<T>(OrmConnection db) where T : IHasCountColumn, new()
 		{
 			T request = new T();
-			return db.GetScalar<T, long?>(e => Sql.Count(request.CountColumn)).Value;
+			return db.GetScalar<T, long?>(e => Sql.Count(request.CountColumn)) ?? -1;
 		}
 
 		/// <summary>Counts.</summary>
