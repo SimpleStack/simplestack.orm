@@ -370,7 +370,7 @@ namespace SimpleStack.Orm.Expressions
 			_sep = string.Empty;
 			_useFieldName = true;
 			_groupBy = Visit(keySelector).ToString();
-			if (!string.IsNullOrEmpty(_groupBy)) _groupBy = string.Format("GROUP BY {0}", _groupBy);
+			if (!string.IsNullOrEmpty(_groupBy)) _groupBy = string.Format(" GROUP BY {0}", _groupBy);
 			return this;
 		}
 
