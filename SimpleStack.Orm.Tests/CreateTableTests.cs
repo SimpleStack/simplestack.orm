@@ -20,7 +20,7 @@ namespace SimpleStack.Orm.Tests
 
 				AddMembers(db);
 
-				Assert.AreEqual(3,db.Count<Member>());
+				Assert.AreEqual(3, db.Count<Member>());
 
 				db.CreateTableIfNotExists<Member>();
 
@@ -37,9 +37,23 @@ namespace SimpleStack.Orm.Tests
 
 				AddMembers(db);
 
-				Assert.Throws<OrmException>(() =>{db.CreateTable<Member>(false);});
-				
+				Assert.Throws<OrmException>(() => { db.CreateTable<Member>(false); });
+
 				Assert.AreEqual(3, db.Count<Member>());
+			}
+		}
+
+		class NoPKClass
+		{
+			public string test { get; set; }
+		}
+
+		[Test]
+		public void CreateTableWithoutPrimaryKey()
+		{
+			using (var db = OpenDbConnection())
+			{
+				db.CreateTable<NoPKClass>(true);
 			}
 		}
 	}

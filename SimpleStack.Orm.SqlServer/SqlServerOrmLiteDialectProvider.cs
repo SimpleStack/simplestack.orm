@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using System.Data.SqlClient;
 using System.Globalization;
 using System.IO;
@@ -42,19 +43,12 @@ namespace SimpleStack.Orm.SqlServer
 			DbTypeMap.Set<DateTimeOffset?>(DbType.DateTimeOffset, DateTimeOffsetColumnDefinition);
 		}
 
-		/// <summary>Gets quoted parameter.</summary>
-		/// <param name="paramValue">The parameter value.</param>
-		/// <returns>The quoted parameter.</returns>
-		public override string GetQuotedParam(string paramValue)
-		{
-			return (UseUnicode ? "N'" : "'") + paramValue.Replace("'", "''") + "'";
-		}
 
 		/// <summary>Creates a connection.</summary>
 		/// <param name="connectionString">The connection string.</param>
 		/// <param name="options">         Options for controlling the operation.</param>
 		/// <returns>The new connection.</returns>
-		public override IDbConnection CreateIDbConnection(string connectionString)
+		public override DbConnection CreateIDbConnection(string connectionString)
 		{
 			var isFullConnectionString = connectionString.Contains(";");
 
@@ -340,17 +334,17 @@ namespace SimpleStack.Orm.SqlServer
 		/// <param name="fieldDef">     The field definition.</param>
 		/// <param name="oldColumnName">Name of the old column.</param>
 		/// <returns>The given data converted to a string.</returns>
-		public override string ToChangeColumnNameStatement(Type modelType, FieldDefinition fieldDef, string oldColumnName)
-		{
-			var objectName = string.Format("{0}.{1}",
-				NamingStrategy.GetTableName(GetModel(modelType).ModelName),
-				oldColumnName);
+		//public override string ToChangeColumnNameStatement(Type modelType, FieldDefinition fieldDef, string oldColumnName)
+		//{
+		//	var objectName = string.Format("{0}.{1}",
+		//		NamingStrategy.GetTableName(GetModel(modelType).ModelName),
+		//		oldColumnName);
 
-			return string.Format("EXEC sp_rename {0}, {1}, {2};",
-								 GetQuotedParam(objectName),
-								 GetQuotedParam(fieldDef.FieldName),
-								 GetQuotedParam("COLUMN"));
-		}
+		//	return string.Format("EXEC sp_rename {0}, {1}, {2};",
+		//						 GetQuotedParam(objectName),
+		//						 GetQuotedParam(fieldDef.FieldName),
+		//						 GetQuotedParam("COLUMN"));
+		//}
 
 		public override CommandDefinition ToSelectStatement<T>(SqlExpressionVisitor<T> visitor, CommandFlags flags)
 		{

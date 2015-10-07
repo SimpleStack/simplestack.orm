@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using System.Text;
 using Dapper;
 using SimpleStack.Orm.Expressions;
@@ -122,7 +123,7 @@ namespace SimpleStack.Orm.PostgreSQL
 		/// <param name="connectionString">The connection string.</param>
 		/// <param name="options">         Options for controlling the operation.</param>
 		/// <returns>The new connection.</returns>
-		public override IDbConnection CreateIDbConnection(string connectionString)
+		public override DbConnection CreateIDbConnection(string connectionString)
 		{
 			return new NpgsqlConnection(connectionString);
 		}

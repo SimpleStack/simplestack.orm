@@ -12,6 +12,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
@@ -140,35 +141,6 @@ namespace SimpleStack.Orm
 		/// <value>The naming strategy.</value>
 		public INamingStrategy NamingStrategy { get; set; }
 
-		/// <summary>Gets quoted value.</summary>
-		/// <exception cref="NotSupportedException">Thrown when the requested operation is not supported.</exception>
-		/// <param name="value">    The value.</param>
-		/// <param name="fieldType">Type of the field.</param>
-		/// <returns>The quoted value.</returns>
-		//[Obsolete("Use parameters everywhere")]
-		//public virtual string GetQuotedValue(object value, Type fieldType)
-		//{
-		//	if (value == null) return "NULL";
-
-		//	if (!fieldType.UnderlyingSystemType.IsValueType && fieldType != typeof(string))
-		//	{
-		//		return Config.DialectProvider.GetQuotedParam(value.ToString());
-		//	}
-		//	//TODO: vdaorn: DateTime
-		//	if (fieldType == typeof(float))
-		//		return ((float)value).ToString(CultureInfo.InvariantCulture);
-
-		//	if (fieldType == typeof(double))
-		//		return ((double)value).ToString(CultureInfo.InvariantCulture);
-
-		//	if (fieldType == typeof(decimal))
-		//		return ((decimal)value).ToString(CultureInfo.InvariantCulture);
-
-		//	return ShouldQuoteValue(fieldType)
-		//		? Config.DialectProvider.GetQuotedParam(value.ToString())
-		//		: value.ToString();
-		//}
-
 		/// <summary>Creates a connection.</summary>
 		/// <param name="connectionString">Connection String.</param>
 		/// <returns>The new connection.</returns>
@@ -177,18 +149,7 @@ namespace SimpleStack.Orm
 			return new OrmConnection(CreateIDbConnection(connectionString),this);
 		}
 
-		public abstract IDbConnection CreateIDbConnection(string connectionString);
-
-		/// <summary>
-		///     Quote the string so that it can be used inside an SQL-expression Escape quotes inside the
-		///     string.
-		/// </summary>
-		/// <param name="paramValue">.</param>
-		/// <returns>The quoted parameter.</returns>
-		public virtual string GetQuotedParam(string paramValue)
-		{
-			return "'" + paramValue.Replace("'", "''") + "'";
-		}
+		public abstract DbConnection CreateIDbConnection(string connectionString);
 
 		public string GetParameterName(int parameterCount)
 		{

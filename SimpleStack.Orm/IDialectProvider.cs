@@ -52,14 +52,6 @@ namespace SimpleStack.Orm
 		/// <value>The naming strategy.</value>
 		INamingStrategy NamingStrategy { get; set; }
 
-		/// <summary>
-		/// Quote the string so that it can be used inside an SQL-expression Escape quotes inside the
-		/// string.
-		/// </summary>
-		/// <param name="paramValue">.</param>
-		/// <returns>The quoted parameter.</returns>
-		string GetQuotedParam(string paramValue);
-
 		string GetParameterName(int parameterCount);
 
 		///// <summary>Gets quoted value.</summary>

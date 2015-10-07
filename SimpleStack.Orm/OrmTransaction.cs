@@ -1,44 +1,43 @@
 ﻿using System.Data;
+using System.Data.Common;
 
 namespace SimpleStack.Orm
 {
-	public class OrmTransaction : IDbTransaction
+	public class OrmTransaction : DbTransaction
 	{
-		/// <summary>The previous transaction.</summary>
-		private readonly OrmTransaction prevTrans;
-
 		/// <summary>The transaction.</summary>
-		internal readonly IDbTransaction trans;
+		internal readonly DbTransaction trans;
 
 		/// <summary>The database.</summary>
 		private readonly OrmConnection db;
+
+		private bool _isOpen;
 
 		/// <summary>
 		/// Initializes a new instance of the NServiceKit.OrmLite.OrmLiteTransaction class.
 		/// </summary>
 		/// <param name="db">   The database.</param>
 		/// <param name="trans">The transaction.</param>
-		internal OrmTransaction(OrmConnection db, IDbTransaction trans)
+		internal OrmTransaction(OrmConnection db, DbTransaction trans)
 		{
 			this.db = db;
 			this.trans = trans;
+			_isOpen = true;
 		}
 
-		/// <summary>
-		/// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged
-		/// resources.
-		/// </summary>
-		public void Dispose()
-		{
-			Dispose(true);
-		}
 
-		protected virtual void Dispose(bool disposing)
+		protected override void Dispose(bool disposing)
 		{
 			if (disposing)
 			{
+				if (_isOpen)
+				{
+					Rollback();
+				}
+
 				trans.Dispose();
 				db.ClearCurrrentTransaction();
+				base.Dispose(true);
 			}
 		}
 
@@ -51,10 +50,11 @@ namespace SimpleStack.Orm
 		///                     -or-
 		/// 
 		///                     The connection is broken.</exception>
-		public void Commit()
+		public override void Commit()
 		{
 			trans.Commit();
 			db.ClearCurrrentTransaction();
+			_isOpen = false;
 		}
 
 		/// <summary>Rolls back a transaction from a pending state.</summary>
@@ -66,23 +66,14 @@ namespace SimpleStack.Orm
 		///                     -or-
 		/// 
 		///                     The connection is broken.</exception>
-		public void Rollback()
+		public override void Rollback()
 		{
 			trans.Rollback();
 			db.ClearCurrrentTransaction();
+			_isOpen = false;
 		}
 
-		/// <summary>Specifies the Connection object to associate with the transaction.</summary>
-		/// <value>The Connection object to associate with the transaction.</value>
-		public IDbConnection Connection => trans.Connection;
-
-		/// <summary>
-		/// Specifies the <see cref="T:System.Data.IsolationLevel" /> for this transaction.
-		/// </summary>
-		/// <value>
-		/// The <see cref="T:System.Data.IsolationLevel" /> for this transaction. The default is
-		/// ReadCommitted.
-		/// </value>
-		public IsolationLevel IsolationLevel => trans.IsolationLevel;
+		protected override DbConnection DbConnection => trans.Connection;
+		public override IsolationLevel IsolationLevel => trans.IsolationLevel;
 	}
 }

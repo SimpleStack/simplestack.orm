@@ -1,5 +1,6 @@
 using System;
 using System.Data;
+using System.Data.Common;
 using System.IO;
 using System.Reflection;
 using System.Text;
@@ -72,7 +73,7 @@ namespace SimpleStack.Orm.Sqlite
 		/// <param name="connectionString">The connection string.</param>
 		/// <param name="options">         Options for controlling the operation.</param>
 		/// <returns>The new connection.</returns>
-		public override IDbConnection CreateIDbConnection(string connectionString)
+		public override DbConnection CreateIDbConnection(string connectionString)
 		{
 			var isFullConnectionString = connectionString.Contains(";");
 			var connString = new StringBuilder();

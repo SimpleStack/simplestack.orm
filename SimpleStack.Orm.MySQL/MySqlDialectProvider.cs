@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using System.Text;
 using Dapper;
 using SimpleStack.Orm.Attributes;
@@ -36,56 +37,16 @@ namespace SimpleStack.Orm.MySQL
     	    base.SelectIdentitySql = "SELECT LAST_INSERT_ID()";
         }
 
-        /// <summary>Gets quoted parameter.</summary>
-        /// <param name="paramValue">The parameter value.</param>
-        /// <returns>The quoted parameter.</returns>
-        public override string GetQuotedParam(string paramValue)
-        {
-            return "'" + paramValue.Replace("\\", "\\\\").Replace("'", @"\'") + "'";
-        }
-
         /// <summary>Creates a connection.</summary>
         /// <param name="connectionString">The connection string.</param>
         /// <param name="options">         Options for controlling the operation.</param>
         /// <returns>The new connection.</returns>
-		public override IDbConnection CreateIDbConnection(string connectionString)
+		public override DbConnection CreateIDbConnection(string connectionString)
         {
-            return new MySqlConnection(connectionString);
+            var c= new MySqlConnection(connectionString);
+	        return c;
+
         }
-
-        /// <summary>Gets quoted value.</summary>
-        /// <param name="value">    The value.</param>
-        /// <param name="fieldType">Type of the field.</param>
-		///// <returns>The quoted value.</returns>
-		//public override string GetQuotedValue(object value, Type fieldType)
-		//{
-		//	if (value == null) return "NULL";
-
-		//	if (fieldType == typeof(DateTime))
-		//	{
-		//		var dateValue = (DateTime)value;
-		//		/*
-		//		 * ms not contained in format. MySql ignores ms part anyway
-		//		 * 
-		//		 * for more details see: http://dev.mysql.com/doc/refman/5.1/en/datetime.html
-		//		 */
-		//		const string dateTimeFormat = "yyyy-MM-dd HH:mm:ss"; 
-
-		//		return base.GetQuotedValue(dateValue.ToString(dateTimeFormat), typeof(string));
-		//	}
-		//	if (fieldType == typeof(Guid))
-		//	{
-		//		var guidValue = (Guid)value;
-		//		return base.GetQuotedValue(guidValue.ToString("N"), typeof(string));
-		//	}
-
-		//	if (fieldType == typeof(byte[]))
-		//	{
-		//		return "0x" + BitConverter.ToString((byte[])value).Replace("-", "");
-		//	}
-
-		//	return base.GetQuotedValue(value, fieldType);
-		//}
 
         /// <summary>Gets quoted table name.</summary>
         /// <param name="modelDef">The model definition.</param>
