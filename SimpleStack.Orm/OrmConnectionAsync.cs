@@ -225,6 +225,11 @@ namespace SimpleStack.Orm
 			return await this.ExecuteScalarAsync<int>(cmd);
 		}
 
+		public async Task<int> InsertAsync<T>(T obj)
+		{
+			return await this.ExecuteScalarAsync<int>(DialectProvider.ToInsertRowStatement(obj));
+		}
+
 		/// <summary>An OrmConnection extension method that inserts all.</summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		/// <param name="objs">  The objects.</param>

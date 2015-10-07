@@ -1257,6 +1257,38 @@ namespace SimpleStack.Orm.Expressions
 
 			return new PartialSqlString(statement);
 		}
+		protected virtual List<object> VisitInSqlExpressionList(ReadOnlyCollection<Expression> original)
+		{
+			var list = new List<object>();
+			for (int i = 0, n = original.Count; i < n; i++)
+			{
+				var e = original[i];
+				if (e.NodeType == ExpressionType.NewArrayInit ||
+					 e.NodeType == ExpressionType.NewArrayBounds)
+				{
+					list.AddRange(VisitNewArrayFromExpressionList(e as NewArrayExpression));
+				}
+				else if (e.NodeType == ExpressionType.MemberAccess)
+				{
+					MemberExpression m  = e as MemberExpression;
+					var propertyInfo = m.Member as PropertyInfo;
+					if (propertyInfo != null && propertyInfo.PropertyType.IsEnum)
+						list.Add(new EnumMemberAccess(
+							 (PrefixFieldWithTableName ? DialectProvider.GetQuotedTableName(_modelDef.ModelName) + "." : string.Empty)
+						+ GetQuotedColumnName(m.Member.Name), propertyInfo.PropertyType));
+					else
+					{
+						list.Add(new PartialSqlString((PrefixFieldWithTableName ? DialectProvider.GetQuotedTableName(_modelDef.ModelName) + "." : string.Empty)
+							+ GetQuotedColumnName(m.Member.Name)));
+					}
+				}
+				else
+				{
+					list.Add(Visit(e));
+				}
+			}
+			return list;
+		}
 
 		protected virtual Queue<object> VisitSqlParameters(ReadOnlyCollection<Expression> parameters)
 		{
