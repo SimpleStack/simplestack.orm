@@ -42,7 +42,7 @@ namespace SimpleStack.Orm
 		public string DateTimeColumnDefinition = "DATETIME";
 
 		/// <summary>The database type map.</summary>
-		[Obsolete]
+		//TODO: vdaron : merge DBTypes and ITypeMap from Dapper
 		protected DbTypes<TDialect> DbTypeMap = new DbTypes<TDialect>();
 
 		/// <summary>The decimal column definition.</summary>
