@@ -188,5 +188,6 @@ namespace SimpleStack.Orm.Tests
 		}
 
 		protected override string ConnectionString => @"Data Source=e:\mydb.db;Version=3;New=True;";
+		//protected override string ConnectionString => @":memory:";
 	}
 }
