@@ -45,6 +45,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\SolutionInfo.cs">
+      <Link>SolutionInfo.cs</Link>
+    </Compile>
     <Compile Include="PostgreSQLDialectProvider.cs" />
     <Compile Include="PostgreSQLExpressionVisitor.cs" />
     <Compile Include="PostgreSqlNamingStrategy.cs" />

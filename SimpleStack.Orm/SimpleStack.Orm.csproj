@@ -44,6 +44,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\SolutionInfo.cs">
+      <Link>SolutionInfo.cs</Link>
+    </Compile>
     <Compile Include="Attributes\AliasAttribute.cs" />
     <Compile Include="Attributes\AutoIncrementAttribute.cs" />
     <Compile Include="Attributes\BelongToAttribute.cs" />
