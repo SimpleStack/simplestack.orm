@@ -50,6 +50,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AdditiveExpressionsTest.cs" />
+    <Compile Include="AsynchronousTests.cs" />
     <Compile Include="ConditionalExpressionTests.cs" />
     <Compile Include="CountTests.cs" />
     <Compile Include="CreateTableTests.cs" />
