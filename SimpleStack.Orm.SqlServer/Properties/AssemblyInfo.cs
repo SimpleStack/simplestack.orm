@@ -6,9 +6,9 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("SimpleStack.Orm.SqlServer")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("SimpleStack.Orm SQLServer support")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("Vincent DARON & Contributors")]
 [assembly: AssemblyProduct("SimpleStack.Orm.SqlServer")]
 [assembly: AssemblyCopyright("Copyright ©  2015")]
 [assembly: AssemblyTrademark("")]

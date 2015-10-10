@@ -42,6 +42,7 @@ namespace SimpleStack.Orm.Tests
 		}
 
 		[Test]
+		[NUnit.Framework.Ignore]
 		public void BulkInsert()
 		{
 			var members = new List<Member>();
