@@ -10,7 +10,7 @@ namespace SimpleStack.Orm
 {
 	public partial class OrmConnection
 	{
-		/// <summary>An IDbConnection extension method that selects.</summary>
+		/// <summary>An OrmConnection method that selects.</summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		/// <param name="predicate">The predicate.</param>
 		/// <param name="buffered"></param>
@@ -22,7 +22,7 @@ namespace SimpleStack.Orm
 			return this.Query<T>(DialectProvider.ToSelectStatement(ev.Where(predicate), flags));
 		}
 
-		/// <summary>An IDbConnection extension method that selects.</summary>
+		/// <summary>An OrmConnection method that selects.</summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		/// <param name="expression">The expression.</param>
 		/// <param name="buffered"></param>
@@ -34,7 +34,7 @@ namespace SimpleStack.Orm
 			return this.Query<T>(DialectProvider.ToSelectStatement(expression(ev),flags));
 		}
 
-		/// <summary>An IDbConnection extension method that selects.</summary>
+		/// <summary>An OrmConnection method that selects.</summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		/// <param name="expression">The expression.</param>
 		/// <param name="buffered"></param>
@@ -44,7 +44,7 @@ namespace SimpleStack.Orm
 			return this.Query<T>(DialectProvider.ToSelectStatement(expression,flags));
 		}
 
-		/// <summary>An IDbConnection extension method that selects.</summary>
+		/// <summary>An OrmConnection method that selects.</summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		/// <param name="buffered"></param>
 		/// <returns>A List&lt;T&gt;</returns>
@@ -53,7 +53,7 @@ namespace SimpleStack.Orm
 			return this.Query<T>(DialectProvider.ToSelectStatement(DialectProvider.ExpressionVisitor<T>(),flags));
 		}
 
-		/// <summary>An IDbConnection extension method that selects based on a JoinSqlBuilder.</summary>
+		/// <summary>An OrmConnection method that selects based on a JoinSqlBuilder.</summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		/// <typeparam name="V"></typeparam>
 		/// <param name="sqlBuilder"></param>
@@ -64,7 +64,7 @@ namespace SimpleStack.Orm
 			return this.Query<T>(sqlBuilder.ToSql(), sqlBuilder.Parameters, buffered: buffered);
 		}
 
-		/// <summary>An IDbConnection extension method that firsts.</summary>
+		/// <summary>An OrmConnection method that firsts.</summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		
 		/// <param name="predicate">The predicate.</param>
@@ -75,7 +75,7 @@ namespace SimpleStack.Orm
 			return Select(ev.Where(predicate).Limit(1)).First();
 		}
 
-		/// <summary>An IDbConnection extension method that firsts.</summary>
+		/// <summary>An OrmConnection method that firsts.</summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		
 		/// <param name="expression">The expression.</param>
@@ -85,7 +85,7 @@ namespace SimpleStack.Orm
 			return Select(expression.Limit(1)).First();
 		}
 
-		/// <summary>An IDbConnection extension method that first or default.</summary>
+		/// <summary>An OrmConnection method that first or default.</summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		
 		/// <param name="predicate">The predicate.</param>
@@ -96,7 +96,7 @@ namespace SimpleStack.Orm
 			return Select(ev.Where(predicate).Limit(1)).FirstOrDefault();
 		}
 
-		/// <summary>An IDbConnection extension method that first or default.</summary>
+		/// <summary>An OrmConnection method that first or default.</summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		
 		/// <param name="expression">The expression.</param>
@@ -106,7 +106,7 @@ namespace SimpleStack.Orm
 			return Select(expression.Limit(1)).FirstOrDefault();
 		}
 
-		/// <summary>An IDbConnection extension method that gets a scalar.</summary>
+		/// <summary>An OrmConnection method that gets a scalar.</summary>
 		/// <typeparam name="T">   Generic type parameter.</typeparam>
 		/// <typeparam name="TKey">Type of the key.</typeparam>
 		
@@ -119,7 +119,7 @@ namespace SimpleStack.Orm
 			return this.ExecuteScalar<TKey>(DialectProvider.ToSelectStatement(ev.Select(field),CommandFlags.None));
 		}
 
-		/// <summary>An IDbConnection extension method that gets a scalar.</summary>
+		/// <summary>An OrmConnection method that gets a scalar.</summary>
 		/// <typeparam name="T">   Generic type parameter.</typeparam>
 		/// <typeparam name="TKey">Type of the key.</typeparam>
 		
@@ -140,7 +140,7 @@ namespace SimpleStack.Orm
 		}
 
 		/// <summary>
-		///    An IDbConnection extension method that counts the given database connection.
+		///    An OrmConnection method that counts the given database connection.
 		/// </summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		/// <param name="expression">The expression.</param>
@@ -151,7 +151,7 @@ namespace SimpleStack.Orm
 		}
 
 		/// <summary>
-		///    An IDbConnection extension method that counts the given database connection.
+		///    An OrmConnection method that counts the given database connection.
 		/// </summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		/// <param name="expression">The expression.</param>
@@ -163,7 +163,7 @@ namespace SimpleStack.Orm
 		}
 
 		/// <summary>
-		///    An IDbConnection extension method that counts the given database connection.
+		///    An OrmConnection method that counts the given database connection.
 		/// </summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		
@@ -172,7 +172,7 @@ namespace SimpleStack.Orm
 			return Count(DialectProvider.ExpressionVisitor<T>());
 		}
 
-		/// <summary>An IDbConnection extension method that updates the only.</summary>
+		/// <summary>An OrmConnection method that updates the only.</summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		
 		/// <param name="model">     The model.</param>
@@ -185,7 +185,7 @@ namespace SimpleStack.Orm
 			return Update(model, onlyFields(DialectProvider.ExpressionVisitor<T>()));
 		}
 
-		/// <summary>An IDbConnection extension method that updates the only.</summary>
+		/// <summary>An OrmConnection method that updates the only.</summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		
 		/// <param name="model">     The model.</param>
@@ -199,7 +199,7 @@ namespace SimpleStack.Orm
 			return this.ExecuteScalar<int>(cmd);
 		}
 
-		/// <summary>An IDbConnection extension method that updates the only.</summary>
+		/// <summary>An OrmConnection method that updates the only.</summary>
 		/// <typeparam name="T">   Generic type parameter.</typeparam>
 		/// <typeparam name="TKey">Type of the key.</typeparam>
 		
@@ -221,7 +221,7 @@ namespace SimpleStack.Orm
 			return Update(obj, ev);
 		}
 
-		/// <summary>An IDbConnection extension method that updates this object.</summary>
+		/// <summary>An OrmConnection method that updates this object.</summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		
 		/// <param name="updateOnly">The update only.</param>
@@ -243,7 +243,7 @@ namespace SimpleStack.Orm
 			this.ExecuteScalar(DialectProvider.ToInsertRowStatement(obj));
 		}
 
-		/// <summary>An IDbConnection extension method that inserts all.</summary>
+		/// <summary>An OrmConnection method that inserts all.</summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		/// <param name="objs">  The objects.</param>
 		public void Insert<T>(IEnumerable<T> objs)
@@ -254,7 +254,7 @@ namespace SimpleStack.Orm
 			}
 		}
 
-		/// <summary>An IDbConnection extension method that inserts an only.</summary>
+		/// <summary>An OrmConnection method that inserts an only.</summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		/// <param name="obj">       The object.</param>
 		/// <param name="onlyFields">The only fields.</param>
@@ -264,7 +264,7 @@ namespace SimpleStack.Orm
 			InsertOnly(obj, onlyFields(ev));
 		}
 
-		/// <summary>An IDbConnection extension method that inserts an only.</summary>
+		/// <summary>An OrmConnection method that inserts an only.</summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		/// <param name="obj">       The object.</param>
 		/// <param name="onlyFields">The only fields.</param>
@@ -283,7 +283,7 @@ namespace SimpleStack.Orm
 			return Delete(ev.Where(where));
 		}
 
-		/// <summary>An IDbConnection extension method that deletes this object.</summary>
+		/// <summary>An OrmConnection method that deletes this object.</summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		/// <param name="where"> The where.</param>
 		/// <returns>An int.</returns>
@@ -346,7 +346,7 @@ namespace SimpleStack.Orm
 			return DialectProvider.DoesTableExist(this, tableName);
 		}
 
-		/// <summary>An IDbCommand extension method that creates a table.</summary>
+		/// <summary>An IDbCommand method that creates a table.</summary>
 		/// <exception cref="Exception">Thrown when an exception error condition occurs.</exception>
 		/// <param name="overwrite">true to overwrite, false to preserve.</param>
 		/// <param name="modelType">Type of the model.</param>

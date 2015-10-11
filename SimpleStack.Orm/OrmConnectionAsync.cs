@@ -10,7 +10,7 @@ namespace SimpleStack.Orm
 {
 	public partial class OrmConnection
 	{
-		/// <summary>An OrmConnection extension method that selects.</summary>
+		/// <summary>An OrmConnection method that selects.</summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		/// <param name="predicate">The predicate.</param>
 		/// <param name="flags"></param>
@@ -21,7 +21,7 @@ namespace SimpleStack.Orm
 			return await this.QueryAsync<T>(DialectProvider.ToSelectStatement(ev.Where(predicate),flags));
 		}
 
-		/// <summary>An OrmConnection extension method that selects.</summary>
+		/// <summary>An OrmConnection method that selects.</summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		/// <param name="expression">The expression.</param>
 		/// <returns>A List&lt;T&gt;</returns>
@@ -31,7 +31,7 @@ namespace SimpleStack.Orm
 			return await this.QueryAsync<T>(DialectProvider.ToSelectStatement(expression(ev),flags));
 		}
 
-		/// <summary>An OrmConnection extension method that selects.</summary>
+		/// <summary>An OrmConnection method that selects.</summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		/// <param name="expression">The expression.</param>
 		/// <returns>A List&lt;T&gt;</returns>
@@ -40,7 +40,7 @@ namespace SimpleStack.Orm
 			return await this.QueryAsync<T>(DialectProvider.ToSelectStatement(expression,flags));
 		}
 
-		/// <summary>An OrmConnection extension method that selects.</summary>
+		/// <summary>An OrmConnection method that selects.</summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		/// <returns>A List&lt;T&gt;</returns>
 		public async Task<IEnumerable<T>> SelectAsync<T>(CommandFlags flags = CommandFlags.Buffered)
@@ -48,7 +48,7 @@ namespace SimpleStack.Orm
 			return await this.QueryAsync<T>(DialectProvider.ToSelectStatement(DialectProvider.ExpressionVisitor<T>(),flags));
 		}
 
-		/// <summary>An OrmConnection extension method that selects based on a JoinSqlBuilder.</summary>
+		/// <summary>An OrmConnection method that selects based on a JoinSqlBuilder.</summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		/// <typeparam name="V"></typeparam>
 		/// <returns>A List&lt;T&gt;</returns>
@@ -57,7 +57,7 @@ namespace SimpleStack.Orm
 			return await this.QueryAsync<T>(sqlBuilder.ToSql(), sqlBuilder.Parameters);
 		}
 
-		/// <summary>An OrmConnection extension method that firsts.</summary>
+		/// <summary>An OrmConnection method that firsts.</summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		/// <param name="predicate">The predicate.</param>
 		/// <returns>A T.</returns>
@@ -68,7 +68,7 @@ namespace SimpleStack.Orm
 			return r.First();
 		}
 
-		/// <summary>An OrmConnection extension method that firsts.</summary>
+		/// <summary>An OrmConnection method that firsts.</summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		/// <param name="expression">The expression.</param>
 		/// <returns>A T.</returns>
@@ -78,7 +78,7 @@ namespace SimpleStack.Orm
 			return r.First();
 		}
 
-		/// <summary>An OrmConnection extension method that first or default.</summary>
+		/// <summary>An OrmConnection method that first or default.</summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		/// <param name="predicate">The predicate.</param>
 		/// <returns>A T.</returns>
@@ -89,7 +89,7 @@ namespace SimpleStack.Orm
 			return r.FirstOrDefault();
 		}
 
-		/// <summary>An OrmConnection extension method that first or default.</summary>
+		/// <summary>An OrmConnection method that first or default.</summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		/// <param name="expression">The expression.</param>
 		/// <returns>A T.</returns>
@@ -99,7 +99,7 @@ namespace SimpleStack.Orm
 			return r.FirstOrDefault();
 		}
 
-		/// <summary>An OrmConnection extension method that gets a scalar.</summary>
+		/// <summary>An OrmConnection method that gets a scalar.</summary>
 		/// <typeparam name="T">   Generic type parameter.</typeparam>
 		/// <typeparam name="TKey">Type of the key.</typeparam>
 		/// <param name="field"> The field.</param>
@@ -111,7 +111,7 @@ namespace SimpleStack.Orm
 			return await this.ExecuteScalarAsync<TKey>(DialectProvider.ToSelectStatement(ev.Select(field),CommandFlags.None));
 		}
 
-		/// <summary>An OrmConnection extension method that gets a scalar.</summary>
+		/// <summary>An OrmConnection method that gets a scalar.</summary>
 		/// <typeparam name="T">   Generic type parameter.</typeparam>
 		/// <typeparam name="TKey">Type of the key.</typeparam>
 		/// <param name="field">    The field.</param>
@@ -131,7 +131,7 @@ namespace SimpleStack.Orm
 		}
 
 		/// <summary>
-		///    An OrmConnection extension method that counts the given database connection.
+		///    An OrmConnection method that counts the given database connection.
 		/// </summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		/// <param name="expression">The expression.</param>
@@ -142,7 +142,7 @@ namespace SimpleStack.Orm
 		}
 
 		/// <summary>
-		///    An OrmConnection extension method that counts the given database connection.
+		///    An OrmConnection method that counts the given database connection.
 		/// </summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		/// <param name="expression">The expression.</param>
@@ -154,7 +154,7 @@ namespace SimpleStack.Orm
 		}
 
 		/// <summary>
-		///    An OrmConnection extension method that counts the given database connection.
+		///    An OrmConnection method that counts the given database connection.
 		/// </summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		/// <returns>A long.</returns>
@@ -163,7 +163,7 @@ namespace SimpleStack.Orm
 			return await CountAsync(DialectProvider.ExpressionVisitor<T>());
 		}
 
-		/// <summary>An OrmConnection extension method that updates the only.</summary>
+		/// <summary>An OrmConnection method that updates the only.</summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		/// <param name="model">     The model.</param>
 		/// <param name="onlyFields">The only fields.</param>
@@ -175,7 +175,7 @@ namespace SimpleStack.Orm
 			return await UpdateAsync(model, onlyFields(DialectProvider.ExpressionVisitor<T>()));
 		}
 
-		/// <summary>An OrmConnection extension method that updates the only.</summary>
+		/// <summary>An OrmConnection method that updates the only.</summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		/// <param name="model">     The model.</param>
 		/// <param name="expression">The only fields.</param>
@@ -188,7 +188,7 @@ namespace SimpleStack.Orm
 			return await this.ExecuteScalarAsync<int>(cmd);
 		}
 
-		/// <summary>An OrmConnection extension method that updates the only.</summary>
+		/// <summary>An OrmConnection method that updates the only.</summary>
 		/// <typeparam name="T">   Generic type parameter.</typeparam>
 		/// <typeparam name="TKey">Type of the key.</typeparam>
 		/// <param name="obj">       The object.</param>
@@ -209,7 +209,7 @@ namespace SimpleStack.Orm
 			return await UpdateAsync(obj, ev);
 		}
 
-		/// <summary>An OrmConnection extension method that updates this object.</summary>
+		/// <summary>An OrmConnection method that updates this object.</summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		/// <param name="updateOnly">The update only.</param>
 		/// <param name="where">     The where.</param>
@@ -230,7 +230,7 @@ namespace SimpleStack.Orm
 			return await this.ExecuteScalarAsync<int>(DialectProvider.ToInsertRowStatement(obj));
 		}
 
-		/// <summary>An OrmConnection extension method that inserts all.</summary>
+		/// <summary>An OrmConnection method that inserts all.</summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		/// <param name="objs">  The objects.</param>
 		public async Task<int> InsertAsync<T>(IEnumerable<T> objs)
@@ -245,7 +245,7 @@ namespace SimpleStack.Orm
 			return count;
 		}
 
-		/// <summary>An OrmConnection extension method that inserts an only.</summary>
+		/// <summary>An OrmConnection method that inserts an only.</summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		/// <param name="obj">       The object.</param>
 		/// <param name="onlyFields">The only fields.</param>
@@ -256,7 +256,7 @@ namespace SimpleStack.Orm
 			return await InsertOnlyAsync(obj, onlyFields(ev));
 		}
 
-		/// <summary>An OrmConnection extension method that inserts an only.</summary>
+		/// <summary>An OrmConnection method that inserts an only.</summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		/// <param name="obj">       The object.</param>
 		/// <param name="onlyFields">The only fields.</param>
@@ -267,7 +267,7 @@ namespace SimpleStack.Orm
 			return await this.ExecuteAsync(sql);
 		}
 
-		/// <summary>An OrmConnection extension method that deletes this object.</summary>
+		/// <summary>An OrmConnection method that deletes this object.</summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		/// <param name="where"> The where.</param>
 		/// <returns>An int.</returns>
@@ -277,7 +277,7 @@ namespace SimpleStack.Orm
 			return await DeleteAsync(ev.Where(where));
 		}
 
-		/// <summary>An OrmConnection extension method that deletes this object.</summary>
+		/// <summary>An OrmConnection method that deletes this object.</summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		/// <param name="where"> The where.</param>
 		/// <returns>An int.</returns>
@@ -286,7 +286,7 @@ namespace SimpleStack.Orm
 			return await DeleteAsync(where(DialectProvider.ExpressionVisitor<T>()));
 		}
 
-		/// <summary>An OrmConnection extension method that deletes this object.</summary>
+		/// <summary>An OrmConnection method that deletes this object.</summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		/// <param name="where"> The where.</param>
 		/// <returns>An int.</returns>
@@ -295,7 +295,7 @@ namespace SimpleStack.Orm
 			return await this.ExecuteScalarAsync<int>(DialectProvider.ToDeleteRowStatement(where));
 		}
 
-		/// <summary>An OrmConnection extension method that deletes this object.</summary>
+		/// <summary>An OrmConnection method that deletes this object.</summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		/// <param name="where"> The where.</param>
 		/// <returns>An int.</returns>
