@@ -217,15 +217,15 @@ namespace SimpleStack.Orm.Sqlite
 		}
 
 		/// <summary>Query if 'dbCmd' does table exist.</summary>
-		/// <param name="dbCmd">    The database command.</param>
+		/// <param name="connection">    The database command.</param>
 		/// <param name="tableName">Name of the table.</param>
 		/// <returns>true if it succeeds, false if it fails.</returns>
-		public override bool DoesTableExist(IDbConnection dbCmd, string tableName)
+		public override bool DoesTableExist(IDbConnection connection, string tableName)
 		{
 			var sql = String.Format("SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name = '{0}'"
 				, tableName);
 
-			var result = dbCmd.ExecuteScalar<int>(sql);
+			var result = connection.ExecuteScalar<int>(sql);
 
 			return result > 0;
 		}

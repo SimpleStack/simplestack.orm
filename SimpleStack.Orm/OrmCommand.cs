@@ -5,20 +5,25 @@ using System.Data.Common;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using SimpleStack.Orm.Logging;
 
 namespace SimpleStack.Orm
 {
 	class OrmCommand : DbCommand
 	{
+		private static readonly ILog Logger = LogProvider.For<OrmCommand>();
+
 		private readonly DbCommand _command;
 
 		internal OrmCommand(DbCommand command)
 		{
+			Logger.Debug("Creating Command");
 			_command = command;
 		}
 		
 		public override void Prepare()
 		{
+			Logger.Debug("Preparing command");
 			_command.Prepare();
 		}
 
@@ -33,6 +38,7 @@ namespace SimpleStack.Orm
 
 		public override void Cancel()
 		{
+			Logger.DebugFormat("Cancelling command: {0}", CommandText);
 			_command.Cancel();
 		}
 
@@ -43,17 +49,26 @@ namespace SimpleStack.Orm
 
 		protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior)
 		{
-			return _command.ExecuteReader(behavior);
+			Logger.DebugFormat("Before ExecuteDbDataReader : {0}",CommandText);
+			var res = _command.ExecuteReader(behavior);
+			Logger.Debug("After ExecuteDbDataReader");
+			return res;
 		}
 
 		public override int ExecuteNonQuery()
 		{
-			return _command.ExecuteNonQuery();
+			Logger.DebugFormat("Before ExecuteNonQuery: {0}", CommandText);
+			var res = _command.ExecuteNonQuery();
+			Logger.Debug("After ExecuteNonQuery");
+			return res;
 		}
 
 		public override object ExecuteScalar()
 		{
-			return _command.ExecuteScalar();
+			Logger.DebugFormat("Before ExecuteScalar: {0}", CommandText);
+			var res = _command.ExecuteScalar();
+			Logger.Debug("After ExecuteScalar");
+			return res;
 		}
 	}
 }

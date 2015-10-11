@@ -1,10 +1,13 @@
 ﻿using System.Data;
 using System.Data.Common;
+using SimpleStack.Orm.Logging;
 
 namespace SimpleStack.Orm
 {
 	public class OrmTransaction : DbTransaction
 	{
+		private static readonly ILog Logger = LogProvider.For<OrmTransaction>();
+
 		/// <summary>The transaction.</summary>
 		internal readonly DbTransaction trans;
 
@@ -20,6 +23,7 @@ namespace SimpleStack.Orm
 		/// <param name="trans">The transaction.</param>
 		internal OrmTransaction(OrmConnection db, DbTransaction trans)
 		{
+			Logger.Debug("Begin Transaction");
 			this.db = db;
 			this.trans = trans;
 			_isOpen = true;
@@ -51,7 +55,8 @@ namespace SimpleStack.Orm
 		///                     The connection is broken.</exception>
 		public override void Commit()
 		{
-			trans.Commit();
+			Logger.Debug("Commit");
+         trans.Commit();
 			db.ClearCurrrentTransaction();
 			_isOpen = false;
 		}
@@ -67,6 +72,7 @@ namespace SimpleStack.Orm
 		///                     The connection is broken.</exception>
 		public override void Rollback()
 		{
+			Logger.Debug("Rollback");
 			trans.Rollback();
 			db.ClearCurrrentTransaction();
 			_isOpen = false;

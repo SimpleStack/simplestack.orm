@@ -1,11 +1,14 @@
 ﻿using System.Data;
 using System.Data.Common;
 using System.Data.SqlClient;
+using SimpleStack.Orm.Logging;
 
 namespace SimpleStack.Orm
 {
 	public partial class OrmConnection : DbConnection
 	{
+		private static readonly ILog Logger = LogProvider.For<OrmConnection>();
+
 		public IDialectProvider DialectProvider { get; }
 
 		public int CommandTimeout { get; set; }
@@ -38,6 +41,8 @@ namespace SimpleStack.Orm
 			{
 				if (DbConnection != null)
 				{
+					Close();
+
 					DbConnection.Dispose();
 					DbConnection = null;
 				}
@@ -61,6 +66,7 @@ namespace SimpleStack.Orm
 		{
 			if (_isOpen)
 			{
+				Logger.DebugFormat("Closing Connection");
 				DbConnection.Close();
 				_isOpen = false;
 			}
@@ -73,6 +79,7 @@ namespace SimpleStack.Orm
 
 		public override void Open()
 		{
+			Logger.DebugFormat("Opening Connection");
 			DbConnection.Open();
 			_isOpen = true;
 		}

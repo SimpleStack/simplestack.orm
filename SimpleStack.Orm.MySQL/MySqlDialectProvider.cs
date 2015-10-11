@@ -89,20 +89,20 @@ namespace SimpleStack.Orm.MySQL
 		}
 
         /// <summary>Query if 'dbCmd' does table exist.</summary>
-        /// <param name="dbCmd">    The database command.</param>
+        /// <param name="connection">    The database command.</param>
         /// <param name="tableName">Name of the table.</param>
         /// <returns>true if it succeeds, false if it fails.</returns>
-		public override bool DoesTableExist(IDbConnection dbCmd, string tableName)
+		public override bool DoesTableExist(IDbConnection connection, string tableName)
 		{
 			//Same as SQL Server apparently?
 			var sql = String.Format("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES " +
 				"WHERE TABLE_NAME = '{0}' AND " +
-				"TABLE_SCHEMA = '{1}'",tableName, dbCmd.Database);
+				"TABLE_SCHEMA = '{1}'",tableName, connection.Database);
 
 			//if (!string.IsNullOrEmpty(schemaName))
 			//    sql += " AND TABLE_SCHEMA = {0}".SqlFormat(schemaName);
 
-			var result = dbCmd.ExecuteScalar<long>(sql);
+			var result = connection.ExecuteScalar<long>(sql);
 
 			return result > 0;
 		}

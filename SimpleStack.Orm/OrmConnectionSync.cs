@@ -397,23 +397,19 @@ namespace SimpleStack.Orm
 			}
 		}
 
-		/// <summary>Drop table.</summary>
-		/// <param name="dbConn">   The dbCmd to act on.</param>
+		/// <summary>Drop table (Table MUST exists).</summary>
 		/// <param name="modelDef">The model definition.</param>
 		private void DropTable(ModelDefinition modelDef)
 		{
 			var dialectProvider = DialectProvider;
 			var tableName = dialectProvider.NamingStrategy.GetTableName(modelDef.ModelName);
 
-			if (DialectProvider.DoesTableExist(this, tableName))
+			var dropTableFks = DialectProvider.GetDropForeignKeyConstraints(modelDef);
+			if (!string.IsNullOrEmpty(dropTableFks))
 			{
-				var dropTableFks = DialectProvider.GetDropForeignKeyConstraints(modelDef);
-				if (!string.IsNullOrEmpty(dropTableFks))
-				{
-					this.Execute(dropTableFks);
-				}
-				this.Execute(DialectProvider.GetDropTableStatement(modelDef));
+				this.Execute(dropTableFks);
 			}
+			this.Execute(DialectProvider.GetDropTableStatement(modelDef));
 		}
 	}
 }

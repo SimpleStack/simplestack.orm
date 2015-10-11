@@ -684,10 +684,10 @@ namespace SimpleStack.Orm
 		}
 
 		/// <summary>Query if 'dbCmd' does table exist.</summary>
-		/// <param name="db">       The database.</param>
+		/// <param name="connection">       The database.</param>
 		/// <param name="tableName">Name of the table.</param>
 		/// <returns>true if it succeeds, false if it fails.</returns>
-		public virtual bool DoesTableExist(IDbConnection db, string tableName)
+		public virtual bool DoesTableExist(IDbConnection connection, string tableName)
 		{
 			return false;
 		}

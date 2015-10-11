@@ -208,10 +208,10 @@ namespace SimpleStack.Orm
 		List<string> SequenceList(ModelDefinition modelDefinition);
 
 		/// <summary>Query if 'dbCmd' does table exist.</summary>
-		/// <param name="db">       The database.</param>
+		/// <param name="connection">       The database.</param>
 		/// <param name="tableName">Name of the table.</param>
 		/// <returns>true if it succeeds, false if it fails.</returns>
-		bool DoesTableExist(IDbConnection db, string tableName);
+		bool DoesTableExist(IDbConnection connection, string tableName);
 
 		/// <summary>Query if 'dbCmd' does table exist.</summary>
 		/// <param name="dbCmd">    The database command.</param>

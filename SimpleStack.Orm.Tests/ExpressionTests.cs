@@ -55,6 +55,7 @@ namespace SimpleStack.Orm.Tests
 		protected ExpressionTests(IDialectProvider dialectProvider)
 		{
 			_dialectProvider = dialectProvider;
+			Logging.LogProvider.SetCurrentLogProvider(new ColoredConsoleLogProvider());
 		}
 
 		[SetUp]

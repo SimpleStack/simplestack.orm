@@ -179,59 +179,17 @@ namespace SimpleStack.Orm.PostgreSQL
 		}
 
 		/// <summary>Query if 'dbCmd' does table exist.</summary>
-		/// <param name="dbCmd">    The database command.</param>
+		/// <param name="connection">    The database command.</param>
 		/// <param name="tableName">Name of the table.</param>
 		/// <returns>true if it succeeds, false if it fails.</returns>
-		public override bool DoesTableExist(IDbConnection dbCmd, string tableName)
+		public override bool DoesTableExist(IDbConnection connection, string tableName)
 		{
-			var sql = String.Format("SELECT COUNT(*) FROM pg_class WHERE relname = '{0}'"
-				, tableName);
-			var conn = dbCmd;
-			if (conn != null)
-			{
-				var builder = new NpgsqlConnectionStringBuilder(conn.ConnectionString);
-				// If a search path (schema) is specified, and there is only one, then assume the CREATE TABLE directive should apply to that schema.
-				if (!String.IsNullOrEmpty(builder.SearchPath) && !builder.SearchPath.Contains(","))
-					sql = String.Format("SELECT COUNT(*) FROM pg_class JOIN pg_catalog.pg_namespace n ON n.oid = pg_class.relnamespace WHERE relname = '{0}' AND nspname = '{1}'"
-						  , tableName, builder.SearchPath);
-			}
-			var result = dbCmd.ExecuteScalar<long>(sql);
+			var result = connection.ExecuteScalar<long>(
+				"SELECT COUNT(*) FROM pg_class WHERE relname = :table", 
+				new { table = tableName});
 
 			return result > 0;
 		}
-
-		/// <summary>Converts the objWithProperties to an execute procedure statement.</summary>
-		/// <exception cref="Exception">Thrown when an exception error condition occurs.</exception>
-		/// <param name="objWithProperties">The object with properties.</param>
-		/// <returns>objWithProperties as a string.</returns>
-		//public override string ToExecuteProcedureStatement(object objWithProperties)
-		//{
-		//	var sbColumnValues = new StringBuilder();
-
-		//	var tableType = objWithProperties.GetType();
-		//	var modelDef = GetModel(tableType);
-
-		//	foreach (var fieldDef in modelDef.FieldDefinitions)
-		//	{
-		//		if (sbColumnValues.Length > 0) sbColumnValues.Append(",");
-		//		try
-		//		{
-		//			sbColumnValues.Append(fieldDef.GetQuotedValue(objWithProperties));
-		//		}
-		//		catch (Exception)
-		//		{
-		//			throw;
-		//		}
-		//	}
-
-		//	var sql = string.Format("{0} {1}{2}{3};",
-		//		GetQuotedTableName(modelDef),
-		//		sbColumnValues.Length > 0 ? "(" : "",
-		//		sbColumnValues,
-		//		sbColumnValues.Length > 0 ? ")" : "");
-
-		//	return sql;
-		//}
 
 		/// <summary>Gets quoted table name.</summary>
 		/// <param name="modelDef">The model definition.</param>
