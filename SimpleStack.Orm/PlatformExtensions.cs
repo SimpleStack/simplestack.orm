@@ -1,108 +1,29 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
 
 namespace SimpleStack.Orm
 {
 	public static class PlatformExtensions
 	{
-		private static readonly Dictionary<string, List<Attribute>> propertyAttributesMap = new Dictionary<string, List<Attribute>>();
-		private const string DataContract = "DataContractAttribute";
-
 		private static readonly Regex InvalidVarCharsRegex = new Regex("[^A-Za-z0-9]", RegexOptions.Compiled);
-		private static Dictionary<Type, object> DefaultValueTypes = new Dictionary<Type, object>();
-		public static object GetDefaultValue(this Type type)
-		{
-			if (!PlatformExtensions.IsValueType(type))
-				return (object)null;
-			object instance;
-			if (DefaultValueTypes.TryGetValue(type, out instance))
-				return instance;
-			instance = Activator.CreateInstance(type);
-			Dictionary<Type, object> comparand;
-			Dictionary<Type, object> dictionary;
-			do
-			{
-				comparand = DefaultValueTypes;
-				dictionary = new Dictionary<Type, object>((IDictionary<Type, object>)DefaultValueTypes);
-				dictionary[type] = instance;
-			}
-			while (!object.ReferenceEquals((object)Interlocked.CompareExchange<Dictionary<Type, object>>(ref DefaultValueTypes, dictionary, comparand), (object)comparand));
-			return instance;
-		}
 
 		public static string SafeVarName(this string text)
 		{
 			if (string.IsNullOrEmpty(text))
-				return (string)null;
+				return null;
 			return InvalidVarCharsRegex.Replace(text, "_");
 		}
 
-		/// <summary>A ModelDefinition extension method that gets column names.</summary>
-		/// <param name="tableType">The tableType to act on.</param>
-		/// <returns>The column names.</returns>
-		//internal static string GetColumnNames(this Type tableType)
-		//{
-		//	var modelDefinition = tableType.GetModelDefinition();
-		//	return GetColumnNames(modelDefinition);
-		//}
-
-		/// <summary>A ModelDefinition extension method that gets column names.</summary>
-		/// <param name="modelDef">The modelDef to act on.</param>
-		/// <returns>The column names.</returns>
-		//public static string GetColumnNames(this ModelDefinition modelDef)
-		//{
-		//	var sqlColumns = new StringBuilder();
-		//	modelDef.FieldDefinitions.ForEach(x =>
-		//		sqlColumns.AppendFormat("{0}{1} ", sqlColumns.Length > 0 ? "," : "",
-		//		  Config.DialectProvider.GetQuotedColumnName(x.FieldName)));
-
-		//	return sqlColumns.ToString();
-		//}
-
-		/// <summary>A string extension method that SQL format.</summary>
-		/// <param name="sqlText">  The sqlText to act on.</param>
-		/// <param name="sqlParams">Options for controlling the SQL.</param>
-		/// <returns>A string.</returns>
-		//public static string SqlFormat(this string sqlText, params object[] sqlParams)
-		//{
-		//	var escapedParams = new List<string>();
-		//	foreach (var sqlParam in sqlParams)
-		//	{
-		//		if (sqlParam == null)
-		//		{
-		//			escapedParams.Add("NULL");
-		//		}
-		//		else
-		//		{
-		//			//var sqlInValues = sqlParam as SqlInValues;
-		//			//if (sqlInValues != null)
-		//			//{
-		//			//	escapedParams.Add(sqlInValues.ToSqlInString());
-		//			//}
-		//			//else
-		//			//{
-		//			escapedParams.Add(Config.DialectProvider.GetQuotedValue(sqlParam, sqlParam.GetType()));
-		//			//}
-		//		}
-		//	}
-		//	return string.Format(sqlText, escapedParams.ToArray());
-		//}
-
-
-
 		public static PropertyInfo[] GetPublicProperties(this Type type)
 		{
-			if (!PlatformExtensions.IsInterface(type))
-				return Enumerable.ToArray<PropertyInfo>(Enumerable.Where<PropertyInfo>((IEnumerable<PropertyInfo>)PlatformExtensions.GetTypesPublicProperties(type), (Func<PropertyInfo, bool>)(t => t.GetIndexParameters().Length == 0)));
-			List<PropertyInfo> propertyInfos = new List<PropertyInfo>();
+			if (!IsInterface(type))
+				return GetTypesPublicProperties(type).Where(t => t.GetIndexParameters().Length == 0).ToArray();
+			var propertyInfos = new List<PropertyInfo>();
 			List<Type> list = new List<Type>();
 			Queue<Type> queue = new Queue<Type>();
 			list.Add(type);
@@ -110,7 +31,7 @@ namespace SimpleStack.Orm
 			while (queue.Count > 0)
 			{
 				Type type1 = queue.Dequeue();
-				foreach (Type type2 in PlatformExtensions.GetTypeInterfaces(type1))
+				foreach (Type type2 in GetTypeInterfaces(type1))
 				{
 					if (!list.Contains(type2))
 					{
@@ -118,7 +39,7 @@ namespace SimpleStack.Orm
 						queue.Enqueue(type2);
 					}
 				}
-				IEnumerable<PropertyInfo> collection = Enumerable.Where<PropertyInfo>((IEnumerable<PropertyInfo>)PlatformExtensions.GetTypesPublicProperties(type1), (Func<PropertyInfo, bool>)(x => !propertyInfos.Contains(x)));
+				IEnumerable<PropertyInfo> collection = GetTypesPublicProperties(type1).Where(x => !propertyInfos.Contains(x));
 				propertyInfos.InsertRange(0, collection);
 			}
 			return propertyInfos.ToArray();
@@ -201,31 +122,31 @@ namespace SimpleStack.Orm
 
 		public static bool HasAttribute<T>(this Type type)
 		{
-			return Enumerable.Any<object>((IEnumerable<object>)PlatformExtensions.AllAttributes(type), (Func<object, bool>)(x => x.GetType() == typeof(T)));
+			return AllAttributes(type).Any(x => x.GetType() == typeof(T));
 		}
 
 		public static bool HasAttributeNamed(this Type type, string name)
 		{
 			string normalizedAttr = name.Replace("Attribute", "").ToLower();
-			return Enumerable.Any<object>((IEnumerable<object>)PlatformExtensions.AllAttributes(type), (Func<object, bool>)(x => x.GetType().Name.Replace("Attribute", "").ToLower() == normalizedAttr));
+			return AllAttributes(type).Any(x => x.GetType().Name.Replace("Attribute", "").ToLower() == normalizedAttr);
 		}
 
 		public static bool HasAttributeNamed(this PropertyInfo pi, string name)
 		{
 			string normalizedAttr = name.Replace("Attribute", "").ToLower();
-			return Enumerable.Any<object>((IEnumerable<object>)PlatformExtensions.AllAttributes(pi), (Func<object, bool>)(x => x.GetType().Name.Replace("Attribute", "").ToLower() == normalizedAttr));
+			return AllAttributes(pi).Any(x => x.GetType().Name.Replace("Attribute", "").ToLower() == normalizedAttr);
 		}
 
 		public static bool HasAttributeNamed(this FieldInfo fi, string name)
 		{
 			string normalizedAttr = name.Replace("Attribute", "").ToLower();
-			return Enumerable.Any<object>((IEnumerable<object>)PlatformExtensions.AllAttributes(fi), (Func<object, bool>)(x => x.GetType().Name.Replace("Attribute", "").ToLower() == normalizedAttr));
+			return AllAttributes(fi).Any(x => x.GetType().Name.Replace("Attribute", "").ToLower() == normalizedAttr);
 		}
 
 		public static bool HasAttributeNamed(this MemberInfo mi, string name)
 		{
 			string normalizedAttr = name.Replace("Attribute", "").ToLower();
-			return Enumerable.Any<object>((IEnumerable<object>)PlatformExtensions.AllAttributes(mi), (Func<object, bool>)(x => x.GetType().Name.Replace("Attribute", "").ToLower() == normalizedAttr));
+			return AllAttributes(mi).Any(x => x.GetType().Name.Replace("Attribute", "").ToLower() == normalizedAttr);
 		}
 
 		public static MethodInfo PropertyGetMethod(this PropertyInfo pi, bool nonPublic = false)
@@ -248,8 +169,6 @@ namespace SimpleStack.Orm
 			TypeDescriptor.AddAttributes(type, attrs);
 			return type;
 		}
-
-
 
 		public static object[] AllAttributes(this ParameterInfo paramInfo)
 		{
@@ -281,59 +200,59 @@ namespace SimpleStack.Orm
 			return fieldInfo.GetCustomAttributes(attrType, true);
 		}
 
-		public static object[] AllAttributes(this Type type)
+		public static Attribute[] AllAttributes(this Type type)
 		{
-			return Enumerable.ToArray<object>(Enumerable.Cast<object>((IEnumerable)TypeDescriptor.GetAttributes(type)));
+			return TypeDescriptor.GetAttributes(type).Cast<Attribute>().ToArray();
 		}
 
-		public static object[] AllAttributes(this Type type, Type attrType)
+		public static Attribute[] AllAttributes(this Type type, Type attrType)
 		{
-			return (object[])Enumerable.ToArray<Attribute>(Enumerable.OfType<Attribute>((IEnumerable)TypeDescriptor.GetAttributes(type)));
+			return TypeDescriptor.GetAttributes(type).OfType<Attribute>().ToArray();
 		}
 
 		public static TAttr[] AllAttributes<TAttr>(this ParameterInfo pi)
 		{
-			return Enumerable.ToArray<TAttr>(Enumerable.Cast<TAttr>((IEnumerable)PlatformExtensions.AllAttributes(pi, typeof(TAttr))));
+			return AllAttributes(pi, typeof(TAttr)).Cast<TAttr>().ToArray<TAttr>();
 		}
 
 		public static TAttr[] AllAttributes<TAttr>(this MemberInfo mi)
 		{
-			return Enumerable.ToArray<TAttr>(Enumerable.Cast<TAttr>((IEnumerable)PlatformExtensions.AllAttributes(mi, typeof(TAttr))));
+			return AllAttributes(mi, typeof(TAttr)).Cast<TAttr>().ToArray<TAttr>();
 		}
 
 		public static TAttr[] AllAttributes<TAttr>(this FieldInfo fi)
 		{
-			return Enumerable.ToArray<TAttr>(Enumerable.Cast<TAttr>((IEnumerable)PlatformExtensions.AllAttributes(fi, typeof(TAttr))));
+			return AllAttributes(fi, typeof(TAttr)).Cast<TAttr>().ToArray<TAttr>();
 		}
 
 		public static TAttr[] AllAttributes<TAttr>(this PropertyInfo pi)
 		{
-			return Enumerable.ToArray<TAttr>(Enumerable.Cast<TAttr>((IEnumerable)PlatformExtensions.AllAttributes(pi, typeof(TAttr))));
+			return AllAttributes(pi, typeof(TAttr)).Cast<TAttr>().ToArray<TAttr>();
 		}
 
 		public static TAttr[] AllAttributes<TAttr>(this Type type)
 		{
-			return Enumerable.ToArray<TAttr>(Enumerable.OfType<TAttr>((IEnumerable)TypeDescriptor.GetAttributes(type)));
+			return TypeDescriptor.GetAttributes(type).OfType<TAttr>().ToArray<TAttr>();
 		}
 
 		public static TAttr FirstAttribute<TAttr>(this Type type) where TAttr : class
 		{
-			return Enumerable.FirstOrDefault<TAttr>(Enumerable.OfType<TAttr>((IEnumerable)TypeDescriptor.GetAttributes(type)));
+			return TypeDescriptor.GetAttributes(type).OfType<TAttr>().FirstOrDefault<TAttr>();
 		}
 
 		public static TAttribute FirstAttribute<TAttribute>(this MemberInfo memberInfo)
 		{
-			return Enumerable.FirstOrDefault<TAttribute>((IEnumerable<TAttribute>)PlatformExtensions.AllAttributes<TAttribute>(memberInfo));
+			return AllAttributes<TAttribute>(memberInfo).FirstOrDefault<TAttribute>();
 		}
 
 		public static TAttribute FirstAttribute<TAttribute>(this ParameterInfo paramInfo)
 		{
-			return Enumerable.FirstOrDefault<TAttribute>((IEnumerable<TAttribute>)PlatformExtensions.AllAttributes<TAttribute>(paramInfo));
+			return AllAttributes<TAttribute>(paramInfo).FirstOrDefault<TAttribute>();
 		}
 
 		public static TAttribute FirstAttribute<TAttribute>(this PropertyInfo propertyInfo)
 		{
-			return Enumerable.FirstOrDefault<TAttribute>((IEnumerable<TAttribute>)PlatformExtensions.AllAttributes<TAttribute>(propertyInfo));
+			return AllAttributes<TAttribute>(propertyInfo).FirstOrDefault<TAttribute>();
 		}
 
 		public static bool IsDynamic(this Assembly assembly)
@@ -342,7 +261,7 @@ namespace SimpleStack.Orm
 			{
 				return assembly is AssemblyBuilder || string.IsNullOrEmpty(assembly.Location);
 			}
-			catch (NotSupportedException ex)
+			catch (NotSupportedException)
 			{
 				return true;
 			}
@@ -351,7 +270,7 @@ namespace SimpleStack.Orm
 		public static MethodInfo GetPublicStaticMethod(this Type type, string methodName, Type[] types = null)
 		{
 			if (types != null)
-				return type.GetMethod(methodName, BindingFlags.Static | BindingFlags.Public, (Binder)null, types, (ParameterModifier[])null);
+				return type.GetMethod(methodName, BindingFlags.Static | BindingFlags.Public, null, types, null);
 			return type.GetMethod(methodName, BindingFlags.Static | BindingFlags.Public);
 		}
 
@@ -447,7 +366,7 @@ namespace SimpleStack.Orm
 		public static bool IsEnumFlags(this Type type)
 		{
 			if (type.IsEnum)
-				return PlatformExtensions.FirstAttribute<FlagsAttribute>(type) != null;
+				return FirstAttribute<FlagsAttribute>(type) != null;
 			return false;
 		}
 
@@ -480,18 +399,12 @@ namespace SimpleStack.Orm
 
 		public static string GetDeclaringTypeName(this Type type)
 		{
-			if (type.DeclaringType != (Type)null)
-				return type.DeclaringType.Name;
-			if (type.ReflectedType != (Type)null)
-				return type.ReflectedType.Name;
-			return (string)null;
+			return type.DeclaringType?.Name ?? type.ReflectedType?.Name;
 		}
 
 		public static string GetDeclaringTypeName(this MemberInfo mi)
 		{
-			if (mi.DeclaringType != (Type)null)
-				return mi.DeclaringType.Name;
-			return mi.ReflectedType.Name;
+			return mi.DeclaringType?.Name ?? mi.ReflectedType?.Name;
 		}
 	}
 }

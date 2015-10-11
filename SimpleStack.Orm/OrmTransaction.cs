@@ -24,8 +24,7 @@ namespace SimpleStack.Orm
 			this.trans = trans;
 			_isOpen = true;
 		}
-
-
+		
 		protected override void Dispose(bool disposing)
 		{
 			if (disposing)

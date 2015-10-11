@@ -16,8 +16,7 @@ namespace SimpleStack.Orm
 		{
 			_command = command;
 		}
-
-
+		
 		public override void Prepare()
 		{
 			_command.Prepare();

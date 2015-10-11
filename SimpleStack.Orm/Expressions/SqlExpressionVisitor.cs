@@ -157,14 +157,6 @@ namespace SimpleStack.Orm.Expressions
 
 		public bool IsDistinct { get; private set; }
 
-		/// <summary>Gets or sets the update fields.</summary>
-		/// <value>The update fields.</value>
-		//public IList<string> UpdateFields
-		//{
-		//	get { return _updateFields; }
-		//	set { _updateFields = value; }
-		//}
-
 		/// <summary>Gets or sets the insert fields.</summary>
 		/// <value>The insert fields.</value>
 		public IList<string> InsertFields
@@ -357,7 +349,7 @@ namespace SimpleStack.Orm.Expressions
 		/// <returns>A SqlExpressionVisitor&lt;T&gt;</returns>
 		public virtual SqlExpressionVisitor<T> GroupBy(string groupBy)
 		{
-			this._groupBy = groupBy;
+			_groupBy = groupBy;
 			return this;
 		}
 
@@ -373,30 +365,6 @@ namespace SimpleStack.Orm.Expressions
 			if (!string.IsNullOrEmpty(_groupBy)) _groupBy = string.Format(" GROUP BY {0}", _groupBy);
 			return this;
 		}
-
-		/// <summary>Havings the given predicate.</summary>
-		/// <returns>A SqlExpressionVisitor&lt;T&gt;</returns>
-		//public virtual SqlExpressionVisitor<T> Having()
-		//{
-		//	return Having(string.Empty);
-		//}
-
-		/// <summary>Havings the given predicate.</summary>
-		/// <param name="sqlFilter">   A filter specifying the SQL.</param>
-		/// <param name="filterParams">Options for controlling the filter.</param>
-		/// <returns>A SqlExpressionVisitor&lt;T&gt;</returns>
-		//public virtual SqlExpressionVisitor<T> Having(string sqlFilter, params object[] filterParams)
-		//{
-		//	_havingExpression = !string.IsNullOrEmpty(sqlFilter) ? 
-		//		sqlFilter.SqlFormat(filterParams) : 
-		//		string.Empty;
-
-		//	if (!string.IsNullOrEmpty(_havingExpression))
-		//	{
-		//		_havingExpression = "HAVING " + _havingExpression;
-		//	}
-		//	return this;
-		//}
 
 		/// <summary>Havings the given predicate.</summary>
 		/// <param name="predicate">The predicate.</param>
@@ -429,7 +397,7 @@ namespace SimpleStack.Orm.Expressions
 		public virtual SqlExpressionVisitor<T> OrderBy(string orderBy)
 		{
 			_orderByProperties.Clear();
-			this._orderBy = orderBy;
+			_orderBy = orderBy;
 			return this;
 		}
 
@@ -538,21 +506,7 @@ namespace SimpleStack.Orm.Expressions
 			Rows = null;
 			return this;
 		}
-
-		/// <summary>Fields to be updated.</summary>
-		/// <param name="updateFields">The update fields.</param>
-		/// <returns>A SqlExpressionVisitor&lt;T&gt;</returns>
-		/// ###
-		/// <param name="updatefields">
-		///     IList&lt;string&gt; containing Names of properties to be
-		///     updated.
-		/// </param>
-		//public virtual SqlExpressionVisitor<T> Update(IList<string> updateFields)
-		//{
-		//	this._updateFields = updateFields;
-		//	return this;
-		//}
-
+		
 		/// <summary>Fields to be updated.</summary>
 		/// <typeparam name="TKey">objectWithProperties.</typeparam>
 		/// <param name="fields">x=> x.SomeProperty1 or x=> new{ x.SomeProperty1, x.SomeProperty2}</param>
@@ -590,7 +544,7 @@ namespace SimpleStack.Orm.Expressions
 		/// <returns>A SqlExpressionVisitor&lt;T&gt;</returns>
 		public virtual SqlExpressionVisitor<T> Insert(IList<string> insertFields)
 		{
-			this._insertFields = insertFields;
+			_insertFields = insertFields;
 			return this;
 		}
 
@@ -600,36 +554,6 @@ namespace SimpleStack.Orm.Expressions
 		{
 			_insertFields = new List<string>();
 			return this;
-		}
-
-		/// <summary>Converts this object to an update statement.</summary>
-		/// <param name="item">           The item.</param>
-		/// <param name="excludeDefaults">true to exclude, false to include the defaults.</param>
-		/// <returns>The given data converted to a string.</returns>
-		public virtual string ToUpdateStatement(T item, bool excludeDefaults = false)
-		{
-			var setFields = new StringBuilder();
-			var dialectProvider = DialectProvider;
-
-			foreach (var fieldDef in _modelDef.FieldDefinitions)
-			{
-				if (_fields.Count > 0 && !_fields.Contains(fieldDef.Name))
-					continue; // ignore field
-
-				var value = fieldDef.GetValue(item);
-				if (excludeDefaults && (value == null || value.Equals(value.GetType().GetDefaultValue())))
-					continue; //GetDefaultValue?
-
-				if (setFields.Length > 0)
-					setFields.Append(",");
-
-				setFields.AppendFormat("{0} = {1}",
-					dialectProvider.GetQuotedColumnName(fieldDef.FieldName),
-					AddParameter(value));
-			}
-
-			return string.Format("UPDATE {0} SET {1} {2}",
-				dialectProvider.GetQuotedTableName(_modelDef), setFields, WhereExpression);
 		}
 
 		/// <summary>Visits the given exponent.</summary>
@@ -705,7 +629,7 @@ namespace SimpleStack.Orm.Expressions
 			{
 				var m = lambda.Body as MemberExpression;
 
-				if (m.Expression != null)
+				if (m?.Expression != null)
 				{
 					var r = VisitMemberAccess(m).ToString();
 					return string.Format("{0}={1}", r, GetQuotedTrueValue());
@@ -737,15 +661,15 @@ namespace SimpleStack.Orm.Expressions
 				else
 					right = Visit(b.Right);
 
-				if (left as PartialSqlString == null && right as PartialSqlString == null)
+				if (!(left is PartialSqlString) && !(right is PartialSqlString))
 				{
 					var result = Expression.Lambda(b).Compile().DynamicInvoke();
 					return new PartialSqlString(AddParameter(result));
 				}
 
-				if (left as PartialSqlString == null)
+				if (!(left is PartialSqlString))
 					left = ((bool)left) ? GetTrueExpression() : GetFalseExpression();
-				if (right as PartialSqlString == null)
+				if (!(right is PartialSqlString))
 					right = ((bool)right) ? GetTrueExpression() : GetFalseExpression();
 			}
 			else
@@ -753,7 +677,7 @@ namespace SimpleStack.Orm.Expressions
 				left = Visit(b.Left);
 				right = Visit(b.Right);
 
-				if (left as EnumMemberAccess != null)
+				if (left is EnumMemberAccess)
 				{
 					//enum value was may have been returned by Visit(b.Right) as Integer, we have to convert it to Enum
 					if (right is Enum)
@@ -765,7 +689,7 @@ namespace SimpleStack.Orm.Expressions
 						right = AddParameter(Enum.ToObject(((EnumMemberAccess)left).EnumType, right));
 					}
 				}
-				else if (right as EnumMemberAccess != null)
+				else if (right is EnumMemberAccess)
 				{
 					//enum value was may have been returned by Visit(b.Left) as Integer, we have to convert it to Enum
 					if (left is Enum)
@@ -777,16 +701,16 @@ namespace SimpleStack.Orm.Expressions
 						left = AddParameter(Enum.ToObject(((EnumMemberAccess)right).EnumType, left));
 					}
 				}
-				else if (left as PartialSqlString == null && right as PartialSqlString == null)
+				else if (!(left is PartialSqlString) && !(right is PartialSqlString))
 				{
 					var result = Expression.Lambda(b).Compile().DynamicInvoke();
 					return result;
 				}
-				else if (left as PartialSqlString == null)
+				else if (!(left is PartialSqlString))
 				{
 					left = AddParameter(left);
 				}
-				else if (right as PartialSqlString == null)
+				else if (!(right is PartialSqlString))
 				{
 					right = AddParameter(right);
 				}
@@ -816,7 +740,7 @@ namespace SimpleStack.Orm.Expressions
 			{
 				var propertyInfo = m.Member as PropertyInfo;
 
-				if (propertyInfo.PropertyType.IsEnum)
+				if (propertyInfo != null && propertyInfo.PropertyType.IsEnum)
 					return
 						new EnumMemberAccess(
 							(PrefixFieldWithTableName ? DialectProvider.GetQuotedTableName(_modelDef.ModelName) + "." : "") +
@@ -899,7 +823,7 @@ namespace SimpleStack.Orm.Expressions
 				case ExpressionType.Not:
 					var o = Visit(u.Operand);
 
-					if (o as PartialSqlString == null)
+					if (!(o is PartialSqlString))
 						return !((bool)o);
 
 					if (IsFieldName(o))
@@ -920,14 +844,11 @@ namespace SimpleStack.Orm.Expressions
 		/// <returns>true if column access, false if not.</returns>
 		private bool IsColumnAccess(MethodCallExpression m)
 		{
-			if (m.Object != null && m.Object as MethodCallExpression != null)
-				return IsColumnAccess(m.Object as MethodCallExpression);
+			if (m.Object is MethodCallExpression)
+				return IsColumnAccess((MethodCallExpression) m.Object);
 
 			var exp = m.Object as MemberExpression;
-			return exp != null
-				   && exp.Expression != null
-				   && exp.Expression.Type == typeof(T)
-				   && exp.Expression.NodeType == ExpressionType.Parameter;
+			return exp?.Expression != null && exp.Expression.Type == typeof(T) && exp.Expression.NodeType == ExpressionType.Parameter;
 		}
 
 		/// <summary>Visit method call.</summary>
@@ -1101,12 +1022,10 @@ namespace SimpleStack.Orm.Expressions
 		}
 
 		/// <summary>Builds select expression.</summary>
-		/// <param name="fields">  x=> x.SomeProperty1 or x=> new{ x.SomeProperty1, x.SomeProperty2}</param>
-		/// <param name="distinct">true to distinct.</param>
 		private void BuildSelectExpression()
 		{
 			_selectExpression = string.Format("SELECT {0}{1} \nFROM {2}",
-				(IsDistinct ? "DISTINCT " : String.Empty),
+				(IsDistinct ? "DISTINCT " : string.Empty),
 				(_fields.Count == 0)
 					? DialectProvider.GetColumnNames(_modelDef)
 					: _fields.Aggregate((x, y) => x + ", " + y),
@@ -1342,7 +1261,7 @@ namespace SimpleStack.Orm.Expressions
 				args.AddRange(VisitExpressionList(m.Arguments));
 			}
 			var quotedColName = Visit(m.Object);
-			var statement = "";
+			string statement;
 
 			switch (m.Method.Name)
 			{
@@ -1375,10 +1294,10 @@ namespace SimpleStack.Orm.Expressions
 						AddParameter("%" + args[0].ToString().ToUpper() + "%"));
 					break;
 				case "Substring":
-					var startIndex = Int32.Parse(args[0].ToString()) + 1;
+					var startIndex = int.Parse(args[0].ToString()) + 1;
 					if (args.Count == 2)
 					{
-						var length = Int32.Parse(args[1].ToString());
+						var length = int.Parse(args[1].ToString());
 						statement = string.Format("substring({0} from {1} for {2})",
 							quotedColName,
 							startIndex,
