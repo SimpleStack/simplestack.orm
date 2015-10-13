@@ -39,8 +39,8 @@ namespace SimpleStack.Orm.PostgreSQL
 			base.SelectIdentitySql = "SELECT LASTVAL()";
 			this.NamingStrategy = new PostgreSqlNamingStrategy();
 
-			DbTypeMap.Set<TimeSpan>(DbType.Time, "Interval");
-			DbTypeMap.Set<TimeSpan?>(DbType.Time, "Interval");
+			DbTypeMap.Set(DbType.Time, "Interval");
+			DbTypeMap.Set(DbType.Time, "Interval");
 
 			DefaultStringLength = 255;
 		}
@@ -88,7 +88,7 @@ namespace SimpleStack.Orm.PostgreSQL
 				}
 				else
 				{
-					fieldDefinition = GetColumnTypeDefinition(fieldType);
+					fieldDefinition = GetColumnTypeDefinition(fieldType,fieldName,fieldLength);
 				}
 			}
 

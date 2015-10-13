@@ -235,15 +235,10 @@ namespace SimpleStack.Orm
 		/// <returns>A SqlExpressionVisitor&lt;T&gt;</returns>
 		SqlExpressionVisitor<T> ExpressionVisitor<T>();
 
-		/// <summary>Gets column database type.</summary>
-		/// <param name="valueType">Type of the value.</param>
-		/// <returns>The column database type.</returns>
-		DbType GetColumnDbType(Type valueType);
-
 		/// <summary>Gets column type definition.</summary>
 		/// <param name="fieldType">Type of the field.</param>
 		/// <returns>The column type definition.</returns>
-		string GetColumnTypeDefinition(Type fieldType);
+		string GetColumnTypeDefinition(Type fieldType, string fieldName, int? fieldLength);
 
 		/// <summary>Gets drop foreign key constraints.</summary>
 		/// <param name="modelDef">The model definition.</param>

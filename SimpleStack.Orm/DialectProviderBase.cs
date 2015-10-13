@@ -42,8 +42,7 @@ namespace SimpleStack.Orm
 		public string DateTimeColumnDefinition = "DATETIME";
 
 		/// <summary>The database type map.</summary>
-		//TODO: vdaron : merge DBTypes and ITypeMap from Dapper
-		protected DbTypes<TDialect> DbTypeMap = new DbTypes<TDialect>();
+		protected DbTypes DbTypeMap = new DbTypes();
 
 		/// <summary>The decimal column definition.</summary>
 		public string DecimalColumnDefinition = "DECIMAL";
@@ -202,39 +201,8 @@ namespace SimpleStack.Orm
 			bool isPrimaryKey, bool autoIncrement, bool isNullable,
 			int? fieldLength, int? scale, string defaultValue)
 		{
-			string fieldDefinition;
-
-			SqlMapper.ITypeHandler typeHandler = null;
-			var dbType = SqlMapper.LookupDbType(fieldType, fieldName, false, out typeHandler);
-			var typeHandlerColumnType = typeHandler as ITypeHandlerColumnType;
-			if (typeHandlerColumnType != null)
-			{
-				fieldType = typeHandlerColumnType.ColumnType;
-			}
-
-			if (fieldType == typeof(string))
-			{
-				fieldDefinition = string.Format(StringLengthColumnDefinitionFormat,
-					fieldLength.GetValueOrDefault(DefaultStringLength));
-			}
-			else if (fieldType.IsEnum)
-			{
-				if (!DbTypeMap.ColumnTypeMap.TryGetValue(typeof (Enum), out fieldDefinition) &&
-				    !DbTypeMap.ColumnTypeMap.TryGetValue(fieldType, out fieldDefinition))
-				{
-					fieldDefinition = GetUndefinedColumnDefinition(fieldType, fieldLength);
-				}
-			}
-			else
-			{	
-				if (!DbTypeMap.ColumnTypeMap.TryGetValue(fieldType, out fieldDefinition))
-				{
-					fieldDefinition = GetUndefinedColumnDefinition(fieldType, fieldLength);
-				}
-			}
-
 			var sql = new StringBuilder();
-			sql.AppendFormat("{0} {1}", GetQuotedColumnName(fieldName), fieldDefinition);
+			sql.AppendFormat("{0} {1}", GetQuotedColumnName(fieldName), GetColumnTypeDefinition(fieldType,fieldName,fieldLength));
 
 			if (isPrimaryKey)
 			{
@@ -658,26 +626,38 @@ namespace SimpleStack.Orm
 		/// <summary>Gets column database type.</summary>
 		/// <param name="valueType">Type of the value.</param>
 		/// <returns>The column database type.</returns>
-		public virtual DbType GetColumnDbType(Type valueType)
-		{
-			if (valueType.IsEnum)
-				return DbTypeMap.ColumnDbTypeMap[typeof(int)];
-
-			return DbTypeMap.ColumnDbTypeMap[valueType];
-		}
-
 		/// <summary>Gets column type definition.</summary>
 		/// <param name="fieldType">Type of the field.</param>
+		/// <param name="fieldName"></param>
+		/// <param name="fieldLength"></param>
 		/// <returns>The column type definition.</returns>
-		public virtual string GetColumnTypeDefinition(Type fieldType)
+		public virtual string GetColumnTypeDefinition(Type fieldType, string fieldName, int? fieldLength)
 		{
 			string fieldDefinition;
 
-			DbTypeMap.ColumnTypeMap.TryGetValue(fieldType, out fieldDefinition);
-
-			if (fieldDefinition == null && fieldType.IsEnum)
+			SqlMapper.ITypeHandler typeHandler = null;
+			var dbType = SqlMapper.LookupDbType(fieldType, fieldName, false, out typeHandler);
+			var typeHandlerColumnType = typeHandler as ITypeHandlerColumnType;
+			if (typeHandlerColumnType != null)
 			{
-				DbTypeMap.ColumnTypeMap.TryGetValue(typeof(Enum), out fieldDefinition);
+				dbType = typeHandlerColumnType.ColumnType;
+				fieldLength = typeHandlerColumnType.Length;
+			}
+
+			if (dbType == DbType.AnsiString ||
+			    dbType == DbType.AnsiStringFixedLength ||
+			    dbType == DbType.String ||
+			    dbType == DbType.StringFixedLength)
+			{
+				fieldDefinition = string.Format(StringLengthColumnDefinitionFormat,
+					fieldLength ?? DefaultStringLength);
+			}
+			else
+			{
+				if (!DbTypeMap.ColumnDbTypeMap.TryGetValue(dbType, out fieldDefinition))
+				{
+					fieldDefinition = GetUndefinedColumnDefinition(fieldType, fieldLength);
+				}
 			}
 
 			return fieldDefinition ?? GetUndefinedColumnDefinition(fieldType, null);
@@ -804,69 +784,52 @@ namespace SimpleStack.Orm
 		/// <summary>Initialises the column type map.</summary>
 		protected void InitColumnTypeMap()
 		{
-			DbTypeMap.Set<string>(DbType.String, StringColumnDefinition);
-			DbTypeMap.Set<char>(DbType.StringFixedLength, StringColumnDefinition);
-			DbTypeMap.Set<char?>(DbType.StringFixedLength, StringColumnDefinition);
-			DbTypeMap.Set<char[]>(DbType.String, StringColumnDefinition);
-			DbTypeMap.Set<bool>(DbType.Boolean, BoolColumnDefinition);
-			DbTypeMap.Set<bool?>(DbType.Boolean, BoolColumnDefinition);
-			DbTypeMap.Set<Guid>(DbType.Guid, GuidColumnDefinition);
-			DbTypeMap.Set<Guid?>(DbType.Guid, GuidColumnDefinition);
-			DbTypeMap.Set<DateTime>(DbType.DateTime, DateTimeColumnDefinition);
-			DbTypeMap.Set<DateTime?>(DbType.DateTime, DateTimeColumnDefinition);
-			DbTypeMap.Set<TimeSpan>(DbType.Time, TimeColumnDefinition);
-			DbTypeMap.Set<TimeSpan?>(DbType.Time, TimeColumnDefinition);
-			DbTypeMap.Set<DateTimeOffset>(DbType.DateTimeOffset, DateTimeColumnDefinition);
-			DbTypeMap.Set<DateTimeOffset?>(DbType.DateTimeOffset, DateTimeColumnDefinition);
+			DbTypeMap.Set(DbType.String, StringColumnDefinition);
+			DbTypeMap.Set(DbType.StringFixedLength, StringColumnDefinition);
+			DbTypeMap.Set(DbType.AnsiString, StringColumnDefinition);
+			DbTypeMap.Set(DbType.AnsiStringFixedLength, StringColumnDefinition);
+			DbTypeMap.Set(DbType.String, StringColumnDefinition);
+			DbTypeMap.Set(DbType.Boolean, BoolColumnDefinition);
+			DbTypeMap.Set(DbType.Boolean, BoolColumnDefinition);
+			DbTypeMap.Set(DbType.Guid, GuidColumnDefinition);
+			DbTypeMap.Set(DbType.Guid, GuidColumnDefinition);
+			DbTypeMap.Set(DbType.DateTime, DateTimeColumnDefinition);
+			DbTypeMap.Set(DbType.DateTime, DateTimeColumnDefinition);
+			DbTypeMap.Set(DbType.Time, TimeColumnDefinition);
+			DbTypeMap.Set(DbType.Time, TimeColumnDefinition);
+			DbTypeMap.Set(DbType.DateTimeOffset, DateTimeColumnDefinition);
+			DbTypeMap.Set(DbType.DateTimeOffset, DateTimeColumnDefinition);
 
-			DbTypeMap.Set<byte>(DbType.Byte, IntColumnDefinition);
-			DbTypeMap.Set<byte?>(DbType.Byte, IntColumnDefinition);
-			DbTypeMap.Set<sbyte>(DbType.SByte, IntColumnDefinition);
-			DbTypeMap.Set<sbyte?>(DbType.SByte, IntColumnDefinition);
-			DbTypeMap.Set<short>(DbType.Int16, IntColumnDefinition);
-			DbTypeMap.Set<short?>(DbType.Int16, IntColumnDefinition);
-			DbTypeMap.Set<ushort>(DbType.UInt16, IntColumnDefinition);
-			DbTypeMap.Set<ushort?>(DbType.UInt16, IntColumnDefinition);
-			DbTypeMap.Set<int>(DbType.Int32, IntColumnDefinition);
-			DbTypeMap.Set<int?>(DbType.Int32, IntColumnDefinition);
-			DbTypeMap.Set<uint>(DbType.UInt32, IntColumnDefinition);
-			DbTypeMap.Set<uint?>(DbType.UInt32, IntColumnDefinition);
+			DbTypeMap.Set(DbType.Byte, IntColumnDefinition);
+			DbTypeMap.Set(DbType.Byte, IntColumnDefinition);
+			DbTypeMap.Set(DbType.SByte, IntColumnDefinition);
+			DbTypeMap.Set(DbType.SByte, IntColumnDefinition);
+			DbTypeMap.Set(DbType.Int16, IntColumnDefinition);
+			DbTypeMap.Set(DbType.Int16, IntColumnDefinition);
+			DbTypeMap.Set(DbType.UInt16, IntColumnDefinition);
+			DbTypeMap.Set(DbType.UInt16, IntColumnDefinition);
+			DbTypeMap.Set(DbType.Int32, IntColumnDefinition);
+			DbTypeMap.Set(DbType.Int32, IntColumnDefinition);
+			DbTypeMap.Set(DbType.UInt32, IntColumnDefinition);
+			DbTypeMap.Set(DbType.UInt32, IntColumnDefinition);
 
-			DbTypeMap.Set<long>(DbType.Int64, LongColumnDefinition);
-			DbTypeMap.Set<long?>(DbType.Int64, LongColumnDefinition);
-			DbTypeMap.Set<ulong>(DbType.UInt64, LongColumnDefinition);
-			DbTypeMap.Set<ulong?>(DbType.UInt64, LongColumnDefinition);
+			DbTypeMap.Set(DbType.Int64, LongColumnDefinition);
+			DbTypeMap.Set(DbType.Int64, LongColumnDefinition);
+			DbTypeMap.Set(DbType.UInt64, LongColumnDefinition);
+			DbTypeMap.Set(DbType.UInt64, LongColumnDefinition);
 
-			DbTypeMap.Set<float>(DbType.Single, RealColumnDefinition);
-			DbTypeMap.Set<float?>(DbType.Single, RealColumnDefinition);
-			DbTypeMap.Set<double>(DbType.Double, RealColumnDefinition);
-			DbTypeMap.Set<double?>(DbType.Double, RealColumnDefinition);
+			DbTypeMap.Set(DbType.Single, RealColumnDefinition);
+			DbTypeMap.Set(DbType.Single, RealColumnDefinition);
+			DbTypeMap.Set(DbType.Double, RealColumnDefinition);
+			DbTypeMap.Set(DbType.Double, RealColumnDefinition);
 
-			DbTypeMap.Set<decimal>(DbType.Decimal, DecimalColumnDefinition);
-			DbTypeMap.Set<decimal?>(DbType.Decimal, DecimalColumnDefinition);
+			DbTypeMap.Set(DbType.Decimal, DecimalColumnDefinition);
+			DbTypeMap.Set(DbType.Decimal, DecimalColumnDefinition);
 
-			DbTypeMap.Set<byte[]>(DbType.Binary, BlobColumnDefinition);
+			DbTypeMap.Set(DbType.Binary, BlobColumnDefinition);
 
-			DbTypeMap.Set<object>(DbType.Object, StringColumnDefinition);
-			DbTypeMap.Set<Enum>(DbType.Int32, IntColumnDefinition);
-		}
-
-		/// <summary>Determine if we should quote value.</summary>
-		/// <param name="fieldType">Type of the field.</param>
-		/// <returns>true if it succeeds, false if it fails.</returns>
-		public virtual bool ShouldQuoteValue(Type fieldType)
-		{
-			string fieldDefinition;
-			if (!DbTypeMap.ColumnTypeMap.TryGetValue(fieldType, out fieldDefinition))
-			{
-				fieldDefinition = GetUndefinedColumnDefinition(fieldType, null);
-			}
-
-			return fieldDefinition != IntColumnDefinition
-				   && fieldDefinition != LongColumnDefinition
-				   && fieldDefinition != RealColumnDefinition
-				   && fieldDefinition != DecimalColumnDefinition
-				   && fieldDefinition != BoolColumnDefinition;
+			DbTypeMap.Set(DbType.Object, StringColumnDefinition);
+			DbTypeMap.Set(DbType.Int32, IntColumnDefinition);
 		}
 
 		/// <summary>Gets undefined column definition.</summary>

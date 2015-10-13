@@ -26,8 +26,8 @@ namespace SimpleStack.Orm.Sqlite
 			base.InitColumnTypeMap();
 
 			// add support for DateTimeOffset
-			DbTypeMap.Set<DateTimeOffset>(DbType.DateTimeOffset, StringColumnDefinition);
-			DbTypeMap.Set<DateTimeOffset?>(DbType.DateTimeOffset, StringColumnDefinition);
+			DbTypeMap.Set(DbType.DateTimeOffset, StringColumnDefinition);
+			DbTypeMap.Set(DbType.DateTimeOffset, StringColumnDefinition);
 		}
 
 		/// <summary>Gets or sets the password.</summary>

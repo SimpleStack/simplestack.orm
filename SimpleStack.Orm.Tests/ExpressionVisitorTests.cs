@@ -10,39 +10,8 @@ namespace SimpleStack.Orm.Tests
 {
 	public partial class ExpressionTests
 	{
-		public class TestType2TypeHandler : SqlMapper.ITypeHandler
-		{
-			public void SetValue(IDbDataParameter parameter, object value)
-			{
-				parameter.DbType = DbType.String;
-				parameter.Value = ((TestType2)value).TextCol;
-			}
-
-			public object Parse(Type destinationType, object value)
-			{
-				return new TestType2() { TextCol = value.ToString() };
-			}
-		}
-
-		public class JsonTypeHandler : SqlMapper.ITypeHandler
-		{
-			public void SetValue(IDbDataParameter parameter, object value)
-			{
-				parameter.DbType = DbType.String;
-				parameter.Value = NServiceKit.Text.JsonSerializer.SerializeToString(value);
-			}
-
-			public object Parse(Type destinationType, object value)
-			{
-				return NServiceKit.Text.JsonSerializer.DeserializeFromString(value.ToString(), destinationType);
-			}
-		}
-
 		private void SetupContext()
 		{
-			SqlMapper.AddTypeHandler(typeof(TestType2), new TestType2TypeHandler());
-			SqlMapper.AddTypeHandler(typeof(TestEnum), new EnumAsStringTypeHandler<TestEnum>());
-
 			OpenDbConnection().Insert(new TestType2 { Id = 1, BoolCol = true, DateCol = new DateTime(2012, 1, 1), TextCol = "asdf", EnumCol = TestEnum.Val0 });
 			OpenDbConnection().Insert(new TestType2 { Id = 2, BoolCol = true, DateCol = new DateTime(2012, 2, 1), TextCol = "asdf123", EnumCol = TestEnum.Val1 });
 			OpenDbConnection().Insert(new TestType2 { Id = 3, BoolCol = false, DateCol = new DateTime(2012, 3, 1), TextCol = "qwer", EnumCol = TestEnum.Val2 });

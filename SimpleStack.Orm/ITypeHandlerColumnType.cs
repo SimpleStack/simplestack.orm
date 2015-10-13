@@ -10,6 +10,8 @@ namespace SimpleStack.Orm
 {
 	interface ITypeHandlerColumnType : SqlMapper.ITypeHandler
 	{
-		Type ColumnType { get; set; } 
+		int? Length { get; }
+
+		DbType ColumnType { get; } 
 	}
 }

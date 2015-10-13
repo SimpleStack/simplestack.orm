@@ -39,8 +39,8 @@ namespace SimpleStack.Orm.SqlServer
 			base.InitColumnTypeMap();
 
 			// add support for DateTimeOffset
-			DbTypeMap.Set<DateTimeOffset>(DbType.DateTimeOffset, DateTimeOffsetColumnDefinition);
-			DbTypeMap.Set<DateTimeOffset?>(DbType.DateTimeOffset, DateTimeOffsetColumnDefinition);
+			DbTypeMap.Set(DbType.DateTimeOffset, DateTimeOffsetColumnDefinition);
+			DbTypeMap.Set(DbType.DateTimeOffset, DateTimeOffsetColumnDefinition);
 		}
 
 
@@ -181,8 +181,8 @@ namespace SimpleStack.Orm.SqlServer
 		{
 			_useDateTime2 = shouldUseDatetime2;
 			DateTimeColumnDefinition = shouldUseDatetime2 ? "datetime2" : "datetime";
-			base.DbTypeMap.Set<DateTime>(shouldUseDatetime2 ? DbType.DateTime2 : DbType.DateTime, DateTimeColumnDefinition);
-			base.DbTypeMap.Set<DateTime?>(shouldUseDatetime2 ? DbType.DateTime2 : DbType.DateTime, DateTimeColumnDefinition);
+			base.DbTypeMap.Set(shouldUseDatetime2 ? DbType.DateTime2 : DbType.DateTime, DateTimeColumnDefinition);
+			base.DbTypeMap.Set(shouldUseDatetime2 ? DbType.DateTime2 : DbType.DateTime, DateTimeColumnDefinition);
 		}
 
 		/// <summary>true to ensure UTC.</summary>

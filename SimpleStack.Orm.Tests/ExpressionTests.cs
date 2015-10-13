@@ -22,7 +22,7 @@ namespace SimpleStack.Orm.Tests
 	{
 		private readonly IDialectProvider _dialectProvider;
 
-		public class EnumAsStringTypeHandler<T> : SqlMapper.ITypeHandler
+		public class EnumAsStringTypeHandler<T> : ITypeHandlerColumnType
 		{
 			public void SetValue(IDbDataParameter parameter, object value)
 			{
@@ -34,9 +34,13 @@ namespace SimpleStack.Orm.Tests
 			{
 				return Enum.Parse(typeof (TestEnum), (string)value);
 			}
+
+			public int? Length => (from object v in Enum.GetValues(typeof (T)) select v.ToString() into str select str.Length).Max();
+
+			public DbType ColumnType => DbType.AnsiString;
 		}
 
-		private class EnumAsIntTypeHandler<T> : SqlMapper.ITypeHandler
+		private class EnumAsIntTypeHandler<T> : ITypeHandlerColumnType
 		{
 			public void SetValue(IDbDataParameter parameter, object value)
 			{
@@ -47,6 +51,41 @@ namespace SimpleStack.Orm.Tests
 			public object Parse(Type destinationType, object value)
 			{
 				return (T)value;
+			}
+
+			public int? Length => null;
+			public DbType ColumnType => DbType.Int32;
+		}
+
+		public class TestType2TypeHandler : ITypeHandlerColumnType
+		{
+			public void SetValue(IDbDataParameter parameter, object value)
+			{
+				parameter.DbType = DbType.String;
+				parameter.Value = ((TestType2)value).TextCol;
+			}
+
+			public object Parse(Type destinationType, object value)
+			{
+				return new TestType2() { TextCol = value.ToString() };
+			}
+
+			public int? Length => 2000;
+
+			public DbType ColumnType => DbType.AnsiString;
+		}
+
+		public class JsonTypeHandler : SqlMapper.ITypeHandler
+		{
+			public void SetValue(IDbDataParameter parameter, object value)
+			{
+				parameter.DbType = DbType.String;
+				parameter.Value = NServiceKit.Text.JsonSerializer.SerializeToString(value);
+			}
+
+			public object Parse(Type destinationType, object value)
+			{
+				return NServiceKit.Text.JsonSerializer.DeserializeFromString(value.ToString(), destinationType);
 			}
 		}
 
@@ -66,13 +105,16 @@ namespace SimpleStack.Orm.Tests
 				_conn.Dispose();
 				_conn = null;
 			}
+
+			SqlMapper.ResetTypeHandlers();
+
+			SqlMapper.AddTypeHandler(typeof(TestEnum), new EnumAsIntTypeHandler<TestEnum>());
+			SqlMapper.AddTypeHandler(typeof(TestType2),new TestType2TypeHandler());
 			
 			OpenDbConnection().CreateTable<TestType>(true);
 			OpenDbConnection().CreateTable<Person>(true);
-
 			OpenDbConnection().CreateTable<TestType2>(true);
 
-			SqlMapper.ResetTypeHandlers();
 		}
 
 		protected abstract string ConnectionString { get; }
@@ -146,15 +188,7 @@ namespace SimpleStack.Orm.Tests
 
 	public class PostgreSQLTests : ExpressionTests
 	{
-		private class TestDialectProvier : PostgreSQLDialectProvider
-		{
-			public TestDialectProvier()
-			{
-				DbTypeMap.Set<TestEnum>(DbType.Int32,IntColumnDefinition);
-			}
-		}
-
-		public PostgreSQLTests() : base(new TestDialectProvier())
+		public PostgreSQLTests() : base(new PostgreSQLDialectProvider())
 		{
 		}
 
