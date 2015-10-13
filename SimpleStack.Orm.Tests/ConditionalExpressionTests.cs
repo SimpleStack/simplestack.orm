@@ -21,12 +21,14 @@ namespace SimpleStack.Orm.Tests
 			};
 
 			EstablishContext(10, expected);
+			using (var conn = OpenDbConnection())
+			{
+				var actual = conn.Select<TestType>(q => q.IntColumn > 2 && q.IntColumn < 4);
 
-			var actual = OpenDbConnection().Select<TestType>(q => q.IntColumn > 2 && q.IntColumn < 4);
-
-			Assert.IsNotNull(actual);
-			Assert.AreEqual(1, actual.Count());
-			CollectionAssert.Contains(actual, expected);
+				Assert.IsNotNull(actual);
+				Assert.AreEqual(1, actual.Count());
+				CollectionAssert.Contains(actual, expected);
+			}
 		}
 
 		/// <summary>Can select conditional or expression.</summary>
@@ -41,12 +43,14 @@ namespace SimpleStack.Orm.Tests
 			};
 
 			EstablishContext(10, expected);
+			using (var conn = OpenDbConnection())
+			{
+				var actual = conn.Select<TestType>(q => q.IntColumn == 3 || q.IntColumn < 0);
 
-			var actual = OpenDbConnection().Select<TestType>(q => q.IntColumn == 3 || q.IntColumn < 0);
-
-			Assert.IsNotNull(actual);
-			Assert.AreEqual(1, actual.Count());
-			CollectionAssert.Contains(actual, expected);
+				Assert.IsNotNull(actual);
+				Assert.AreEqual(1, actual.Count());
+				CollectionAssert.Contains(actual, expected);
+			}
 		}
 
 		/// <summary>Can select evaluated conditional and expression.</summary>
@@ -66,12 +70,14 @@ namespace SimpleStack.Orm.Tests
 			};
 
 			EstablishContext(10, expected);
+			using (var conn = OpenDbConnection())
+			{
+				var actual = conn.Select<TestType>(q => q.BoolColumn == (a >= b && a > 0));
 
-			var actual = OpenDbConnection().Select<TestType>(q => q.BoolColumn == (a >= b && a > 0));
-
-			Assert.IsNotNull(actual);
-			Assert.Greater(actual.Count(), 0);
-			CollectionAssert.Contains(actual, expected);
+				Assert.IsNotNull(actual);
+				Assert.Greater(actual.Count(), 0);
+				CollectionAssert.Contains(actual, expected);
+			}
 		}
 
 		/// <summary>Can select evaluated conditional or expression.</summary>
@@ -91,12 +97,14 @@ namespace SimpleStack.Orm.Tests
 			};
 
 			EstablishContext(10, expected);
+			using (var conn = OpenDbConnection())
+			{
+				var actual = conn.Select<TestType>(q => q.IntColumn == 3 || a > b);
 
-			var actual = OpenDbConnection().Select<TestType>(q => q.IntColumn == 3 || a > b);
-
-			Assert.IsNotNull(actual);
-			Assert.AreEqual(11, actual.Count());
-			CollectionAssert.Contains(actual, expected);
+				Assert.IsNotNull(actual);
+				Assert.AreEqual(11, actual.Count());
+				CollectionAssert.Contains(actual, expected);
+			}
 		}
 
 		/// <summary>Can select evaluated invalid conditional or valid expression.</summary>
@@ -115,12 +123,14 @@ namespace SimpleStack.Orm.Tests
 			};
 
 			EstablishContext(10, expected);
+			using (var conn = OpenDbConnection())
+			{
+				var actual = conn.Select<TestType>(q => !q.BoolColumn || a);
 
-			var actual = OpenDbConnection().Select<TestType>(q => !q.BoolColumn || a);
-
-			Assert.IsNotNull(actual);
-			Assert.Greater(actual.Count(), 0);
-			CollectionAssert.Contains(actual, expected);
+				Assert.IsNotNull(actual);
+				Assert.Greater(actual.Count(), 0);
+				CollectionAssert.Contains(actual, expected);
+			}
 		}
 
 		/// <summary>Can select evaluated conditional and valid expression.</summary>
@@ -140,12 +150,14 @@ namespace SimpleStack.Orm.Tests
 			};
 
 			EstablishContext(10, expected);
+			using (var conn = OpenDbConnection())
+			{
+				var actual = conn.Select<TestType>(q => q.BoolColumn && q.StringColumn == model.StringValue);
 
-			var actual = OpenDbConnection().Select<TestType>(q => q.BoolColumn && q.StringColumn == model.StringValue);
-
-			Assert.IsNotNull(actual);
-			Assert.Greater(actual.Count(), 0);
-			CollectionAssert.Contains(actual, expected);
+				Assert.IsNotNull(actual);
+				Assert.Greater(actual.Count(), 0);
+				CollectionAssert.Contains(actual, expected);
+			}
 		}
 	}
 

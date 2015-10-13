@@ -20,12 +20,14 @@ namespace SimpleStack.Orm.Tests
 			};
 
 			EstablishContext(10, expected);
+			using (var conn = OpenDbConnection())
+			{
+				var actual = conn.SelectAsync<TestType>(q => q.IntColumn == 7).Result;
 
-			var actual = OpenDbConnection().SelectAsync<TestType>(q => q.IntColumn == 7).Result;
-
-			Assert.IsNotNull(actual);
-			Assert.AreEqual(1, actual.Count());
-			CollectionAssert.Contains(actual, expected);
+				Assert.IsNotNull(actual);
+				Assert.AreEqual(1, actual.Count());
+				CollectionAssert.Contains(actual, expected);
+			}
 		}
 	}
 }

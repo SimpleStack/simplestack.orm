@@ -19,12 +19,14 @@ namespace SimpleStack.Orm.Tests
 			};
 
 			EstablishContext(10, expected);
+			using (var conn = OpenDbConnection())
+			{
+				var actual = conn.Select<TestType>(q => q.IntColumn == +12);
 
-			var actual = OpenDbConnection().Select<TestType>(q => q.IntColumn == +12);
-
-			Assert.IsNotNull(actual);
-			Assert.AreEqual(1, actual.Count());
-			CollectionAssert.Contains(actual, expected);
+				Assert.IsNotNull(actual);
+				Assert.AreEqual(1, actual.Count());
+				CollectionAssert.Contains(actual, expected);
+			}
 		}
 
 		/// <summary>Can select unary minus constant expression.</summary>
@@ -39,12 +41,14 @@ namespace SimpleStack.Orm.Tests
 			};
 
 			EstablishContext(10, expected);
+			using (var conn = OpenDbConnection())
+			{
+				var actual = conn.Select<TestType>(q => q.IntColumn == -12);
 
-			var actual = OpenDbConnection().Select<TestType>(q => q.IntColumn == -12);
-
-			Assert.IsNotNull(actual);
-			Assert.AreEqual(1, actual.Count());
-			CollectionAssert.Contains(actual, expected);
+				Assert.IsNotNull(actual);
+				Assert.AreEqual(1, actual.Count());
+				CollectionAssert.Contains(actual, expected);
+			}
 		}
 
 		/// <summary>Can select unary not constant expression.</summary>
@@ -59,12 +63,14 @@ namespace SimpleStack.Orm.Tests
 			};
 
 			EstablishContext(10, expected);
+			using (var conn = OpenDbConnection())
+			{
+				var actual = conn.Select<TestType>(q => q.BoolColumn == !true);
 
-			var actual = OpenDbConnection().Select<TestType>(q => q.BoolColumn == !true);
-
-			Assert.IsNotNull(actual);
-			Assert.Greater(actual.Count(), 0);
-			CollectionAssert.Contains(actual, expected);
+				Assert.IsNotNull(actual);
+				Assert.Greater(actual.Count(), 0);
+				CollectionAssert.Contains(actual, expected);
+			}
 		}
 
 		/// <summary>Can select unary not constant expression 2.</summary>
@@ -79,12 +85,14 @@ namespace SimpleStack.Orm.Tests
 			};
 
 			EstablishContext(10, expected);
+			using (var conn = OpenDbConnection())
+			{
+				var actual = conn.Select<TestType>(q => !q.BoolColumn);
 
-			var actual = OpenDbConnection().Select<TestType>(q => !q.BoolColumn);
-
-			Assert.IsNotNull(actual);
-			Assert.Greater(actual.Count(), 0);
-			CollectionAssert.Contains(actual, expected);
+				Assert.IsNotNull(actual);
+				Assert.Greater(actual.Count(), 0);
+				CollectionAssert.Contains(actual, expected);
+			}
 		}
 
 		#endregion
@@ -106,12 +114,14 @@ namespace SimpleStack.Orm.Tests
 			};
 
 			EstablishContext(10, expected);
+			using (var conn = OpenDbConnection())
+			{
+				var actual = conn.Select<TestType>(q => q.IntColumn == intVal);
 
-			var actual = OpenDbConnection().Select<TestType>(q => q.IntColumn == intVal);
-
-			Assert.IsNotNull(actual);
-			Assert.AreEqual(1, actual.Count());
-			CollectionAssert.Contains(actual, expected);
+				Assert.IsNotNull(actual);
+				Assert.AreEqual(1, actual.Count());
+				CollectionAssert.Contains(actual, expected);
+			}
 		}
 
 		/// <summary>Can select unary minus variable expression.</summary>
@@ -130,12 +140,14 @@ namespace SimpleStack.Orm.Tests
 			};
 
 			EstablishContext(10, expected);
+			using (var conn = OpenDbConnection())
+			{
+				var actual = conn.Select<TestType>(q => q.IntColumn == intVal);
 
-			var actual = OpenDbConnection().Select<TestType>(q => q.IntColumn == intVal);
-
-			Assert.IsNotNull(actual);
-			Assert.AreEqual(1, actual.Count());
-			CollectionAssert.Contains(actual, expected);
+				Assert.IsNotNull(actual);
+				Assert.AreEqual(1, actual.Count());
+				CollectionAssert.Contains(actual, expected);
+			}
 		}
 
 		/// <summary>Can select unary not variable expression.</summary>
@@ -154,12 +166,14 @@ namespace SimpleStack.Orm.Tests
 			};
 
 			EstablishContext(10, expected);
+			using (var conn = OpenDbConnection())
+			{
+				var actual = conn.Select<TestType>(q => q.BoolColumn == !boolVal);
 
-			var actual = OpenDbConnection().Select<TestType>(q => q.BoolColumn == !boolVal);
-
-			Assert.IsNotNull(actual);
-			Assert.Greater(actual.Count(), 0);
-			CollectionAssert.Contains(actual, expected);
+				Assert.IsNotNull(actual);
+				Assert.Greater(actual.Count(), 0);
+				CollectionAssert.Contains(actual, expected);
+			}
 		}
 
 		/// <summary>Can select unary cast variable expression.</summary>
@@ -178,12 +192,14 @@ namespace SimpleStack.Orm.Tests
 			};
 
 			EstablishContext(10, expected);
+			using (var conn = OpenDbConnection())
+			{
+				var actual = conn.Select<TestType>(q => q.IntColumn == (int) intVal);
 
-			var actual = OpenDbConnection().Select<TestType>(q => q.IntColumn == (int)intVal);
-
-			Assert.IsNotNull(actual);
-			Assert.AreEqual(1, actual.Count());
-			CollectionAssert.Contains(actual, expected);
+				Assert.IsNotNull(actual);
+				Assert.AreEqual(1, actual.Count());
+				CollectionAssert.Contains(actual, expected);
+			}
 		}
 
 		/// <summary>
@@ -206,12 +222,14 @@ namespace SimpleStack.Orm.Tests
 			EstablishContext(10, expected);
 
 			var value = new IntWrapper(intVal);
+			using (var conn = OpenDbConnection())
+			{
+				var actual = conn.Select<TestType>(q => q.IntColumn == (int) value);
 
-			var actual = OpenDbConnection().Select<TestType>(q => q.IntColumn == (int)value);
-
-			Assert.IsNotNull(actual);
-			Assert.AreEqual(1, actual.Count());
-			CollectionAssert.Contains(actual, expected);
+				Assert.IsNotNull(actual);
+				Assert.AreEqual(1, actual.Count());
+				CollectionAssert.Contains(actual, expected);
+			}
 		}
 
 		/// <summary>
@@ -234,12 +252,14 @@ namespace SimpleStack.Orm.Tests
 			EstablishContext(10, expected);
 
 			var value = new IntWrapper(intVal);
+			using (var conn = OpenDbConnection())
+			{
+				var actual = conn.Select<TestType>(q => q.IntColumn == value);
 
-			var actual = OpenDbConnection().Select<TestType>(q => q.IntColumn == value);
-
-			Assert.IsNotNull(actual);
-			Assert.AreEqual(1, actual.Count());
-			CollectionAssert.Contains(actual, expected);
+				Assert.IsNotNull(actual);
+				Assert.AreEqual(1, actual.Count());
+				CollectionAssert.Contains(actual, expected);
+			}
 		}
 
 		#endregion
@@ -257,12 +277,14 @@ namespace SimpleStack.Orm.Tests
 			};
 
 			EstablishContext(10, expected);
+			using (var conn = OpenDbConnection())
+			{
+				var actual = conn.Select<TestType>(q => q.BoolColumn == !GetValue(true));
 
-			var actual = OpenDbConnection().Select<TestType>(q => q.BoolColumn == !GetValue(true));
-
-			Assert.IsNotNull(actual);
-			Assert.Greater(actual.Count(), 0);
-			CollectionAssert.Contains(actual, expected);
+				Assert.IsNotNull(actual);
+				Assert.Greater(actual.Count(), 0);
+				CollectionAssert.Contains(actual, expected);
+			}
 		}
 
 		/// <summary>Can select unary cast method expression.</summary>
@@ -277,12 +299,14 @@ namespace SimpleStack.Orm.Tests
 			};
 
 			EstablishContext(10, expected);
+			using (var conn = OpenDbConnection())
+			{
+				var actual = conn.Select<TestType>(q => q.IntColumn == (int) GetValue((object) 12));
 
-			var actual = OpenDbConnection().Select<TestType>(q => q.IntColumn == (int)GetValue((object)12));
-
-			Assert.IsNotNull(actual);
-			Assert.AreEqual(1, actual.Count());
-			CollectionAssert.Contains(actual, expected);
+				Assert.IsNotNull(actual);
+				Assert.AreEqual(1, actual.Count());
+				CollectionAssert.Contains(actual, expected);
+			}
 		}
 
 		#endregion

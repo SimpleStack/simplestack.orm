@@ -17,11 +17,14 @@ namespace SimpleStack.Orm.Tests
 
 			EstablishContext(10, expected);
 
-			var actual = OpenDbConnection().Select<TestType>(q => q.IntColumn == 4 + 3);
+			using (var conn = OpenDbConnection())
+			{
+				var actual = conn.Select<TestType>(q => q.IntColumn == 4 + 3);
 
-			Assert.IsNotNull(actual);
-			Assert.AreEqual(1, actual.Count());
-			CollectionAssert.Contains(actual, expected);
+				Assert.IsNotNull(actual);
+				Assert.AreEqual(1, actual.Count());
+				CollectionAssert.Contains(actual, expected);
+			}
 		}
 		[Test]
 		public void Can_select_constant_subtract_expression()
@@ -34,12 +37,15 @@ namespace SimpleStack.Orm.Tests
 			};
 
 			EstablishContext(10, expected);
+			
+			using (var conn = OpenDbConnection())
+			{
+				var actual = conn.Select<TestType>(q => q.IntColumn == 10 - 3);
 
-			var actual = OpenDbConnection().Select<TestType>(q => q.IntColumn == 10 - 3);
-
-			Assert.IsNotNull(actual);
-			Assert.AreEqual(1, actual.Count());
-			CollectionAssert.Contains(actual, expected);
+				Assert.IsNotNull(actual);
+				Assert.AreEqual(1, actual.Count());
+				CollectionAssert.Contains(actual, expected);
+			}
 		}
 		/// <summary>Can select variable add expression.</summary>
 		[Test]
@@ -59,11 +65,14 @@ namespace SimpleStack.Orm.Tests
 
 			EstablishContext(10, expected);
 
-			var actual = OpenDbConnection().Select<TestType>(q => q.IntColumn == a + b);
+			using (var conn = OpenDbConnection())
+			{
+				var actual = conn.Select<TestType>(q => q.IntColumn == a + b);
 
-			Assert.IsNotNull(actual);
-			Assert.AreEqual(1, actual.Count());
-			CollectionAssert.Contains(actual, expected);
+				Assert.IsNotNull(actual);
+				Assert.AreEqual(1, actual.Count());
+				CollectionAssert.Contains(actual, expected);
+			}
 		}
 
 		/// <summary>Can select variable subtract expression.</summary>
@@ -83,12 +92,14 @@ namespace SimpleStack.Orm.Tests
 			};
 
 			EstablishContext(10, expected);
+			using (var conn = OpenDbConnection())
+			{
+				var actual = conn.Select<TestType>(q => q.IntColumn == a - b);
 
-			var actual = OpenDbConnection().Select<TestType>(q => q.IntColumn == a - b);
-
-			Assert.IsNotNull(actual);
-			Assert.AreEqual(1, actual.Count());
-			CollectionAssert.Contains(actual, expected);
+				Assert.IsNotNull(actual);
+				Assert.AreEqual(1, actual.Count());
+				CollectionAssert.Contains(actual, expected);
+			}
 		}
 
 		/// <summary>Can select method add expression.</summary>
@@ -103,12 +114,14 @@ namespace SimpleStack.Orm.Tests
 			};
 
 			EstablishContext(10, expected);
+			using (var conn = OpenDbConnection())
+			{
+				var actual = conn.Select<TestType>(q => q.IntColumn == GetValue(4) + GetValue(3));
 
-			var actual = OpenDbConnection().Select<TestType>(q => q.IntColumn == GetValue(4) + GetValue(3));
-
-			Assert.IsNotNull(actual);
-			Assert.AreEqual(1, actual.Count());
-			CollectionAssert.Contains(actual, expected);
+				Assert.IsNotNull(actual);
+				Assert.AreEqual(1, actual.Count());
+				CollectionAssert.Contains(actual, expected);
+			}
 		}
 
 		/// <summary>Can select method subtract expression.</summary>
@@ -124,11 +137,14 @@ namespace SimpleStack.Orm.Tests
 
 			EstablishContext(10, expected);
 
-			var actual = OpenDbConnection().Select<TestType>(q => q.IntColumn == GetValue(10) - GetValue(3));
+			using (var conn = OpenDbConnection())
+			{
+				var actual = conn.Select<TestType>(q => q.IntColumn == GetValue(10) - GetValue(3));
 
-			Assert.IsNotNull(actual);
-			Assert.AreEqual(1, actual.Count());
-			CollectionAssert.Contains(actual, expected);
+				Assert.IsNotNull(actual);
+				Assert.AreEqual(1, actual.Count());
+				CollectionAssert.Contains(actual, expected);
+			}
 		}
 	}
 }

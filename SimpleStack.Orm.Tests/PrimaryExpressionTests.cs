@@ -99,12 +99,14 @@ namespace SimpleStack.Orm.Tests
 			};
 
 			EstablishContext(10, expected);
+			using (var conn = OpenDbConnection())
+			{
+				var actual = conn.Select<TestType>(q => q.IntColumn == tmp.Property);
 
-			var actual = OpenDbConnection().Select<TestType>(q => q.IntColumn == tmp.Property);
-
-			Assert.IsNotNull(actual);
-			Assert.AreEqual(1, actual.Count());
-			CollectionAssert.Contains(actual, expected);
+				Assert.IsNotNull(actual);
+				Assert.AreEqual(1, actual.Count());
+				CollectionAssert.Contains(actual, expected);
+			}
 		}
 
 		/// <summary>Can select int field expression.</summary>
@@ -121,12 +123,14 @@ namespace SimpleStack.Orm.Tests
 			};
 
 			EstablishContext(10, expected);
+			using (var conn = OpenDbConnection())
+			{
+				var actual = conn.Select<TestType>(q => q.IntColumn == tmp._field);
 
-			var actual = OpenDbConnection().Select<TestType>(q => q.IntColumn == tmp._field);
-
-			Assert.IsNotNull(actual);
-			Assert.AreEqual(1, actual.Count());
-			CollectionAssert.Contains(actual, expected);
+				Assert.IsNotNull(actual);
+				Assert.AreEqual(1, actual.Count());
+				CollectionAssert.Contains(actual, expected);
+			}
 		}
 
 		/// <summary>Can select int method expression.</summary>
@@ -143,12 +147,14 @@ namespace SimpleStack.Orm.Tests
 			};
 
 			EstablishContext(10, expected);
+			using (var conn = OpenDbConnection())
+			{
+				var actual = conn.Select<TestType>(q => q.IntColumn == tmp.Mehtod());
 
-			var actual = OpenDbConnection().Select<TestType>(q => q.IntColumn == tmp.Mehtod());
-
-			Assert.IsNotNull(actual);
-			Assert.AreEqual(1, actual.Count());
-			CollectionAssert.Contains(actual, expected);
+				Assert.IsNotNull(actual);
+				Assert.AreEqual(1, actual.Count());
+				CollectionAssert.Contains(actual, expected);
+			}
 		}
 
 		/// <summary>Can select static int property expression.</summary>
@@ -163,12 +169,14 @@ namespace SimpleStack.Orm.Tests
 			};
 
 			EstablishContext(10, expected);
+			using (var conn = OpenDbConnection())
+			{
+				var actual = conn.Select<TestType>(q => q.IntColumn == TestClass.StaticProperty);
 
-			var actual = OpenDbConnection().Select<TestType>(q => q.IntColumn == TestClass.StaticProperty);
-
-			Assert.IsNotNull(actual);
-			Assert.AreEqual(1, actual.Count());
-			CollectionAssert.Contains(actual, expected);
+				Assert.IsNotNull(actual);
+				Assert.AreEqual(1, actual.Count());
+				CollectionAssert.Contains(actual, expected);
+			}
 		}
 
 		/// <summary>Can select static int field expression.</summary>
@@ -183,12 +191,14 @@ namespace SimpleStack.Orm.Tests
 			};
 
 			EstablishContext(10, expected);
+			using (var conn = OpenDbConnection())
+			{
+				var actual = conn.Select<TestType>(q => q.IntColumn == TestClass._staticField);
 
-			var actual = OpenDbConnection().Select<TestType>(q => q.IntColumn == TestClass._staticField);
-
-			Assert.IsNotNull(actual);
-			Assert.AreEqual(1, actual.Count());
-			CollectionAssert.Contains(actual, expected);
+				Assert.IsNotNull(actual);
+				Assert.AreEqual(1, actual.Count());
+				CollectionAssert.Contains(actual, expected);
+			}
 		}
 
 		/// <summary>Can select static int method expression.</summary>
@@ -203,12 +213,14 @@ namespace SimpleStack.Orm.Tests
 			};
 
 			EstablishContext(10, expected);
+			using (var conn = OpenDbConnection())
+			{
+				var actual = conn.Select<TestType>(q => q.IntColumn == TestClass<int>.StaticMethod(12));
 
-			var actual = OpenDbConnection().Select<TestType>(q => q.IntColumn == TestClass<int>.StaticMethod(12));
-
-			Assert.IsNotNull(actual);
-			Assert.AreEqual(1, actual.Count());
-			CollectionAssert.Contains(actual, expected);
+				Assert.IsNotNull(actual);
+				Assert.AreEqual(1, actual.Count());
+				CollectionAssert.Contains(actual, expected);
+			}
 		}
 
 		/// <summary>Can select int new expression.</summary>
@@ -223,12 +235,14 @@ namespace SimpleStack.Orm.Tests
 			};
 
 			EstablishContext(10, expected);
+			using (var conn = OpenDbConnection())
+			{
+				var actual = conn.Select<TestType>(q => q.IntColumn == new TestClass<int>(12).Property);
 
-			var actual = OpenDbConnection().Select<TestType>(q => q.IntColumn == new TestClass<int>(12).Property);
-
-			Assert.IsNotNull(actual);
-			Assert.AreEqual(1, actual.Count());
-			CollectionAssert.Contains(actual, expected);
+				Assert.IsNotNull(actual);
+				Assert.AreEqual(1, actual.Count());
+				CollectionAssert.Contains(actual, expected);
+			}
 		}
 
 		/// <summary>Can select structure int field expression.</summary>
@@ -245,12 +259,14 @@ namespace SimpleStack.Orm.Tests
 			};
 
 			EstablishContext(10, expected);
+			using (var conn = OpenDbConnection())
+			{
+				var actual = conn.Select<TestType>(q => q.IntColumn == tmp._field);
 
-			var actual = OpenDbConnection().Select<TestType>(q => q.IntColumn == tmp._field);
-
-			Assert.IsNotNull(actual);
-			Assert.AreEqual(1, actual.Count());
-			CollectionAssert.Contains(actual, expected);
+				Assert.IsNotNull(actual);
+				Assert.AreEqual(1, actual.Count());
+				CollectionAssert.Contains(actual, expected);
+			}
 		}
 
 		/// <summary>Can select structure int property expression.</summary>
@@ -267,12 +283,14 @@ namespace SimpleStack.Orm.Tests
 			};
 
 			EstablishContext(10, expected);
+			using (var conn = OpenDbConnection())
+			{
+				var actual = conn.Select<TestType>(q => q.IntColumn == tmp.Property);
 
-			var actual = OpenDbConnection().Select<TestType>(q => q.IntColumn == tmp.Property);
-
-			Assert.IsNotNull(actual);
-			Assert.AreEqual(1, actual.Count());
-			CollectionAssert.Contains(actual, expected);
+				Assert.IsNotNull(actual);
+				Assert.AreEqual(1, actual.Count());
+				CollectionAssert.Contains(actual, expected);
+			}
 		}
 
 		/// <summary>Can select structure int method expression.</summary>
@@ -289,12 +307,14 @@ namespace SimpleStack.Orm.Tests
 			};
 
 			EstablishContext(10, expected);
+			using (var conn = OpenDbConnection())
+			{
+				var actual = conn.Select<TestType>(q => q.IntColumn == tmp.Mehtod());
 
-			var actual = OpenDbConnection().Select<TestType>(q => q.IntColumn == tmp.Mehtod());
-
-			Assert.IsNotNull(actual);
-			Assert.AreEqual(1, actual.Count());
-			CollectionAssert.Contains(actual, expected);
+				Assert.IsNotNull(actual);
+				Assert.AreEqual(1, actual.Count());
+				CollectionAssert.Contains(actual, expected);
+			}
 		}
 
 		#endregion int
@@ -315,12 +335,14 @@ namespace SimpleStack.Orm.Tests
 			};
 
 			EstablishContext(10, expected);
+			using (var conn = OpenDbConnection())
+			{
+				var actual = conn.Select<TestType>(q => q.BoolColumn == tmp.Property);
 
-			var actual = OpenDbConnection().Select<TestType>(q => q.BoolColumn == tmp.Property);
-
-			Assert.IsNotNull(actual);
-			Assert.Greater(actual.Count(), 1);
-			CollectionAssert.Contains(actual, expected);
+				Assert.IsNotNull(actual);
+				Assert.Greater(actual.Count(), 1);
+				CollectionAssert.Contains(actual, expected);
+			}
 		}
 
 		/// <summary>Can select bool field expression.</summary>
@@ -337,12 +359,14 @@ namespace SimpleStack.Orm.Tests
 			};
 
 			EstablishContext(10, expected);
+			using (var conn = OpenDbConnection())
+			{
+				var actual = conn.Select<TestType>(q => q.BoolColumn == tmp._field);
 
-			var actual = OpenDbConnection().Select<TestType>(q => q.BoolColumn == tmp._field);
-
-			Assert.IsNotNull(actual);
-			Assert.Greater(actual.Count(), 1);
-			CollectionAssert.Contains(actual, expected);
+				Assert.IsNotNull(actual);
+				Assert.Greater(actual.Count(), 1);
+				CollectionAssert.Contains(actual, expected);
+			}
 		}
 
 		/// <summary>Can select bool method expression.</summary>
@@ -359,12 +383,14 @@ namespace SimpleStack.Orm.Tests
 			};
 
 			EstablishContext(10, expected);
+			using (var conn = OpenDbConnection())
+			{
+				var actual = conn.Select<TestType>(q => q.BoolColumn == tmp.Mehtod());
 
-			var actual = OpenDbConnection().Select<TestType>(q => q.BoolColumn == tmp.Mehtod());
-
-			Assert.IsNotNull(actual);
-			Assert.Greater(actual.Count(), 1);
-			CollectionAssert.Contains(actual, expected);
+				Assert.IsNotNull(actual);
+				Assert.Greater(actual.Count(), 1);
+				CollectionAssert.Contains(actual, expected);
+			}
 		}
 
 		/// <summary>Can select static bool method expression.</summary>
@@ -379,12 +405,14 @@ namespace SimpleStack.Orm.Tests
 			};
 
 			EstablishContext(10, expected);
+			using (var conn = OpenDbConnection())
+			{
+				var actual = conn.Select<TestType>(q => q.BoolColumn == TestClass<bool>.StaticMethod(false));
 
-			var actual = OpenDbConnection().Select<TestType>(q => q.BoolColumn == TestClass<bool>.StaticMethod(false));
-
-			Assert.IsNotNull(actual);
-			Assert.Greater(actual.Count(), 1);
-			CollectionAssert.Contains(actual, expected);
+				Assert.IsNotNull(actual);
+				Assert.Greater(actual.Count(), 1);
+				CollectionAssert.Contains(actual, expected);
+			}
 		}
 
 		/// <summary>Can select bool new expression.</summary>
@@ -399,12 +427,14 @@ namespace SimpleStack.Orm.Tests
 			};
 
 			EstablishContext(10, expected);
+			using (var conn = OpenDbConnection())
+			{
+				var actual = conn.Select<TestType>(q => q.BoolColumn == new TestClass<bool>(false).Property);
 
-			var actual = OpenDbConnection().Select<TestType>(q => q.BoolColumn == new TestClass<bool>(false).Property);
-
-			Assert.IsNotNull(actual);
-			Assert.Greater(actual.Count(), 1);
-			CollectionAssert.Contains(actual, expected);
+				Assert.IsNotNull(actual);
+				Assert.Greater(actual.Count(), 1);
+				CollectionAssert.Contains(actual, expected);
+			}
 		}
 
 		#endregion bool

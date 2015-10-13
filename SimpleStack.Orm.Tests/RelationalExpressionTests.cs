@@ -18,12 +18,14 @@ namespace SimpleStack.Orm.Tests
 			};
 
 			EstablishContext(10, expected);
+			using (var conn = OpenDbConnection())
+			{
+				var actual = conn.Select<TestType>(q => q.IntColumn > 1);
 
-			var actual = OpenDbConnection().Select<TestType>(q => q.IntColumn > 1);
-
-			Assert.IsNotNull(actual);
-			Assert.AreEqual(10, actual.Count());
-			CollectionAssert.DoesNotContain(actual, expected);
+				Assert.IsNotNull(actual);
+				Assert.AreEqual(10, actual.Count());
+				CollectionAssert.DoesNotContain(actual, expected);
+			}
 		}
 
 		/// <summary>Can select greater or equal than expression.</summary>
@@ -38,12 +40,14 @@ namespace SimpleStack.Orm.Tests
 			};
 
 			EstablishContext(10, expected);
+			using (var conn = OpenDbConnection())
+			{
+				var actual = conn.Select<TestType>(q => q.IntColumn >= 1);
 
-			var actual = OpenDbConnection().Select<TestType>(q => q.IntColumn >= 1);
-
-			Assert.IsNotNull(actual);
-			Assert.AreEqual(11, actual.Count());
-			CollectionAssert.Contains(actual, expected);
+				Assert.IsNotNull(actual);
+				Assert.AreEqual(11, actual.Count());
+				CollectionAssert.Contains(actual, expected);
+			}
 		}
 
 		/// <summary>Can select smaller than expression.</summary>
@@ -58,11 +62,13 @@ namespace SimpleStack.Orm.Tests
 			};
 
 			EstablishContext(10, expected);
+			using (var conn = OpenDbConnection())
+			{
+				var actual = conn.Select<TestType>(q => q.IntColumn < 1);
 
-			var actual = OpenDbConnection().Select<TestType>(q => q.IntColumn < 1);
-
-			Assert.IsNotNull(actual);
-			Assert.AreEqual(0, actual.Count());
+				Assert.IsNotNull(actual);
+				Assert.AreEqual(0, actual.Count());
+			}
 		}
 
 		/// <summary>Can select smaller or equal than expression.</summary>
@@ -77,12 +83,14 @@ namespace SimpleStack.Orm.Tests
 			};
 
 			EstablishContext(10, expected);
+			using (var conn = OpenDbConnection())
+			{
+				var actual = conn.Select<TestType>(q => q.IntColumn <= 1);
 
-			var actual = OpenDbConnection().Select<TestType>(q => q.IntColumn <= 1);
-
-			Assert.IsNotNull(actual);
-			Assert.AreEqual(1, actual.Count());
-			CollectionAssert.Contains(actual, expected);
+				Assert.IsNotNull(actual);
+				Assert.AreEqual(1, actual.Count());
+				CollectionAssert.Contains(actual, expected);
+			}
 		}
 	}
 }

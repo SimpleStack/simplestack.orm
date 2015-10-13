@@ -15,13 +15,19 @@ namespace SimpleStack.Orm.Tests
 		public void Can_select_count_without_parameters()
 		{
 			CreateModelWithFieldsOfDifferentTypes(10);
-			Assert.AreEqual(10, OpenDbConnection().Count<ModelWithFieldsOfDifferentTypes>());
+			using (var conn = OpenDbConnection())
+			{
+				Assert.AreEqual(10, conn.Count<ModelWithFieldsOfDifferentTypes>());
+			}
 		}
 		[Test]
 		public void Can_select_count_with_where_Statement()
 		{
 			CreateModelWithFieldsOfDifferentTypes(10);
-			Assert.AreEqual(5, OpenDbConnection().Count<ModelWithFieldsOfDifferentTypes>(x => x.Bool));
+			using (var conn = OpenDbConnection())
+			{
+				Assert.AreEqual(5, conn.Count<ModelWithFieldsOfDifferentTypes>(x => x.Bool));
+			}
 		}
 
 		[Test]
@@ -34,12 +40,15 @@ namespace SimpleStack.Orm.Tests
 			OpenDbConnection().Insert(new Person { Id = 5, Age = 20 });
 			OpenDbConnection().Insert(new Person { Id = 6, Age = 25 });
 
-			Assert.AreEqual(4, OpenDbConnection().Count<Person>(x =>
+			using (var conn = OpenDbConnection())
 			{
-				x.Distinct();
-				x.Select(y => y.Age);
-				return x;
-			})); // SELECT COUNT (DISTINCT Age) FROM Person
+				Assert.AreEqual(4, conn.Count<Person>(x =>
+				{
+					x.Distinct();
+					x.Select(y => y.Age);
+					return x;
+				})); // SELECT COUNT (DISTINCT Age) FROM Person
+			}
 		}
 	}
 }

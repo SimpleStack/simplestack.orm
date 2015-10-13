@@ -94,7 +94,7 @@ namespace SimpleStack.Orm.Tests
 		protected ExpressionTests(IDialectProvider dialectProvider)
 		{
 			_dialectProvider = dialectProvider;
-			Logging.LogProvider.SetCurrentLogProvider(new ColoredConsoleLogProvider());
+			//Logging.LogProvider.SetCurrentLogProvider(new ColoredConsoleLogProvider());
 		}
 
 		[SetUp]
@@ -144,7 +144,7 @@ namespace SimpleStack.Orm.Tests
 			if (obj == null)
 				obj = new TestType[0];
 
-			var con = OpenDbConnection();
+			using (var con = OpenDbConnection())
 			{
 				foreach (var t in obj)
 				{

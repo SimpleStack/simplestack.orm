@@ -31,12 +31,14 @@ namespace SimpleStack.Orm.Tests
 			};
 
 			EstablishContext(10, expected);
+			using (var conn = OpenDbConnection())
+			{
+				var actual = conn.Select<TestType>(q => q.BoolColumn == (a & b));
 
-			var actual = OpenDbConnection().Select<TestType>(q => q.BoolColumn == (a & b));
-
-			Assert.IsNotNull(actual);
-			Assert.Greater(actual.Count(), 0);
-			CollectionAssert.Contains(actual, expected);
+				Assert.IsNotNull(actual);
+				Assert.Greater(actual.Count(), 0);
+				CollectionAssert.Contains(actual, expected);
+			}
 		}
 
 		/// <summary>Can select logical or variable expression.</summary>
@@ -56,12 +58,14 @@ namespace SimpleStack.Orm.Tests
 			};
 
 			EstablishContext(10, expected);
+			using (var conn = OpenDbConnection())
+			{
+				var actual = conn.Select<TestType>(q => q.BoolColumn == (a | b));
 
-			var actual = OpenDbConnection().Select<TestType>(q => q.BoolColumn == (a | b));
-
-			Assert.IsNotNull(actual);
-			Assert.Greater(actual.Count(), 0);
-			CollectionAssert.Contains(actual, expected);
+				Assert.IsNotNull(actual);
+				Assert.Greater(actual.Count(), 0);
+				CollectionAssert.Contains(actual, expected);
+			}
 		}
 
 		/// <summary>Can select logical exclusive-or variable expression.</summary>
@@ -81,12 +85,14 @@ namespace SimpleStack.Orm.Tests
 			};
 
 			EstablishContext(10, expected);
+			using (var conn = OpenDbConnection())
+			{
+				var actual = conn.Select<TestType>(q => q.BoolColumn == (a ^ b));
 
-			var actual = OpenDbConnection().Select<TestType>(q => q.BoolColumn == (a ^ b));
-
-			Assert.IsNotNull(actual);
-			Assert.Greater(actual.Count(), 0);
-			CollectionAssert.Contains(actual, expected);
+				Assert.IsNotNull(actual);
+				Assert.Greater(actual.Count(), 0);
+				CollectionAssert.Contains(actual, expected);
+			}
 		}
 
 		#endregion
@@ -104,12 +110,14 @@ namespace SimpleStack.Orm.Tests
 			};
 
 			EstablishContext(10, expected);
+			using (var conn = OpenDbConnection())
+			{
+				var actual = conn.Select<TestType>(q => q.BoolColumn == (GetValue(true) & GetValue(false)));
 
-			var actual = OpenDbConnection().Select<TestType>(q => q.BoolColumn == (GetValue(true) & GetValue(false)));
-
-			Assert.IsNotNull(actual);
-			Assert.Greater(actual.Count(), 0);
-			CollectionAssert.Contains(actual, expected);
+				Assert.IsNotNull(actual);
+				Assert.Greater(actual.Count(), 0);
+				CollectionAssert.Contains(actual, expected);
+			}
 		}
 
 		/// <summary>Can select logical or method expression.</summary>
@@ -124,12 +132,14 @@ namespace SimpleStack.Orm.Tests
 			};
 
 			EstablishContext(10, expected);
+			using (var conn = OpenDbConnection())
+			{
+				var actual = conn.Select<TestType>(q => q.BoolColumn == (GetValue(true) | GetValue(false)));
 
-			var actual = OpenDbConnection().Select<TestType>(q => q.BoolColumn == (GetValue(true) | GetValue(false)));
-
-			Assert.IsNotNull(actual);
-			Assert.Greater(actual.Count(), 0);
-			CollectionAssert.Contains(actual, expected);
+				Assert.IsNotNull(actual);
+				Assert.Greater(actual.Count(), 0);
+				CollectionAssert.Contains(actual, expected);
+			}
 		}
 
 		/// <summary>Can select logical exclusive-or method expression.</summary>
@@ -144,12 +154,14 @@ namespace SimpleStack.Orm.Tests
 			};
 
 			EstablishContext(10, expected);
+			using (var conn = OpenDbConnection())
+			{
+				var actual = conn.Select<TestType>(q => q.BoolColumn == (GetValue(true) ^ GetValue(false)));
 
-			var actual = OpenDbConnection().Select<TestType>(q => q.BoolColumn == (GetValue(true) ^ GetValue(false)));
-
-			Assert.IsNotNull(actual);
-			Assert.Greater(actual.Count(), 0);
-			CollectionAssert.Contains(actual, expected);
+				Assert.IsNotNull(actual);
+				Assert.Greater(actual.Count(), 0);
+				CollectionAssert.Contains(actual, expected);
+			}
 		}
 
 		#endregion

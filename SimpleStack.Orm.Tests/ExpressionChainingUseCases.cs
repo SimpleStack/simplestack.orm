@@ -73,129 +73,137 @@ namespace SimpleStack.Orm.Tests
 		[Test]
 		public void Can_Chain_Expressions_Using_And()
 		{
-			var db = OpenDbConnection();
-			db.Insert<Person>(People);
+			using (var db = OpenDbConnection())
+			{
+				db.Insert<Person>(People);
 
-			var visitor = db.DialectProvider.ExpressionVisitor<Person>();
+				var visitor = db.DialectProvider.ExpressionVisitor<Person>();
 
-			visitor.Where(x => x.FirstName.StartsWith("Jim")).And(x => x.LastName.StartsWith("Hen"));
-			var results = db.Select(visitor).ToArray();
+				visitor.Where(x => x.FirstName.StartsWith("Jim")).And(x => x.LastName.StartsWith("Hen"));
+				var results = db.Select(visitor).ToArray();
 
-			Assert.AreEqual(1, results.Count());
+				Assert.AreEqual(1, results.Count());
 
-			visitor.Clear(); //clears underlying expression
+				visitor.Clear(); //clears underlying expression
 
-			visitor.Where(x => x.LastName.StartsWith("J")).And(x => x.Age > 40);
-			results = db.Select(visitor).ToArray();
-			Assert.AreEqual(results[0].FirstName, "Michael");
+				visitor.Where(x => x.LastName.StartsWith("J")).And(x => x.Age > 40);
+				results = db.Select(visitor).ToArray();
+				Assert.AreEqual(results[0].FirstName, "Michael");
+			}
 		}
 
 		/// <summary>Can chain expressions using or.</summary>
 		[Test]
 		public void Can_Chain_expressions_Using_Or()
 		{
-			var db = OpenDbConnection();
-			db.Insert<Person>(People);
+			using (var db = OpenDbConnection())
+			{
+				db.Insert<Person>(People);
 
-			var visitor = db.DialectProvider.ExpressionVisitor<Person>();
+				var visitor = db.DialectProvider.ExpressionVisitor<Person>();
 
-			visitor.Where(x => x.FirstName.StartsWith("Jim")).Or(x => x.LastName.StartsWith("Cob"));
+				visitor.Where(x => x.FirstName.StartsWith("Jim")).Or(x => x.LastName.StartsWith("Cob"));
 
-			var results = db.Select<Person>(visitor);
-			Assert.AreEqual(3, results.Count());
+				var results = db.Select<Person>(visitor);
+				Assert.AreEqual(3, results.Count());
 
-			visitor.Clear(); //clear the underlying expression
+				visitor.Clear(); //clear the underlying expression
 
-			visitor.Where(x => x.Age < 30).Or(x => x.Age > 45);
-			results = db.Select<Person>(visitor);
-			Assert.AreEqual(5, results.Count());
-			Assert.IsFalse(results.Any(x => x.FirstName == "Elvis"));
+				visitor.Where(x => x.Age < 30).Or(x => x.Age > 45);
+				results = db.Select<Person>(visitor);
+				Assert.AreEqual(5, results.Count());
+				Assert.IsFalse(results.Any(x => x.FirstName == "Elvis"));
+			}
 		}
 
 		/// <summary>When chaining expressions using where iterator behaves like and.</summary>
 		[Test]
 		public void When_chaining_expressions_using_Where_it_behaves_like_And()
 		{
-			var db = OpenDbConnection();
-			db.Insert<Person>(People);
+			using (var db = OpenDbConnection())
+			{
+				db.Insert<Person>(People);
 
-			var visitor = db.DialectProvider.ExpressionVisitor<Person>();
+				var visitor = db.DialectProvider.ExpressionVisitor<Person>();
 
-			visitor.Where(x => x.FirstName.StartsWith("Jim"));
-			visitor.Where(x => x.LastName.StartsWith("Hen"));
-			//WHERE (upper("FirstName") like 'JIM%'  AND upper("LastName") like 'HEN%' )
-			var results = db.Select<Person>(visitor);
-			Assert.AreEqual(1, results.Count());
+				visitor.Where(x => x.FirstName.StartsWith("Jim"));
+				visitor.Where(x => x.LastName.StartsWith("Hen"));
+				//WHERE (upper("FirstName") like 'JIM%'  AND upper("LastName") like 'HEN%' )
+				var results = db.Select<Person>(visitor);
+				Assert.AreEqual(1, results.Count());
 
-			visitor.Or(x => x.FirstName.StartsWith("M"));
-			//WHERE ((upper("FirstName") like 'JIM%'  AND upper("LastName") like 'HEN%' ) OR upper("FirstName") like 'M%' )
-			results = db.Select(visitor);
-			Assert.AreEqual(2, results.Count());
+				visitor.Or(x => x.FirstName.StartsWith("M"));
+				//WHERE ((upper("FirstName") like 'JIM%'  AND upper("LastName") like 'HEN%' ) OR upper("FirstName") like 'M%' )
+				results = db.Select(visitor);
+				Assert.AreEqual(2, results.Count());
 
-			visitor.Where(x => x.FirstName.StartsWith("M"));
-			//WHERE (((upper("FirstName") like 'JIM%'  AND upper("LastName") like 'HEN%' ) OR upper("FirstName") like 'M%' ) AND upper("FirstName") like 'M%' )
-			results = db.Select(visitor);
-			Assert.AreEqual(1, results.Count());
+				visitor.Where(x => x.FirstName.StartsWith("M"));
+				//WHERE (((upper("FirstName") like 'JIM%'  AND upper("LastName") like 'HEN%' ) OR upper("FirstName") like 'M%' ) AND upper("FirstName") like 'M%' )
+				results = db.Select(visitor);
+				Assert.AreEqual(1, results.Count());
+			}
 		}
 
 		/// <summary>Can chain order expressions using then by.</summary>
 		[Test]
 		public void Can_Chain_Order_Expressions_using_ThenBy()
 		{
-			var db = OpenDbConnection();
-			db.Insert<Person>(People);
-
-			var visitor = db.DialectProvider.ExpressionVisitor<Person>();
-			visitor.OrderBy(x => x.Age);
-			visitor.ThenBy(x => x.FirstName);
-
-			var results = db.Select(visitor).ToArray();
-
-			Console.WriteLine("Sorting using Linq");
-			var expected = People.OrderBy(x => x.Age).ThenBy(x => x.FirstName).ToList();
-			foreach (var e in expected)
+			using (var db = OpenDbConnection())
 			{
-				Console.WriteLine(e.ToString());
-			}
+				db.Insert<Person>(People);
 
-			Console.WriteLine("Retrieved from DB");
-			foreach (var r in results)
-			{
-				Console.WriteLine(r.ToString());
-			}
+				var visitor = db.DialectProvider.ExpressionVisitor<Person>();
+				visitor.OrderBy(x => x.Age);
+				visitor.ThenBy(x => x.FirstName);
 
-			for (int i = 0; i < expected.Count(); i++)
-			{
-				if (results[i].Id != expected[i].Id)
+				var results = db.Select(visitor).ToArray();
+
+				Console.WriteLine("Sorting using Linq");
+				var expected = People.OrderBy(x => x.Age).ThenBy(x => x.FirstName).ToList();
+				foreach (var e in expected)
 				{
-					Assert.Fail("Expected person with id {0}, got {1}", expected[i].Id, results[i].Id);
+					Console.WriteLine(e.ToString());
 				}
-			}
 
-			visitor.OrderBy(); //clears orderBy Expression
-
-			visitor.OrderBy(x => x.Age);
-			visitor.ThenByDescending(x => x.FirstName);
-			results = db.Select(visitor).ToArray();
-
-			Console.WriteLine("Sorting using Linq");
-			expected = People.OrderBy(x => x.Age).ThenByDescending(x => x.FirstName).ToList();
-			foreach (var e in expected)
-			{
-				Console.WriteLine(e.ToString());
-			}
-
-			Console.WriteLine("Retrieved from DB");
-			foreach (var r in results)
-			{
-				Console.WriteLine(r.ToString());
-			}
-
-			for (int i = 0; i < expected.Count(); i++)
-			{
-				if (results[i].Id != expected[i].Id)
+				Console.WriteLine("Retrieved from DB");
+				foreach (var r in results)
 				{
-					Assert.Fail("Expected person with id {0}, got {1}", expected[i].Id, results[i].Id);
+					Console.WriteLine(r.ToString());
+				}
+
+				for (int i = 0; i < expected.Count(); i++)
+				{
+					if (results[i].Id != expected[i].Id)
+					{
+						Assert.Fail("Expected person with id {0}, got {1}", expected[i].Id, results[i].Id);
+					}
+				}
+
+				visitor.OrderBy(); //clears orderBy Expression
+
+				visitor.OrderBy(x => x.Age);
+				visitor.ThenByDescending(x => x.FirstName);
+				results = db.Select(visitor).ToArray();
+
+				Console.WriteLine("Sorting using Linq");
+				expected = People.OrderBy(x => x.Age).ThenByDescending(x => x.FirstName).ToList();
+				foreach (var e in expected)
+				{
+					Console.WriteLine(e.ToString());
+				}
+
+				Console.WriteLine("Retrieved from DB");
+				foreach (var r in results)
+				{
+					Console.WriteLine(r.ToString());
+				}
+
+				for (int i = 0; i < expected.Count(); i++)
+				{
+					if (results[i].Id != expected[i].Id)
+					{
+						Assert.Fail("Expected person with id {0}, got {1}", expected[i].Id, results[i].Id);
+					}
 				}
 			}
 		}

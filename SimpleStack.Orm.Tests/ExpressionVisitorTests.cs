@@ -23,8 +23,11 @@ namespace SimpleStack.Orm.Tests
 		public void Can_Select_by_const_int()
 		{
 			SetupContext();
-			var target = OpenDbConnection().Select<TestType2>(q => q.Id == 1);
-			Assert.AreEqual(1, target.Count());
+			using (var conn = OpenDbConnection())
+			{
+				var target = conn.Select<TestType2>(q => q.Id == 1);
+				Assert.AreEqual(1, target.Count());
+			}
 		}
 
 		/// <summary>Can select by value returned by method without parameters.</summary>
@@ -32,8 +35,11 @@ namespace SimpleStack.Orm.Tests
 		public void Can_Select_by_value_returned_by_method_without_params()
 		{
 			SetupContext();
-			var target = OpenDbConnection().Select<TestType2>(q => q.Id == MethodReturningInt());
-			Assert.AreEqual(1, target.Count());
+			using (var conn = OpenDbConnection())
+			{
+				var target = conn.Select<TestType2>(q => q.Id == MethodReturningInt());
+				Assert.AreEqual(1, target.Count());
+			}
 		}
 
 		/// <summary>Can select by value returned by method with parameter.</summary>
@@ -41,8 +47,11 @@ namespace SimpleStack.Orm.Tests
 		public void Can_Select_by_value_returned_by_method_with_param()
 		{
 			SetupContext();
-			var target = OpenDbConnection().Select<TestType2>(q => q.Id == MethodReturningInt(1));
-			Assert.AreEqual(1, target.Count());
+			using (var conn = OpenDbConnection())
+			{
+				var target = conn.Select<TestType2>(q => q.Id == MethodReturningInt(1));
+				Assert.AreEqual(1, target.Count());
+			}
 		}
 
 		/// <summary>Can select by constant enum.</summary>
@@ -50,10 +59,13 @@ namespace SimpleStack.Orm.Tests
 		public void Can_Select_by_const_enum()
 		{
 			SetupContext();
-			var target = OpenDbConnection().Select<TestType2>(q => q.EnumCol == TestEnum.Val0);
-			Assert.AreEqual(1, target.Count());
-			target = OpenDbConnection().Select<TestType2>(q => TestEnum.Val0 == q.EnumCol);
-			Assert.AreEqual(1, target.Count());
+			using (var conn = OpenDbConnection())
+			{
+				var target = conn.Select<TestType2>(q => q.EnumCol == TestEnum.Val0);
+				Assert.AreEqual(1, target.Count());
+				target = conn.Select<TestType2>(q => TestEnum.Val0 == q.EnumCol);
+				Assert.AreEqual(1, target.Count());
+			}
 		}
 
 		/// <summary>Can select by enum returned by method.</summary>
@@ -61,8 +73,11 @@ namespace SimpleStack.Orm.Tests
 		public void Can_Select_by_enum_returned_by_method()
 		{
 			SetupContext();
-			var target = OpenDbConnection().Select<TestType2>(q => q.EnumCol == MethodReturningEnum());
-			Assert.AreEqual(1, target.Count());
+			using (var conn = OpenDbConnection())
+			{
+				var target = conn.Select<TestType2>(q => q.EnumCol == MethodReturningEnum());
+				Assert.AreEqual(1, target.Count());
+			}
 		}
 
 		/// <summary>Can select using to upper on string property of t.</summary>
@@ -70,9 +85,12 @@ namespace SimpleStack.Orm.Tests
 		public void Can_Select_using_ToUpper_on_string_property_of_T()
 		{
 			SetupContext();
-			var target =
-				OpenDbConnection().Select<TestType2>(q => q.TextCol.ToUpper() == "ASDF");
-			Assert.AreEqual(1, target.Count());
+
+			using (var conn = OpenDbConnection())
+			{
+				var target = conn.Select<TestType2>(q => q.TextCol.ToUpper() == "ASDF");
+				Assert.AreEqual(1, target.Count());
+			}
 		}
 
 		/// <summary>Can select using to lower on string property of field.</summary>
@@ -82,9 +100,11 @@ namespace SimpleStack.Orm.Tests
 			SetupContext();
 			var obj = new TestType2 { TextCol = "ASDF" };
 
-			var target =
-				OpenDbConnection().Select<TestType2>(q => q.TextCol == obj.TextCol.ToLower());
-			Assert.AreEqual(1, target.Count());
+			using (var conn = OpenDbConnection())
+			{
+				var target = conn.Select<TestType2>(q => q.TextCol == obj.TextCol.ToLower());
+				Assert.AreEqual(1, target.Count());
+			}
 		}
 
 		/// <summary>Can select using constant bool value.</summary>
@@ -92,9 +112,12 @@ namespace SimpleStack.Orm.Tests
 		public void Can_Select_using_Constant_Bool_Value()
 		{
 			SetupContext();
-			var target =
-				OpenDbConnection().Select<TestType2>(q => q.BoolCol == true);
-			Assert.AreEqual(2, target.Count());
+
+			using (var conn = OpenDbConnection())
+			{
+				var target = conn.Select<TestType2>(q => q.BoolCol == true);
+				Assert.AreEqual(2, target.Count());
+			}
 		}
 
 		/// <summary>Can select using new.</summary>
@@ -115,8 +138,7 @@ namespace SimpleStack.Orm.Tests
 					ComplexObjCol = new TestType2 { TextCol = "poiu" }
 				});
 
-				var target =
-					OpenDbConnection().Select<TestType2>(
+				var target = con.Select<TestType2>(
 						q => q.ComplexObjCol == new TestType2() { TextCol = "poiu" });
 				Assert.AreEqual(1, target.Count());
 			}
@@ -126,9 +148,13 @@ namespace SimpleStack.Orm.Tests
 		public void Can_Select_Scalar_using_MAX()
 		{
 			SetupContext();
-			
-			var maxDate = OpenDbConnection().GetScalar<TestType2,DateTime>(x => Sql.Max(x.DateCol));
-			Assert.AreEqual(new DateTime(2012, 4, 1), maxDate);
+
+
+			using (var conn = OpenDbConnection())
+			{
+				var maxDate = conn.GetScalar<TestType2, DateTime>(x => Sql.Max(x.DateCol));
+				Assert.AreEqual(new DateTime(2012, 4, 1), maxDate);
+			}
 		}
 
 		[Test]
@@ -136,8 +162,11 @@ namespace SimpleStack.Orm.Tests
 		{
 			SetupContext();
 
-			var minDate = OpenDbConnection().GetScalar<TestType2, DateTime>(x => Sql.Min(x.DateCol));
-			Assert.AreEqual(new DateTime(2012, 1, 1), minDate);
+			using (var conn = OpenDbConnection())
+			{
+				var minDate = conn.GetScalar<TestType2, DateTime>(x => Sql.Min(x.DateCol));
+				Assert.AreEqual(new DateTime(2012, 1, 1), minDate);
+			}
 		}
 
 		[Test]
@@ -145,8 +174,11 @@ namespace SimpleStack.Orm.Tests
 		{
 			SetupContext();
 
-			var sumIds = OpenDbConnection().GetScalar<TestType2, int>(x => Sql.Sum(x.Id));
-			Assert.AreEqual(10, sumIds);
+			using (var conn = OpenDbConnection())
+			{
+				var sumIds = conn.GetScalar<TestType2, int>(x => Sql.Sum(x.Id));
+				Assert.AreEqual(10, sumIds);
+			}
 		}
 
 		/// <summary>Can select using in.</summary>
@@ -157,8 +189,12 @@ namespace SimpleStack.Orm.Tests
 
 			var visitor = _dialectProvider.ExpressionVisitor<TestType2>();
 			visitor.Where(q => Sql.In(q.TextCol, "asdf", "qwer"));
-			var target = OpenDbConnection().Select(visitor);
-			Assert.AreEqual(2, target.Count());
+
+			using (var conn = OpenDbConnection())
+			{
+				var target = conn.Select(visitor);
+				Assert.AreEqual(2, target.Count());
+			}
 		}
 
 		/// <summary>Can select using in using parameters.</summary>
@@ -169,8 +205,11 @@ namespace SimpleStack.Orm.Tests
 
 			var visitor = _dialectProvider.ExpressionVisitor<TestType2>();
 			visitor.Where(q => Sql.In(q.Id, 1, 2, 3));
-			var target = OpenDbConnection().Select(visitor);
-			Assert.AreEqual(3, target.Count());
+			using (var conn = OpenDbConnection())
+			{
+				var target = conn.Select(visitor);
+				Assert.AreEqual(3, target.Count());
+			}
 		}
 
 		/// <summary>Can select using in using int array.</summary>
@@ -181,8 +220,11 @@ namespace SimpleStack.Orm.Tests
 
 			var visitor = _dialectProvider.ExpressionVisitor<TestType2>();
 			visitor.Where(q => Sql.In(q.Id, new[] { 1, 2, 3 }));
-			var target = OpenDbConnection().Select(visitor);
-			Assert.AreEqual(3, target.Count());
+			using (var conn = OpenDbConnection())
+			{
+				var target = conn.Select(visitor);
+				Assert.AreEqual(3, target.Count());
+			}
 		}
 
 		/// <summary>Can select using in using object array.</summary>
@@ -193,8 +235,11 @@ namespace SimpleStack.Orm.Tests
 
 			var visitor = _dialectProvider.ExpressionVisitor<TestType2>();
 			visitor.Where(q => Sql.In(q.Id, new object[] { 1, 2, 3 }));
-			var target = OpenDbConnection().Select(visitor);
-			Assert.AreEqual(3, target.Count());
+			using (var conn = OpenDbConnection())
+			{
+				var target = conn.Select(visitor);
+				Assert.AreEqual(3, target.Count());
+			}
 		}
 
 		/// <summary>Can select using startswith.</summary>
@@ -202,8 +247,11 @@ namespace SimpleStack.Orm.Tests
 		public void Can_Select_using_Startswith()
 		{
 			SetupContext();
-			var target = OpenDbConnection().Select<TestType2>(q => q.TextCol.StartsWith("asdf"));
-			Assert.AreEqual(2, target.Count());
+			using (var conn = OpenDbConnection())
+			{
+				var target = conn.Select<TestType2>(q => q.TextCol.StartsWith("asdf"));
+				Assert.AreEqual(2, target.Count());
+			}
 		}
 
 		/// <summary>Can selelct using chained string operations.</summary>
@@ -214,8 +262,11 @@ namespace SimpleStack.Orm.Tests
 			var value = "ASDF";
 			var visitor = _dialectProvider.ExpressionVisitor<TestType2>();
 			visitor.Where(q => q.TextCol.ToUpper().StartsWith(value));
-			var target = OpenDbConnection().Select(visitor);
-			Assert.AreEqual(2, target.Count());
+			using (var conn = OpenDbConnection())
+			{
+				var target = conn.Select(visitor);
+				Assert.AreEqual(2, target.Count());
+			}
 		}
 
 		/// <summary>Can select using object array contains.</summary>
