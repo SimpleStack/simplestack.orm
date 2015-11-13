@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Dapper;
 using SimpleStack.Orm.Attributes;
 using NUnit.Framework;
 using SimpleStack.Orm.Sqlite;
@@ -159,6 +160,69 @@ namespace SimpleStack.Orm.Tests
 
 			Assert.AreEqual(expected, joinQuery);
 		}
+
+
+
+		public class Bar
+		{
+			[PrimaryKey]
+			public int Id { get; set; }
+
+			public string BarProperty { get; set; }
+		}
+
+		public class Foo
+		{
+			[PrimaryKey]
+			public int Id { get; set; }
+
+			public string FooProperty { get; set; }
+		}
+
+		public class BarView
+		{
+			public string BarProperty { get; set; }
+
+			public string FooProperty { get; set; }
+		}
+
+		[Test]
+		public void JoinSqlBuilderWithWhereCondition()
+		{
+			IDialectProvider dialectProvider = new SqliteDialectProvider();
+			using (OrmConnection connection = dialectProvider.CreateConnection(":memory:"))
+			{
+				connection.Open();
+
+				connection.CreateTable<Bar>(true);
+				for (int i = 0; i < 10; i++)
+				{
+					connection.Insert(new Bar { Id = i, BarProperty = i + "_Bar" });
+				}
+
+				connection.CreateTable<Foo>(true);
+				for (int i = 0; i < 10; i++)
+				{
+					connection.Insert(new Foo { Id = i, FooProperty = i + "_Foo" });
+				}
+
+				var builder = new JoinSqlBuilder<Bar, Bar>(dialectProvider)
+					 .Join<Bar, Foo>(x => x.Id, x => x.Id)
+					 .Select<Bar>(x => new { x.BarProperty })
+					 .Select<Foo>(x => new { x.FooProperty })
+					 .Where<Bar>(x => x.Id > 5);
+				IList<BarView> views = connection.Query<BarView>(builder.ToSql(),builder.Parameters).ToList();
+				Assert.AreEqual(4, views.Count);
+				foreach (var view in views)
+				{
+					Assert.AreEqual(view.BarProperty.Replace("_Bar", string.Empty), view.FooProperty.Replace("_Foo", string.Empty));
+				}
+
+				connection.Close();
+			}
+		}
+
+
 	}
 }
 

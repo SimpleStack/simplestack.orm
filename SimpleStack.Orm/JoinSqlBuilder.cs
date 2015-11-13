@@ -375,6 +375,12 @@ namespace SimpleStack.Orm
 			ev.WhereStatementWithoutWhereString = true;
 			ev.PrefixFieldWithTableName = true;
 			ev.Where(where);
+
+			foreach (var p in ev.Parameters)
+			{
+				Parameters.Add(p);
+			}
+
 			var str = ev.WhereExpression;
 			if (String.IsNullOrEmpty(str) == false)
 			{
