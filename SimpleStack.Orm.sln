@@ -24,6 +24,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{4F9F20
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{41503166-6A06-427B-BE04-0540771ED7F2}"
 	ProjectSection(SolutionItems) = preProject
+		SimpleStack.Orm.MySQL\SimpleStack.Orm.MySQL.nuspec = SimpleStack.Orm.MySQL\SimpleStack.Orm.MySQL.nuspec
+		SimpleStack.Orm\SimpleStack.Orm.nuspec = SimpleStack.Orm\SimpleStack.Orm.nuspec
+		SimpleStack.Orm.PostgreSQL\SimpleStack.Orm.PostgreSQL.nuspec = SimpleStack.Orm.PostgreSQL\SimpleStack.Orm.PostgreSQL.nuspec
+		SimpleStack.Orm.Sqlite\SimpleStack.Orm.Sqlite.nuspec = SimpleStack.Orm.Sqlite\SimpleStack.Orm.Sqlite.nuspec
+		SimpleStack.Orm.SqlServer\SimpleStack.Orm.SqlServer.nuspec = SimpleStack.Orm.SqlServer\SimpleStack.Orm.SqlServer.nuspec
 		SolutionInfo.cs = SolutionInfo.cs
 	EndProjectSection
 EndProject
