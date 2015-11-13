@@ -5,6 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Dapper;
+using log4net.Appender;
+using log4net.Config;
+using log4net.Layout;
 using SimpleStack.Orm.MySQL;
 using SimpleStack.Orm.PostgreSQL;
 using SimpleStack.Orm.Sqlite;
@@ -94,7 +97,7 @@ namespace SimpleStack.Orm.Tests
 		protected ExpressionTests(IDialectProvider dialectProvider)
 		{
 			_dialectProvider = dialectProvider;
-			//Logging.LogProvider.SetCurrentLogProvider(new ColoredConsoleLogProvider());
+			BasicConfigurator.Configure(new DebugAppender{Layout =  new SimpleLayout()});
 		}
 
 		[SetUp]
