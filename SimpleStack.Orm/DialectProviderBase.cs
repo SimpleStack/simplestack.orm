@@ -687,9 +687,19 @@ namespace SimpleStack.Orm
 		public virtual string GetColumnNames(ModelDefinition modelDef)
 		{
 			var sqlColumns = new StringBuilder();
-			modelDef.FieldDefinitions.ForEach(x =>
-				sqlColumns.AppendFormat("{0}{1} ", sqlColumns.Length > 0 ? "," : "",
-				  GetQuotedColumnName(x.FieldName)));
+
+			foreach (var fd in modelDef.FieldDefinitions)
+			{
+				if (sqlColumns.Length > 0)
+					sqlColumns.Append(", ");
+
+				sqlColumns.Append(GetQuotedColumnName(fd.FieldName));
+
+				if (fd.FieldName != fd.Name)
+				{
+					sqlColumns.AppendFormat(" AS {0} ", fd.Name);
+				}
+			}
 
 			return sqlColumns.ToString();
 		}

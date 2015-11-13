@@ -58,6 +58,8 @@ namespace SimpleStack.Orm.Expressions
 		/// <summary>true to use field name.</summary>
 		private bool _useFieldName;
 
+		private bool _addAliasSpecification;
+
 		/// <summary>The where expression.</summary>
 		private string _whereExpression;
 
@@ -233,6 +235,7 @@ namespace SimpleStack.Orm.Expressions
 		{
 			_sep = string.Empty;
 			_useFieldName = true;
+			_addAliasSpecification = true;
 			_fields = Visit(fields).ToString().Split(',').ToList();
 			return this;
 		}
@@ -959,7 +962,12 @@ namespace SimpleStack.Orm.Expressions
 			if (_useFieldName)
 			{
 				var fd = _modelDef.FieldDefinitions.FirstOrDefault(x => x.Name == memberName);
-				var fn = fd != default(FieldDefinition) ? fd.FieldName : memberName;
+				var fn = fd?.FieldName ?? memberName;
+
+				if (_addAliasSpecification && fd != null &&  fd.FieldName != fd.Name) // Check if an alias has been defined
+				{
+					return DialectProvider.GetQuotedColumnName(fn) + " AS " + fd.Name;
+				}
 				return DialectProvider.GetQuotedColumnName(fn);
 			}
 			return memberName;
