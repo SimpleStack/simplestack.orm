@@ -60,24 +60,6 @@ namespace SimpleStack.Orm.Tests
 			public DbType ColumnType => DbType.Int32;
 		}
 
-		public class TestType2TypeHandler : ITypeHandlerColumnType
-		{
-			public void SetValue(IDbDataParameter parameter, object value)
-			{
-				parameter.DbType = DbType.String;
-				parameter.Value = ((TestType2)value).TextCol;
-			}
-
-			public object Parse(Type destinationType, object value)
-			{
-				return new TestType2() { TextCol = value.ToString() };
-			}
-
-			public int? Length => 2000;
-
-			public DbType ColumnType => DbType.AnsiString;
-		}
-
 		public class JsonTypeHandler : SqlMapper.ITypeHandler
 		{
 			public void SetValue(IDbDataParameter parameter, object value)
@@ -112,7 +94,6 @@ namespace SimpleStack.Orm.Tests
 			SqlMapper.ResetTypeHandlers();
 
 			SqlMapper.AddTypeHandler(typeof(TestEnum), new EnumAsIntTypeHandler<TestEnum>());
-			SqlMapper.AddTypeHandler(typeof(TestType2),new TestType2TypeHandler());
 			
 			OpenDbConnection().CreateTable<TestType>(true);
 			OpenDbConnection().CreateTable<Person>(true);
