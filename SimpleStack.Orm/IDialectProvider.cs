@@ -299,5 +299,7 @@ namespace SimpleStack.Orm
 		/// <param name="fieldName">Name of the field.</param>
 		/// <returns>The index name.</returns>
 		string GetIndexName(bool isUnique, string modelName, string fieldName);
+
+		string GetDatePartFunction(string name, string quotedColName);
 	}
 }

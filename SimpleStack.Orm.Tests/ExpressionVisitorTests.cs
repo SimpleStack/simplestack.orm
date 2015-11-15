@@ -12,7 +12,7 @@ namespace SimpleStack.Orm.Tests
 	{
 		private void SetupContext()
 		{
-			OpenDbConnection().Insert(new TestType2 { Id = 1, BoolCol = true, DateCol = new DateTime(2012, 1, 1), TextCol = "asdf", EnumCol = TestEnum.Val0 });
+			OpenDbConnection().Insert(new TestType2 { Id = 1, BoolCol = true, DateCol = new DateTime(2012, 11, 2,3,4,5), TextCol = "asdf", EnumCol = TestEnum.Val0 });
 			OpenDbConnection().Insert(new TestType2 { Id = 2, BoolCol = true, DateCol = new DateTime(2012, 2, 1), TextCol = "asdf123", EnumCol = TestEnum.Val1 });
 			OpenDbConnection().Insert(new TestType2 { Id = 3, BoolCol = false, DateCol = new DateTime(2012, 3, 1), TextCol = "qwer", EnumCol = TestEnum.Val2 });
 			OpenDbConnection().Insert(new TestType2 { Id = 4, BoolCol = false, DateCol = new DateTime(2012, 4, 1), TextCol = "qwer123", EnumCol = TestEnum.Val3 });
@@ -148,12 +148,11 @@ namespace SimpleStack.Orm.Tests
 		public void Can_Select_Scalar_using_MAX()
 		{
 			SetupContext();
-
-
+			
 			using (var conn = OpenDbConnection())
 			{
 				var maxDate = conn.GetScalar<TestType2, DateTime>(x => Sql.Max(x.DateCol));
-				Assert.AreEqual(new DateTime(2012, 4, 1), maxDate);
+				Assert.AreEqual(new DateTime(2012, 11, 2, 3, 4, 5), maxDate);
 			}
 		}
 
@@ -165,7 +164,7 @@ namespace SimpleStack.Orm.Tests
 			using (var conn = OpenDbConnection())
 			{
 				var minDate = conn.GetScalar<TestType2, DateTime>(x => Sql.Min(x.DateCol));
-				Assert.AreEqual(new DateTime(2012, 1, 1), minDate);
+				Assert.AreEqual(new DateTime(2012, 2, 1), minDate);
 			}
 		}
 
@@ -178,6 +177,45 @@ namespace SimpleStack.Orm.Tests
 			{
 				var sumIds = conn.GetScalar<TestType2, int>(x => Sql.Sum(x.Id));
 				Assert.AreEqual(10, sumIds);
+			}
+		}
+
+		[Test]
+		public void Can_Select_Scalar_using_Date_Functions()
+		{
+			SetupContext();
+
+			Assert.AreEqual(1, Sql.Quarter(new DateTime(2010, 1, 1)));
+			Assert.AreEqual(1, Sql.Quarter(new DateTime(2010, 2, 1)));
+			Assert.AreEqual(1, Sql.Quarter(new DateTime(2010, 3, 1)));
+			Assert.AreEqual(2, Sql.Quarter(new DateTime(2010, 4, 1)));
+			Assert.AreEqual(2, Sql.Quarter(new DateTime(2010, 5, 1)));
+			Assert.AreEqual(2, Sql.Quarter(new DateTime(2010, 6, 1)));
+			Assert.AreEqual(3, Sql.Quarter(new DateTime(2010, 7, 1)));
+			Assert.AreEqual(3, Sql.Quarter(new DateTime(2010, 8, 1)));
+			Assert.AreEqual(3, Sql.Quarter(new DateTime(2010, 9, 1)));
+			Assert.AreEqual(4, Sql.Quarter(new DateTime(2010, 10, 1)));
+			Assert.AreEqual(4, Sql.Quarter(new DateTime(2010, 11, 1)));
+			Assert.AreEqual(4, Sql.Quarter(new DateTime(2010, 12, 1)));
+
+			using (var conn = OpenDbConnection())
+			{
+				Assert.AreEqual(2012, conn.GetScalar<TestType2, int>(x => Sql.Year(x.DateCol)));
+				Assert.AreEqual(11, conn.GetScalar<TestType2, int>(x => Sql.Month(x.DateCol)));
+				Assert.AreEqual(4, conn.GetScalar<TestType2, int>(x => Sql.Quarter(x.DateCol)));
+				Assert.AreEqual(2, conn.GetScalar<TestType2, int>(x => Sql.Day(x.DateCol)));
+				Assert.AreEqual(3, conn.GetScalar<TestType2, int>(x => Sql.Hour(x.DateCol)));
+				Assert.AreEqual(4, conn.GetScalar<TestType2, int>(x => Sql.Minute(x.DateCol)));
+				Assert.AreEqual(5, conn.GetScalar<TestType2, int>(x => Sql.Second(x.DateCol)));
+
+				//SELECT "id", "textcol", "boolcol", "datecol", "enumcol", "complexobjcol"
+				//FROM "testtype2"
+				//WHERE(date_part('month', "datecol") = 11)
+
+				var v = conn.FirstOrDefault<TestType2>(x => Sql.Month(x.DateCol) == 11);
+
+				Assert.AreEqual(2012, v.DateCol.Year);
+				Assert.AreEqual(11, v.DateCol.Month);
 			}
 		}
 

@@ -907,6 +907,11 @@ namespace SimpleStack.Orm
 			return string.Format("{0}idx_{1}_{2}", isUnique ? "u" : "", modelName, fieldName).ToLower();
 		}
 
+		public virtual string GetDatePartFunction(string name, string quotedColName)
+		{
+			throw new NotImplementedException();
+		}
+
 		/// <summary>Gets composite index name.</summary>
 		/// <param name="compositeIndex">Zero-based index of the composite.</param>
 		/// <param name="modelDef">      The model definition.</param>

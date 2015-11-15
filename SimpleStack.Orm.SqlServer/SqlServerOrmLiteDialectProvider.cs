@@ -418,5 +418,10 @@ namespace SimpleStack.Orm.SqlServer
 		{
 			return String.Empty;
 		}
+
+		public override string GetDatePartFunction(string name, string quotedColName)
+		{
+			return $"DATEPART({name.ToLower()},{quotedColName})";
+		}
 	}
 }

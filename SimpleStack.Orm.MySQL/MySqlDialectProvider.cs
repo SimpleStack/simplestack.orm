@@ -130,5 +130,28 @@ namespace SimpleStack.Orm.MySQL
 				 null,
 				 fieldDefinition.DefaultValue);
 		}
+
+		public override string GetDatePartFunction(string name, string quotedColName)
+		{
+			switch (name)
+			{
+				case "Year":
+					return $"YEAR({quotedColName})";
+				case "Month":
+					return $"MONTH({quotedColName})";
+				case "Day":
+					return $"DAY({quotedColName})";
+				case "Hour":
+					return $"HOUR({quotedColName})";
+				case "Minute":
+					return $"MINUTE({quotedColName})";
+				case "Second":
+					return $"SECOND({quotedColName})";
+				case "Quarter":
+					return $"QUARTER({quotedColName})";
+				default:
+					throw new NotImplementedException();
+			}
+		}
 	}
 }

@@ -1129,7 +1129,7 @@ namespace SimpleStack.Orm.Expressions
 		protected virtual object VisitSqlMethodCall(MethodCallExpression m)
 		{
 			var args = VisitSqlParameters(m.Arguments);
-			var quotedColName = args.Dequeue();
+			string quotedColName = args.Dequeue().ToString();
 
 			string statement;
 
@@ -1178,6 +1178,15 @@ namespace SimpleStack.Orm.Expressions
 						quotedColName,
 						args.Count == 1 ? string.Format(",{0}", args.Dequeue()) : string.Empty);
 					break;
+				case "Year":
+				case "Month":
+				case "Day":
+				case "Hour":
+				case "Minute":
+				case "Second":
+				case "Quarter":
+					statement = DialectProvider.GetDatePartFunction(m.Method.Name,quotedColName);
+               break;
 				default:
 					throw new NotSupportedException();
 			}

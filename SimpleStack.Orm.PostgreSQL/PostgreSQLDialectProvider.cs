@@ -230,5 +230,10 @@ namespace SimpleStack.Orm.PostgreSQL
 		{
 			return "DROP TABLE " + GetQuotedTableName(modelDef) + " CASCADE";
 		}
+
+		public override string GetDatePartFunction(string name, string quotedColName)
+		{
+			return $"date_part('{name.ToLower()}', {quotedColName})";
+		}
 	}
 }

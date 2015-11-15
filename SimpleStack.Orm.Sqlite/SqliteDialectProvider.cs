@@ -169,5 +169,28 @@ namespace SimpleStack.Orm.Sqlite
 				return ret.Replace(" BIGINT ", " INTEGER ");
 			return ret;
 		}
+
+		public override string GetDatePartFunction(string name, string quotedColName)
+		{
+			switch (name)
+			{
+				case "Year":
+					return $"strftime('%Y',{quotedColName})";
+				case "Month":
+					return $"strftime('%m',{quotedColName})";
+				case "Day":
+					return $"strftime('%d',{quotedColName})";
+				case "Hour":
+					return $"strftime('%H',{quotedColName})";
+				case "Minute":
+					return $"strftime('%M',{quotedColName})";
+				case "Second":
+					return $"strftime('%S',{quotedColName})";
+				case "Quarter":
+					return $"(((strftime('%m',{quotedColName})- 1) / 3) + 1)";
+				default:
+					throw new NotImplementedException();
+			}
+		}
 	}
 }
