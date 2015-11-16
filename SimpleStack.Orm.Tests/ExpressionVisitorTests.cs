@@ -219,7 +219,6 @@ namespace SimpleStack.Orm.Tests
 		}
 
 		[Test]
-		//Doesn't seems supported by SQLite
 		public void Can_Select_Scalar_using_Date_In_Where_Functions()
 		{
 			SetupContext();
@@ -228,7 +227,7 @@ namespace SimpleStack.Orm.Tests
 			{
 				//SELECT "id", "textcol", "boolcol", "datecol", "enumcol", "complexobjcol"
 				//FROM "testtype2"
-				//WHERE(date_part('month', "datecol") = 11)
+				//WHERE (date_part('month', "datecol") = 11)
 
 				var v = conn.FirstOrDefault<TestType2>(x => Sql.Month(x.DateCol) == 11);
 

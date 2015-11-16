@@ -175,19 +175,19 @@ namespace SimpleStack.Orm.Sqlite
 			switch (name)
 			{
 				case "Year":
-					return $"strftime('%Y',{quotedColName})";
+					return $"CAST(strftime('%Y',{quotedColName}) AS INT)";
 				case "Month":
-					return $"strftime('%m',{quotedColName})";
+					return $"CAST(strftime('%m',{quotedColName}) AS INT)";
 				case "Day":
-					return $"strftime('%d',{quotedColName})";
+					return $"CAST(strftime('%d',{quotedColName}) AS INT)";
 				case "Hour":
-					return $"strftime('%H',{quotedColName})";
+					return $"CAST(strftime('%H',{quotedColName}) AS INT)";
 				case "Minute":
-					return $"strftime('%M',{quotedColName})";
+					return $"CAST(strftime('%M',{quotedColName}) AS INT)";
 				case "Second":
-					return $"strftime('%S',{quotedColName})";
+					return $"CAST(strftime('%S',{quotedColName}) AS INT)";
 				case "Quarter":
-					return $"(((strftime('%m',{quotedColName})- 1) / 3) + 1)";
+					return $"CAST((((strftime('%m',{quotedColName})- 1) / 3) + 1) AS INT)";
 				default:
 					throw new NotImplementedException();
 			}
