@@ -168,6 +168,7 @@ namespace SimpleStack.Orm.Tests
 			[PrimaryKey]
 			public int Id { get; set; }
 
+			[Alias("Test")]
 			public string BarProperty { get; set; }
 		}
 
@@ -222,7 +223,38 @@ namespace SimpleStack.Orm.Tests
 			}
 		}
 
+		[Test]
+		public void Test()
+		{
+			IDialectProvider dialectProvider = new SqliteDialectProvider();
+			using (OrmConnection connection = dialectProvider.CreateConnection(":memory:"))
+			{
+				connection.Open();
 
+				connection.CreateTable<Bar>(true);
+				for (int i = 0; i < 10; i++)
+				{
+					connection.Insert(new Bar { Id = i, BarProperty = i + "_Bar" });
+				}
+				connection.CreateTable<Foo>(true);
+				for (int i = 0; i < 10; i++)
+				{
+					connection.Insert(new Foo { Id = i, FooProperty = i + "_Foo" });
+				}
+
+				var builder = new JoinSqlBuilder<Bar, Bar>(dialectProvider)
+					 .Join<Bar, Foo>(x => x.Id, x => x.Id)
+					 .SelectAll<Bar>()
+					 .Select<Foo>(x => new { x.FooProperty });
+				IList<BarView> views = connection.Query<BarView>(builder.ToSql(), builder.Parameters).ToList();
+
+				Assert.AreEqual(10, views.Count);
+				foreach (var view in views)
+				{
+					Assert.AreEqual(view.BarProperty.Replace("_Bar", string.Empty), view.FooProperty.Replace("_Foo", string.Empty));
+				}
+			}
+		}
 	}
 }
 

@@ -99,10 +99,22 @@ namespace SimpleStack.Orm
 			List<string> result = new List<string>(pocoType.GetModelDefinition().FieldDefinitions.Count);
 			foreach (var item in pocoType.GetModelDefinition().FieldDefinitions)
 			{
+				var name = _dialectProvider.GetQuotedColumnName(item.FieldName);
+
+				if (item.Name != item.FieldName)
+				{
+					name += " AS " + _dialectProvider.GetQuotedColumnName(item.Name);
+				}
+
 				if (withTablePrefix)
-					result.Add(string.Format("{0}.{1}", _dialectProvider.GetQuotedTableName(tableName), _dialectProvider.GetQuotedColumnName(item.FieldName)));
+				{
+
+					result.Add(string.Format("{0}.{1}", _dialectProvider.GetQuotedTableName(tableName), name));
+				}
 				else
-					result.Add(string.Format("{0}", _dialectProvider.GetQuotedColumnName(item.FieldName)));
+				{
+					result.Add(name);
+				}
 			}
 			return result;
 		}
