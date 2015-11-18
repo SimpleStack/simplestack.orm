@@ -163,65 +163,50 @@ namespace SimpleStack.Orm
 			return await CountAsync(DialectProvider.ExpressionVisitor<T>());
 		}
 
-		/// <summary>An OrmConnection method that updates the only.</summary>
-		/// <typeparam name="T">Generic type parameter.</typeparam>
-		/// <param name="model">     The model.</param>
-		/// <param name="onlyFields">The only fields.</param>
-		/// <returns>An int.</returns>
-		public async Task<int> UpdateAsync<T>(
-			T model,
-			Func<SqlExpressionVisitor<T>, SqlExpressionVisitor<T>> onlyFields)
+		public async Task<int> UpdateAsync<T>(T model)
 		{
-			return await UpdateAsync(model, onlyFields(DialectProvider.ExpressionVisitor<T>()));
-		}
-
-		/// <summary>An OrmConnection method that updates the only.</summary>
-		/// <typeparam name="T">Generic type parameter.</typeparam>
-		/// <param name="model">     The model.</param>
-		/// <param name="expression">The only fields.</param>
-		/// <returns>An int.</returns>
-		public async Task<int> UpdateAsync<T>(
-			T model,
-			SqlExpressionVisitor<T> expression)
-		{
-			var cmd = DialectProvider.ToUpdateRowStatement(model, expression);
+			var cmd = DialectProvider.ToUpdateRowStatement(model, DialectProvider.ExpressionVisitor<T>());
 			return await this.ExecuteScalarAsync<int>(cmd);
 		}
 
-		/// <summary>An OrmConnection method that updates the only.</summary>
-		/// <typeparam name="T">   Generic type parameter.</typeparam>
-		/// <typeparam name="TKey">Type of the key.</typeparam>
-		/// <param name="obj">       The object.</param>
-		/// <param name="onlyFields">The only fields.</param>
-		/// <param name="where">     The where.</param>
-		/// <returns>An int.</returns>
-		public async Task<int> UpdateAsync<T, TKey>(
-			T obj,
-			Expression<Func<T, TKey>> onlyFields,
-			Expression<Func<T, bool>> where = null)
+		public async Task<int> UpdateAsync<T, TKey>(T model, Expression<Func<T, TKey>> onlyFields)
 		{
-			if (onlyFields == null)
-				throw new ArgumentNullException(nameof(onlyFields));
-
 			var ev = DialectProvider.ExpressionVisitor<T>();
 			ev.Update(onlyFields);
-			ev.Where(where);
-			return await UpdateAsync(obj, ev);
+			return await UpdateAsync(model, ev);
 		}
 
-		/// <summary>An OrmConnection method that updates this object.</summary>
-		/// <typeparam name="T">Generic type parameter.</typeparam>
-		/// <param name="updateOnly">The update only.</param>
-		/// <param name="where">     The where.</param>
-		/// <returns>An int.</returns>
-		public async Task<int> UpdateAsync<T>(
-			object updateOnly,
-			Expression<Func<T, bool>> where = null)
+		internal async Task<int> UpdateAsync<T>(T model, SqlExpressionVisitor<T> ev)
+		{
+			var cmd = DialectProvider.ToUpdateRowStatement(model, ev);
+			return await this.ExecuteScalarAsync<int>(cmd);
+		}
+
+		public async Task<int> UpdateAllAsync<T, TKey>(T obj, Expression<Func<T, TKey>> onlyField, Expression<Func<T, bool>> where = null)
 		{
 			var ev = DialectProvider.ExpressionVisitor<T>();
 			ev.Where(where);
+			if (onlyField != null)
+			{
+				ev.Update(onlyField);
+			}
+			return await UpdateAllAsync<T>(obj, ev);
+		}
 
-			var cmd = DialectProvider.ToUpdateRowStatement(updateOnly, ev);
+		public async Task<int> UpdateAllAsync<T>(object obj, Expression<Func<T, bool>> where = null, Expression<Func<T, object>> onlyField = null)
+		{
+			var ev = DialectProvider.ExpressionVisitor<T>();
+			ev.Where(where);
+			if (onlyField != null)
+			{
+				ev.Update(onlyField);
+			}
+			return await UpdateAllAsync<T>(obj, ev);
+		}
+
+		internal async Task<int> UpdateAllAsync<T>(object obj, SqlExpressionVisitor<T> ev)
+		{
+			var cmd = DialectProvider.ToUpdateAllRowStatement(obj, ev);
 			return await this.ExecuteScalarAsync<int>(cmd);
 		}
 

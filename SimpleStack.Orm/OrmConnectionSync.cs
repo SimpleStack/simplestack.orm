@@ -24,7 +24,7 @@ namespace SimpleStack.Orm
 
 		/// <summary>An OrmConnection method that selects.</summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
-		/// <param name="expression">The expression.</param>
+		/// <param name="expression">The ev.</param>
 		/// <param name="buffered"></param>
 		/// <returns>A List&lt;T&gt;</returns>
 		public IEnumerable<T> Select<T>(Func<SqlExpressionVisitor<T>, SqlExpressionVisitor<T>> expression,
@@ -36,7 +36,7 @@ namespace SimpleStack.Orm
 
 		/// <summary>An OrmConnection method that selects.</summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
-		/// <param name="expression">The expression.</param>
+		/// <param name="expression">The ev.</param>
 		/// <param name="buffered"></param>
 		/// <returns>A List&lt;T&gt;</returns>
 		public IEnumerable<T> Select<T>(SqlExpressionVisitor<T> expression, CommandFlags flags = CommandFlags.Buffered)
@@ -78,7 +78,7 @@ namespace SimpleStack.Orm
 		/// <summary>An OrmConnection method that firsts.</summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		
-		/// <param name="expression">The expression.</param>
+		/// <param name="expression">The ev.</param>
 		/// <returns>A T.</returns>
 		public T First<T>(SqlExpressionVisitor<T> expression)
 		{
@@ -99,7 +99,7 @@ namespace SimpleStack.Orm
 		/// <summary>An OrmConnection method that first or default.</summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		
-		/// <param name="expression">The expression.</param>
+		/// <param name="expression">The ev.</param>
 		/// <returns>A T.</returns>
 		public T FirstOrDefault<T>(SqlExpressionVisitor<T> expression)
 		{
@@ -143,7 +143,7 @@ namespace SimpleStack.Orm
 		///    An OrmConnection method that counts the given database connection.
 		/// </summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
-		/// <param name="expression">The expression.</param>
+		/// <param name="expression">The ev.</param>
 		/// <returns>A long.</returns>
 		public long Count<T>(SqlExpressionVisitor<T> expression)
 		{
@@ -154,7 +154,7 @@ namespace SimpleStack.Orm
 		///    An OrmConnection method that counts the given database connection.
 		/// </summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
-		/// <param name="expression">The expression.</param>
+		/// <param name="expression">The ev.</param>
 		/// <returns>A long.</returns>
 		public long Count<T>(Expression<Func<T, bool>> expression)
 		{
@@ -171,70 +171,85 @@ namespace SimpleStack.Orm
 		{
 			return Count(DialectProvider.ExpressionVisitor<T>());
 		}
-
-		/// <summary>An OrmConnection method that updates the only.</summary>
-		/// <typeparam name="T">Generic type parameter.</typeparam>
 		
-		/// <param name="model">     The model.</param>
-		/// <param name="onlyFields">The only fields.</param>
-		/// <returns>An int.</returns>
-		public int Update<T>(
-			T model,
-			Func<SqlExpressionVisitor<T>, SqlExpressionVisitor<T>> onlyFields)
+		/// <summary>
+		/// Update all properties of object instance
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <param name="model">Object to update</param>
+		/// <returns></returns>
+		public int Update<T>(T model)
 		{
-			return Update(model, onlyFields(DialectProvider.ExpressionVisitor<T>()));
-		}
-
-		/// <summary>An OrmConnection method that updates the only.</summary>
-		/// <typeparam name="T">Generic type parameter.</typeparam>
-		
-		/// <param name="model">     The model.</param>
-		/// <param name="expression">The only fields.</param>
-		/// <returns>An int.</returns>
-		public int Update<T>(
-			T model,
-			SqlExpressionVisitor<T> expression)
-		{
-			var cmd = DialectProvider.ToUpdateRowStatement(model, expression);
+			var cmd = DialectProvider.ToUpdateRowStatement(model, DialectProvider.ExpressionVisitor<T>());
 			return this.ExecuteScalar<int>(cmd);
 		}
 
-		/// <summary>An OrmConnection method that updates the only.</summary>
-		/// <typeparam name="T">   Generic type parameter.</typeparam>
-		/// <typeparam name="TKey">Type of the key.</typeparam>
-		
-		/// <param name="obj">       The object.</param>
-		/// <param name="onlyFields">The only fields.</param>
-		/// <param name="where">     The where.</param>
-		/// <returns>An int.</returns>
-		public int Update<T, TKey>(
-			T obj,
-			Expression<Func<T, TKey>> onlyFields,
-			Expression<Func<T, bool>> where = null)
+		/// <summary>
+		/// Update only some fields of an object
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <typeparam name="TKey"></typeparam>
+		/// <param name="model">Object to update</param>
+		/// <param name="onlyFields">Specify the fields to update. ie : x=> x.SomeProperty1 or x=> new{ x.SomeProperty1, x.SomeProperty2}</param>
+		/// <returns></returns>
+		public int Update<T,TKey>(T model, Expression<Func<T, TKey>> onlyFields)
 		{
-			if (onlyFields == null)
-				throw new ArgumentNullException(nameof(onlyFields));
-
 			var ev = DialectProvider.ExpressionVisitor<T>();
 			ev.Update(onlyFields);
-			ev.Where(where);
-			return Update(obj, ev);
+			return Update(model, ev);
 		}
 
-		/// <summary>An OrmConnection method that updates this object.</summary>
-		/// <typeparam name="T">Generic type parameter.</typeparam>
-		
-		/// <param name="updateOnly">The update only.</param>
-		/// <param name="where">     The where.</param>
-		/// <returns>An int.</returns>
-		public int Update<T>(
-			object updateOnly,
-			Expression<Func<T, bool>> where = null)
+		internal int Update<T>(T model, SqlExpressionVisitor<T> ev)
+		{
+			var cmd = DialectProvider.ToUpdateRowStatement(model, ev);
+			return this.ExecuteScalar<int>(cmd);
+		}
+
+		/// <summary>
+		/// Update all object of a given type
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <typeparam name="TKey"></typeparam>
+		/// <param name="obj">New values</param>
+		/// <param name="onlyField">Fields to update</param>
+		/// <param name="where">Where clause</param>
+		/// <returns></returns>
+		public int UpdateAll<T>(T obj, Expression<Func<T, bool>> where = null, Expression<Func<T, object>> onlyField = null)
+		{
+			var ev = DialectProvider.ExpressionVisitor<T>();
+			if (where != null)
+			{
+				ev.Where(where);
+			}
+			if (onlyField != null)
+			{
+				ev.Update(onlyField);
+			}
+			return UpdateAll<T>(obj, ev);
+		}
+
+		/// <summary>
+		/// Update all object of a given type
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <param name="obj">New values</param>
+		/// <param name="onlyField">Fields to update</param>
+		/// <param name="where">Where clause</param>
+		/// <returns></returns>
+		public int UpdateAll<T>(object obj, Expression <Func<T, bool>> where = null, Expression<Func<T, object>> onlyField = null)
 		{
 			var ev = DialectProvider.ExpressionVisitor<T>();
 			ev.Where(where);
+			if (onlyField != null)
+			{
+				ev.Update(onlyField);
+			}
+			return UpdateAll<T>(obj, ev);
+		}
 
-			var cmd = DialectProvider.ToUpdateRowStatement(updateOnly, ev);
+		internal int UpdateAll<T>(object obj, SqlExpressionVisitor<T> ev)
+		{
+			var cmd = DialectProvider.ToUpdateAllRowStatement(obj, ev);
 			return this.ExecuteScalar<int>(cmd);
 		}
 

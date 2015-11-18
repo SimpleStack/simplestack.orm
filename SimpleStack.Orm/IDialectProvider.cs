@@ -118,7 +118,7 @@ namespace SimpleStack.Orm
 		/// <param name="objWithProperties">The object with properties.</param>
 		/// <param name="updateFields">     The update fields.</param>
 		/// <returns>The given data converted to a string.</returns>
-		CommandDefinition ToUpdateRowStatement<T>(object objWithProperties, SqlExpressionVisitor<T> visitor);
+		CommandDefinition ToUpdateAllRowStatement<T>(object objWithProperties, SqlExpressionVisitor<T> visitor);
 
 		/// <summary>Converts the objWithProperties to a delete row statement.</summary>
 		/// <param name="objWithProperties">The object with properties.</param>

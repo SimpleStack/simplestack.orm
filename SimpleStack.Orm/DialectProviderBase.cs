@@ -390,39 +390,44 @@ namespace SimpleStack.Orm
 		/// <returns>The given data converted to a string.</returns>
 		public virtual CommandDefinition ToUpdateRowStatement<T>(T objWithProperties, SqlExpressionVisitor<T> ev)
 		{
-			var sql = new StringBuilder();
 			var modelDef = objWithProperties.GetType().GetModelDefinition();
+			var parameters = new Dictionary<string, object>();
 
-			var parameters = new Dictionary<string, object>(ev.Parameters);
+			var setSql = new StringBuilder();
+			var whereSql = new StringBuilder();
 
 			foreach (var fieldDef in modelDef.FieldDefinitions)
 			{
-				if (fieldDef.IsComputed || fieldDef.AutoIncrement)
-					continue;
-
-				if (ev.Fields.Contains(fieldDef.Name))
+				if (fieldDef.IsPrimaryKey)
 				{
-					if (sql.Length > 0)
+					whereSql.Append(whereSql.Length == 0 ? "WHERE " : " AND ");
+
+					var parameterName = GetParameterName(parameters.Count);
+					whereSql.AppendFormat("{0} = {1}", GetQuotedColumnName(fieldDef.FieldName), parameterName);
+					parameters.Add(parameterName, fieldDef.GetValueFn(objWithProperties));
+				}
+				else if (ev.Fields.Count == 0 || ev.Fields.Contains(fieldDef.Name))
+				{
+					if (setSql.Length > 0)
 					{
-						sql.Append(",");
+						setSql.Append(",");
 					}
 					var paramName = GetParameterName(parameters.Count);
-					sql.AppendFormat("{0} = {1}", GetQuotedColumnName(fieldDef.FieldName), paramName);
+					setSql.AppendFormat("{0} = {1}", GetQuotedColumnName(fieldDef.FieldName), paramName);
 					parameters.Add(paramName, fieldDef.GetValue(objWithProperties));
 				}
 			}
 
-			var updateSql = string.Format("UPDATE {0} SET {1} {2}", GetQuotedTableName(modelDef), sql, ev.WhereExpression);
+			var updateSql = string.Format("UPDATE {0} SET {1} {2}", GetQuotedTableName(modelDef), setSql, whereSql);
 
-			if (sql.Length == 0)
+			if (setSql.Length == 0)
 				throw new OrmException("No valid update properties provided (e.g. p => p.FirstName): " + updateSql);
 
 			return new CommandDefinition(updateSql, parameters);
 		}
 
-		public virtual CommandDefinition ToUpdateRowStatement<T>(object updateOnly, SqlExpressionVisitor<T> ev)
+		public virtual CommandDefinition ToUpdateAllRowStatement<T>(object updateOnly, SqlExpressionVisitor<T> ev)
 		{
-			var whereSql = ev.WhereExpression;
 			var sql = new StringBuilder();
 			var modelDef = typeof(T).GetModelDefinition();
 			var fields = modelDef.FieldDefinitionsArray;
@@ -431,34 +436,20 @@ namespace SimpleStack.Orm
 
 			foreach (var setField in updateOnly.GetType().GetPublicProperties())
 			{
-				var fieldDef = fields.FirstOrDefault(x => string.Equals(x.Name, setField.Name, StringComparison.InvariantCultureIgnoreCase));
-				if (fieldDef == null)
+				var fieldDef = 
+					fields.FirstOrDefault(x => string.Equals(x.Name, setField.Name, StringComparison.InvariantCultureIgnoreCase));
+
+				if (fieldDef == null || fieldDef.IsComputed || fieldDef.IsPrimaryKey)
 					continue;
 
-				string parameterName;
-
-				if (fieldDef.IsPrimaryKey)
-				{
-					if (String.IsNullOrWhiteSpace(whereSql))
-					{
-						whereSql = "WHERE ";
-					}
-					else
-					{
-						whereSql += " AND ";
-					}
-					parameterName = GetParameterName(parameters.Count);
-					whereSql += String.Format("{0} = {1}", GetQuotedColumnName(fieldDef.FieldName), parameterName);
-					parameters.Add(parameterName, setField.GetPropertyGetterFn()(updateOnly));
-				}
-				else
+				if (ev.Fields.Count == 0 || ev.Fields.Contains(fieldDef.Name))
 				{
 					if (sql.Length > 0)
 					{
 						sql.Append(",");
 					}
 
-					parameterName = GetParameterName(parameters.Count);
+					var parameterName = GetParameterName(parameters.Count);
 
 					sql.AppendFormat("{0} = {1}",
 						GetQuotedColumnName(fieldDef.FieldName),
@@ -469,7 +460,7 @@ namespace SimpleStack.Orm
 			}
 
 			var updateSql = string.Format("UPDATE {0} SET {1} {2}",
-				GetQuotedTableName(modelDef), sql, whereSql);
+				GetQuotedTableName(modelDef), sql, ev.WhereExpression);
 
 			return new CommandDefinition(updateSql, parameters);
 		}

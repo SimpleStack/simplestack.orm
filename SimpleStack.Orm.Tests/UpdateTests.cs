@@ -156,7 +156,7 @@ namespace SimpleStack.Orm.Tests
 
 		/// <summary>Can update model with fields of different types table.</summary>
 		[Test]
-		public void Can_update_ModelWithFieldsOfDifferentTypes_table_with_Implicit_Filter()
+		public void Can_update_allColumns_ModelWithFieldsOfDifferentTypes_table_with_Implicit_Filter()
 		{
 			CreateModelWithFieldsOfDifferentTypes();
 			using (var conn = OpenDbConnection())
@@ -164,11 +164,55 @@ namespace SimpleStack.Orm.Tests
 				var row = conn.Select<ModelWithFieldsOfDifferentTypes>(x => x.Id == 1).FirstOrDefault();
 				row.Name = "UpdatedName";
 
-				conn.Update<ModelWithFieldsOfDifferentTypes>(row);
+				conn.Update(row);
 
 				var dbRow = conn.Select<ModelWithFieldsOfDifferentTypes>(x => x.Id == 1).FirstOrDefault();
 
 				ModelWithFieldsOfDifferentTypes.AssertIsEqual(dbRow, row);
+
+				Assert.AreNotEqual(row.Name, OpenDbConnection().First<ModelWithFieldsOfDifferentTypes>(x => x.Id == 2).Name);
+			}
+		}
+
+		[Test]
+		public void Can_update_singleColumn_ModelWithFieldsOfDifferentTypes_table_with_Implicit_Filter()
+		{
+			CreateModelWithFieldsOfDifferentTypes();
+			using (var conn = OpenDbConnection())
+			{
+				var row = conn.Select<ModelWithFieldsOfDifferentTypes>(x => x.Id == 1).FirstOrDefault();
+				row.Name = "UpdatedName";
+				row.DateTime = new DateTime(2000,1,1);
+
+				conn.Update(row, x => x.Name);
+
+				var dbRow = conn.First<ModelWithFieldsOfDifferentTypes>(x => x.Id == 1);
+
+				Assert.AreEqual(row.Name, dbRow.Name);
+				Assert.AreNotEqual(row.DateTime, dbRow.DateTime);
+
+				Assert.AreNotEqual(row.Name, OpenDbConnection().First<ModelWithFieldsOfDifferentTypes>(x => x.Id == 2).Name);
+			}
+		}
+
+		[Test]
+		public void Can_update_multipleColumns_ModelWithFieldsOfDifferentTypes_table_with_Implicit_Filter()
+		{
+			CreateModelWithFieldsOfDifferentTypes();
+			using (var conn = OpenDbConnection())
+			{
+				var row = conn.Select<ModelWithFieldsOfDifferentTypes>(x => x.Id == 1).FirstOrDefault();
+				row.Name = "UpdatedName";
+				row.DateTime = new DateTime(2000, 1, 1);
+				row.Guid = Guid.NewGuid();
+
+				conn.Update(row, x => new {x.Name, x.DateTime});
+
+				var dbRow = conn.First<ModelWithFieldsOfDifferentTypes>(x => x.Id == 1);
+
+				Assert.AreEqual(row.Name, dbRow.Name);
+				Assert.AreEqual(row.DateTime, dbRow.DateTime);
+				Assert.AreNotEqual(row.Guid, dbRow.Guid);
 
 				Assert.AreNotEqual(row.Name, OpenDbConnection().First<ModelWithFieldsOfDifferentTypes>(x => x.Id == 2).Name);
 			}
@@ -180,140 +224,177 @@ namespace SimpleStack.Orm.Tests
 			CreateModelWithFieldsOfDifferentTypes();
 			using (var conn = OpenDbConnection())
 			{
-				var row = conn.Select<ModelWithFieldsOfDifferentTypes>(x => x.Id == 1).FirstOrDefault();
+				var two = conn.First<ModelWithFieldsOfDifferentTypes>(x => x.Id == 2);
 
-				conn.Update<ModelWithFieldsOfDifferentTypes>(new {Name = "UpdatedName"});
+				conn.UpdateAll<ModelWithFieldsOfDifferentTypes>(new {Name = "UpdatedName"});
 
 				Assert.AreEqual("UpdatedName", conn.First<ModelWithFieldsOfDifferentTypes>(x => x.Id == 1).Name);
 				Assert.AreEqual("UpdatedName", conn.First<ModelWithFieldsOfDifferentTypes>(x => x.Id == 2).Name);
-			}
-		}
-
-		/// <summary>Can update model with fields of different types table with filter.</summary>
-		[Test]
-		public void Can_update_ModelWithFieldsOfDifferentTypes_table_with_filter()
-		{
-			CreateModelWithFieldsOfDifferentTypes();
-			using (var conn = OpenDbConnection())
-			{
-				var row = conn.Select<ModelWithFieldsOfDifferentTypes>(x => x.Id == 1).FirstOrDefault();
-
-				row.Name = "UpdatedName";
-
-				conn.Update<ModelWithFieldsOfDifferentTypes>(row, x => x.LongId <= row.LongId);
-
-				var dbRow = conn.Select<ModelWithFieldsOfDifferentTypes>(x => x.Id == 1).FirstOrDefault();
-
-				ModelWithFieldsOfDifferentTypes.AssertIsEqual(dbRow, row);
-
-				Assert.AreNotEqual(row.Name, conn.First<ModelWithFieldsOfDifferentTypes>(x => x.Id == 2).Name);
-			}
-		}
-
-		/// <summary>Can update with anonymous type and expression filter.</summary>
-		[Test]
-		public void Can_update_with_anonymousType_and_expr_filter()
-		{
-			CreateModelWithFieldsOfDifferentTypes();
-			using (var conn = OpenDbConnection())
-			{
-				var row = conn.Select<ModelWithFieldsOfDifferentTypes>(x => x.Id == 1).FirstOrDefault();
-
-				row.DateTime = DateTime.Now;
-				row.Name = "UpdatedName";
-
-				conn.Update<ModelWithFieldsOfDifferentTypes>(new {row.Name, row.DateTime},
-					x => x.LongId >= row.LongId && x.LongId <= row.LongId);
-
-				var dbRow = conn.Select<ModelWithFieldsOfDifferentTypes>(x => x.Id == row.Id).FirstOrDefault();
-				Console.WriteLine(dbRow.Dump());
-				ModelWithFieldsOfDifferentTypes.AssertIsEqual(dbRow, row);
+				Assert.AreEqual(two.DateTime, conn.First<ModelWithFieldsOfDifferentTypes>(x => x.Id == 2).DateTime);
 			}
 		}
 
 		[Test]
-		public void Can_updateOnly_with_anonymousType_and_single_field_and_expr_filter()
+		public void Can_update_ModelWithFieldsOfDifferentTypes_table_without_Implicit_Filter_and_type()
 		{
 			CreateModelWithFieldsOfDifferentTypes();
 			using (var conn = OpenDbConnection())
 			{
-				var row = conn.Select<ModelWithFieldsOfDifferentTypes>(x => x.Id == 1).FirstOrDefault();
+				conn.UpdateAll(new ModelWithFieldsOfDifferentTypes { Name = "UpdatedName", DateTime = new DateTime(2000, 1, 1) });
 
-				row.DateTime = DateTime.Now;
-				row.Name = "UpdatedName";
-
-				conn.Update(row, x => x.DateTime, x => x.LongId >= row.LongId && x.LongId <= row.LongId);
-
-				var dbRow = conn.Select<ModelWithFieldsOfDifferentTypes>(x => x.Id == row.Id).FirstOrDefault();
-				Assert.AreEqual("Name0", dbRow.Name); //Name shouldn't be updated
-				Assert.AreEqual(row.DateTime.RoundToSecond(), dbRow.DateTime.RoundToSecond());
+				Assert.AreEqual("UpdatedName", conn.First<ModelWithFieldsOfDifferentTypes>(x => x.Id == 1).Name);
+				Assert.AreEqual(new DateTime(2000, 1, 1), conn.First<ModelWithFieldsOfDifferentTypes>(x => x.Id == 1).DateTime);
+				Assert.AreEqual("UpdatedName", conn.First<ModelWithFieldsOfDifferentTypes>(x => x.Id == 2).Name);
+				Assert.AreEqual(new DateTime(2000, 1, 1), conn.First<ModelWithFieldsOfDifferentTypes>(x => x.Id == 2).DateTime);
 			}
 		}
 
 		[Test]
-		public void Can_updateOnly_with_anonymousType_and_two_fields_and_expr_filter()
+		public void Can_update_ModelWithFieldsOfDifferentTypes_table_without_Implicit_Filter_with_where()
 		{
 			CreateModelWithFieldsOfDifferentTypes();
 			using (var conn = OpenDbConnection())
 			{
-				var row = conn.Select<ModelWithFieldsOfDifferentTypes>(x => x.Id == 1).FirstOrDefault();
+				var one = conn.First<ModelWithFieldsOfDifferentTypes>(x => x.Id == 1);
 
-				row.DateTime = DateTime.Now;
-				row.Name = "UpdatedName";
-				row.LongId = 444719;
+				conn.UpdateAll<ModelWithFieldsOfDifferentTypes>(new { Name = "UpdatedName" }, x => x.Id == 1);
 
-				conn.Update(row, x => new {x.LongId, x.DateTime}, x => x.Id == row.Id);
-
-				var dbRow = conn.Select<ModelWithFieldsOfDifferentTypes>(x => x.Id == row.Id).FirstOrDefault();
-				Assert.AreEqual("Name0", dbRow.Name); //Name shouldn't be updated
-				Assert.AreEqual(row.DateTime.RoundToSecond(), dbRow.DateTime.RoundToSecond());
-				Assert.AreEqual(444719, dbRow.LongId);
+				Assert.AreEqual("UpdatedName", conn.First<ModelWithFieldsOfDifferentTypes>(x => x.Id == 1).Name);
+				Assert.AreEqual("Name1", conn.First<ModelWithFieldsOfDifferentTypes>(x => x.Id == 2).Name);
+				Assert.AreEqual(one.DateTime, conn.First<ModelWithFieldsOfDifferentTypes>(x => x.Id == 1).DateTime);
 			}
 		}
 
 		[Test]
-		public void Can_updateOnly_single_field_with_sqlvisitor_syntax()
+		public void Can_update_ModelWithFieldsOfDifferentTypes_table_without_Implicit_Filter_with_where_and_type()
 		{
 			CreateModelWithFieldsOfDifferentTypes();
 			using (var conn = OpenDbConnection())
 			{
-				var row = conn.Select<ModelWithFieldsOfDifferentTypes>(x => x.Id == 1).FirstOrDefault();
+				var one = conn.First<ModelWithFieldsOfDifferentTypes>(x => x.Id == 1);
 
-				row.DateTime = DateTime.Now;
-				row.Name = "UpdatedName";
-				row.LongId = 444719;
+				conn.UpdateAll(new ModelWithFieldsOfDifferentTypes { Name = "UpdatedName", DateTime = new DateTime(2000,1,1)}, x => x.Id == 1);
 
-				conn.Update(row, ev => ev.Update(p => p.LongId).Where(x => x.Id == row.Id));
-
-				var dbRow = conn.Select<ModelWithFieldsOfDifferentTypes>(x => x.Id == row.Id).FirstOrDefault();
-				Assert.AreEqual("Name0", dbRow.Name); //Name shouldn't be updated
-				Assert.AreEqual(444719, dbRow.LongId);
+				Assert.AreEqual("UpdatedName", conn.First<ModelWithFieldsOfDifferentTypes>(x => x.Id == 1).Name);
+				Assert.AreEqual(Guid.Empty, conn.First<ModelWithFieldsOfDifferentTypes>(x => x.Id == 1).Guid);
+				Assert.AreEqual(new DateTime(2000, 1, 1), conn.First<ModelWithFieldsOfDifferentTypes>(x => x.Id == 1).DateTime);
+				Assert.AreEqual("Name1", conn.First<ModelWithFieldsOfDifferentTypes>(x => x.Id == 2).Name);
 			}
 		}
 
 		[Test]
-		public void Can_updateOnly_with_anonymousType_and_two_fields_without_filter()
+		public void Can_update_singleColumn_ModelWithFieldsOfDifferentTypes_table_without_Implicit_Filter_with_where()
 		{
 			CreateModelWithFieldsOfDifferentTypes();
 			using (var conn = OpenDbConnection())
 			{
-				var row = conn.Select<ModelWithFieldsOfDifferentTypes>(x => x.Id == 1).FirstOrDefault();
+				var one = conn.First<ModelWithFieldsOfDifferentTypes>(x => x.Id == 1);
 
-				long oldLongId = row.LongId;
+				conn.UpdateAll<ModelWithFieldsOfDifferentTypes>(new { Name = "UpdatedName", DateTime = new DateTime(2000, 1, 1) }, x => x.Id == 1, x => x.Name);
 
-				row.Name = "UpdatedName";
-				row.DateTime = DateTime.Now;
-				row.LongId = 444719;
+				Assert.AreEqual("UpdatedName", conn.First<ModelWithFieldsOfDifferentTypes>(x => x.Id == 1).Name);
+				Assert.AreEqual("Name1", conn.First<ModelWithFieldsOfDifferentTypes>(x => x.Id == 2).Name);
+				Assert.AreEqual(one.DateTime, conn.First<ModelWithFieldsOfDifferentTypes>(x => x.Id == 1).DateTime);
+			}
+		}
 
-				conn.Update(row, x => new {x.LongId, x.DateTime});
+		[Test]
+		public void Can_update_singleColumn_ModelWithFieldsOfDifferentTypes_table_without_Implicit_Filter_with_where_and_type()
+		{
+			CreateModelWithFieldsOfDifferentTypes();
+			using (var conn = OpenDbConnection())
+			{
+				var one = conn.First<ModelWithFieldsOfDifferentTypes>(x => x.Id == 1);
 
-				var dbRow = conn.Select<ModelWithFieldsOfDifferentTypes>(x => x.Id == row.Id).FirstOrDefault();
-				Assert.AreEqual("Name0", dbRow.Name); //Name shouldn't be updated
-				Assert.AreEqual(row.DateTime.RoundToSecond(), dbRow.DateTime.RoundToSecond());
-				Assert.AreEqual(444719, dbRow.LongId);
+				conn.UpdateAll(new ModelWithFieldsOfDifferentTypes { Name = "UpdatedName", DateTime = new DateTime(2000, 1, 1) }, x => x.Id == 1, x => x.Name);
 
-				var oldValueCount = conn.Count<ModelWithFieldsOfDifferentTypes>(x => x.LongId == oldLongId);
-				Assert.AreEqual(0, oldValueCount);
+				Assert.AreEqual("UpdatedName", conn.First<ModelWithFieldsOfDifferentTypes>(x => x.Id == 1).Name);
+				Assert.AreEqual("Name1", conn.First<ModelWithFieldsOfDifferentTypes>(x => x.Id == 2).Name);
+				Assert.AreEqual(one.DateTime, conn.First<ModelWithFieldsOfDifferentTypes>(x => x.Id == 1).DateTime);
+			}
+		}
+
+		[Test]
+		public void Can_update_multipleColumn_ModelWithFieldsOfDifferentTypes_table_without_Implicit_Filter_with_where()
+		{
+			CreateModelWithFieldsOfDifferentTypes();
+			using (var conn = OpenDbConnection())
+			{
+				var one = conn.First<ModelWithFieldsOfDifferentTypes>(x => x.Id == 1);
+
+				conn.UpdateAll<ModelWithFieldsOfDifferentTypes>(
+					new
+					{
+						Name = "UpdatedName",
+						DateTime = new DateTime(2000, 1, 1),
+						Guid = Guid.Empty
+					},
+					x => x.Id == 1,
+					x => new {x.Name, x.Guid});
+
+				var dbone = conn.First<ModelWithFieldsOfDifferentTypes>(x => x.Id == 1);
+				Assert.AreEqual("UpdatedName", dbone.Name);
+				Assert.AreEqual(Guid.Empty, dbone.Guid);
+				Assert.AreEqual(one.DateTime, dbone.DateTime);
+			}
+		}
+
+		[Test]
+		public void Can_update_multipleColumn_ModelWithFieldsOfDifferentTypes_table_without_Implicit_Filter_with_where_and_type()
+		{
+			CreateModelWithFieldsOfDifferentTypes();
+			using (var conn = OpenDbConnection())
+			{
+				var one = conn.First<ModelWithFieldsOfDifferentTypes>(x => x.Id == 1);
+
+				conn.UpdateAll(
+					new ModelWithFieldsOfDifferentTypes
+					{
+						Name = "UpdatedName",
+						DateTime = new DateTime(2000, 1, 1),
+						Guid = Guid.Empty
+					},
+					x => x.Id == 1,
+					x => new { x.Name, x.Guid });
+
+				var dbone = conn.First<ModelWithFieldsOfDifferentTypes>(x => x.Id == 1);
+				Assert.AreEqual("UpdatedName", dbone.Name);
+				Assert.AreEqual(Guid.Empty, dbone.Guid);
+				Assert.AreEqual(one.DateTime, dbone.DateTime);
+			}
+		}
+
+		[Test]
+		public void Tests_updates()
+		{
+			using (var conn = OpenDbConnection())
+			{
+				conn.Insert(new TestType2 {Id = 1, TextCol = "coucou", DateCol = DateTime.Now.AddDays(3)});
+
+				var t = conn.FirstOrDefault<TestType2>(x => x.Id == 1);
+
+				t.TextCol = "coucou updated";
+
+				// Update TestType2 set TextCol = t.TextCol, DateCol = t.DateCol, dfsdd = .... WHERE Id = t.Id
+				conn.Update(t);
+
+				// Update TestType2 set TextCol = t.TextCol WHERE Id = t.Id
+				conn.Update(t, x => x.TextCol);
+
+				// Update TestType2 set TextCol = t.TextCol, DateCol = t.DateCol WHERE Id = t.Id
+				conn.Update(t, x => new {x.TextCol, x.DateCol});
+
+				// Update TestType2 set TextCol = "coucou massive update"
+				conn.UpdateAll(new TestType2 { TextCol = "coucou massive update" }, null, x => x.TextCol);
+
+				// Update TestType2 set TextCol = "coucou massive update" where Id = 1 
+				conn.UpdateAll(new TestType2 { TextCol = "coucou massive update", DateCol = DateTime.Now}, x => x.Id == 1, x => new { x.TextCol, x.DateCol } );
+
+				// Update TestType2 set TextCol = "coucou massive update" where Id = 1 
+				conn.UpdateAll<TestType2>(new { TextCol = "coucou massive update from anonymous" }, x => x.Id == 1);
+
+				// Update TestType2 set DateCol = DateTime.Now where Id = 1 
+				conn.UpdateAll<TestType2>(new { TextCol = "coucou massive update from anonymous", DateCol = DateTime.Now }, x => x.Id == 1, x => x.DateCol);
 			}
 		}
 	}
