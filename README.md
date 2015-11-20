@@ -192,14 +192,14 @@ db.UpdateAll(new Person { FirstName = "JJ" }, p => p.FirstName, x => x.Age > 27)
 
 ### INSERT
 
-Insert a single row
+#### Insert a single row
 
 ```csharp
 //INSERT INTO "Person" ("Id","FirstName","LastName","Age") VALUES (1,'Jimi','Hendrix',27)
 db.Insert(new Person { Id = 1, FirstName = "Jimi", LastName = "Hendrix", Age = 27 });
 ```
 
-Insert multiple rows
+#### Insert multiple rows
 
 ```csharp
 //INSERT INTO "Person" ("Id","FirstName","LastName","Age") VALUES (1,'Jimi','Hendrix',27)
@@ -209,7 +209,7 @@ db.Insert(new []{
    });
 ```
 
-AutoIncremented Primary Keys
+#### AutoIncremented Primary Keys
 
 if you specify a PrimaryKey as AutoIncrement, the PrimaryKey is not added in the INSERT query
 
