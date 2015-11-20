@@ -6,7 +6,7 @@ Follow [@simplestack](http://twitter.com/servicestack) on twitter for updates.
 
 SimpleStack.Orm is a set of light-weight C# extension methods around `System.Data.*` interfaces which is designed to persist POCO classes with a minimal amount of intrusion and configuration.
 
-SimpleStack.Orm is based on the wonderfull [Dapper](dd) project for all database acces. The SQL query generation code is based on [NServiceKit.OrmLite](ff)
+SimpleStack.Orm is based on the wonderfull [Dapper](https://github.com/StackExchange/dapper-dot-net/) project for all database acces. The SQL query generation code is based on [NServiceKit.OrmLite](https://github.com/NServiceKit/NServiceKit.OrmLite)
 
 Main objectives:
 
