@@ -25,7 +25,7 @@ namespace SimpleStack.Orm
 		///// </summary>
 		///// <param name="connection"></param>
 		///// <param name="dialectProvider"></param>
-		public OrmConnection(DbConnection connection, IDialectProvider dialectProvider)
+		internal OrmConnection(DbConnection connection, IDialectProvider dialectProvider)
 		{
 			DialectProvider = dialectProvider;
 			DbConnection = connection;
