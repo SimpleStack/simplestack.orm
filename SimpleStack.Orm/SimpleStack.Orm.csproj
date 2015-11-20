@@ -78,6 +78,7 @@
     <Compile Include="JoinSqlBuilder.cs" />
     <Compile Include="OrmCommand.cs" />
     <Compile Include="OrmConnection.cs" />
+    <Compile Include="OrmConnectionFactory.cs" />
     <Compile Include="OrmException.cs" />
     <Compile Include="OrmTransaction.cs" />
     <Compile Include="SqlMapperAsync.cs" />
