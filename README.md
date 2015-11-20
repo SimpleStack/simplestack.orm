@@ -29,7 +29,7 @@ Effectively this allows you to create a table from any POCO type and it should p
   - [PostgreSQL](https://www.nuget.org/packages/SimpleStack.Orm.PostgreSQL)
   - [Sqlite](https://www.nuget.org/packages/SimpleStack.Orm.Sqlite/)
 
-### 2 minutes example
+### 2 minutes sample
 
 ```csharp
 using SimpleStack.Orm;
@@ -68,7 +68,7 @@ namespace Test{
 }
 ```
 
-## How to use SimpleStack.Orm
+## 20 Minutes sample
 
 As SimpleStack.Orm is based on Dapper, I encourage you to have a look at [Dapper documentation](https://github.com/StackExchange/dapper-dot-net/blob/master/Readme.md).
 
@@ -140,7 +140,7 @@ conn.GetScalar<Dog, decimal>(x => Sql.Avg(x.Weight))
 
 ## INSERT, UPDATE and DELETEs
 
-To see the behaviour of the different APIs, all examples uses this simple model
+To see the behaviour of the different APIs, all sample uses this simple model
 
 ```csharp
 public class Person
