@@ -25,7 +25,7 @@ Effectively this allows you to create a table from any POCO type and it should p
 ## Depending on the database you want to target:
 
   - [Sql Server](https://www.nuget.org/packages/SimpleStack.Orm.SqlServer)
-  - [MySql](https://www.nuget.org/packages/SimpleStack.Orm.SqlServer)
+  - [MySql](https://www.nuget.org/packages/SimpleStack.Orm.MySQL)
   - [PostgreSQL](https://www.nuget.org/packages/SimpleStack.Orm.PostgreSQL)
   - [Sqlite](https://www.nuget.org/packages/SimpleStack.Orm.Sqlite/)
 
