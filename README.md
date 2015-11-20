@@ -106,18 +106,37 @@ db.Select<Dog>(q => q.Name.EndWidth("R")); // WHERE ("Name" LIKE("%R"))
 ### Combine criterias with AND or OR
 
 ```csharp
-
 // WHERE ("Name" LIKE 'R' OR "Weight" > 10)
 db.Select<Dog>(q => q.Name.Contains("R") || q.Weight > 10);
-
+// WHERE ("Name" LIKE 'R' AND "Weight" > 10)
+db.Select<Dog>(q => q.Name.Contains("R") && q.Weight > 10);
 ```
 
-### IN Criteria
+### Sql class
+
+#### IN Criteria
 
 ```csharp
 // WHERE "Breed" In ('Beagle', 'Border Collie', 'Golden Retriever')
 db.Select<Dog>(q => Sql.In(q.Breed, "Beagle", "Border Collie", "Golden Retriever"));
 ```
+
+#### Date part methods
+```csharp
+// SELECT YEAR("BirthDate") FROM DOG
+conn.GetScalar<Dog, int>(x => Sql.Month(x.BirthDate))
+// SELECT "Id","Name","Breed","DareBirth","Weight" FROM DOG WHERE MONTH("BirthDate") = 10
+conn.Select<Dog>(x => Sql.Month(x.BirthDate) = 10)
+```
+#### Aggregation function
+
+```csharp
+// SELECT MAX("BirthDate") FROM DOG
+conn.GetScalar<Dog, DateTime>(x => Sql.Max(x.BirthDate))
+// SELECT AVG("Weight") FROM DOG
+conn.GetScalar<Dog, decimal>(x => Sql.Avg(x.Weight))
+```
+
 
 ## INSERT, UPDATE and DELETEs
 
