@@ -43,7 +43,7 @@ namespace SimpleStack.Orm.Tests
 
 				AddMembers(db);
 
-				db.Delete<Member>(x => x.Val1 == "Salut");
+				db.DeleteAll<Member>(x => x.Val1 == "Salut");
 
 				var members = db.Select<Member>(visitor => { visitor.OrderBy(x => x.Val1);
 					                                           return visitor;
@@ -64,7 +64,7 @@ namespace SimpleStack.Orm.Tests
 
 				AddMembers(db);
 
-				db.Delete<Member>(x => x.Val1.StartsWith("H"));
+				db.DeleteAll<Member>(x => x.Val1.StartsWith("H"));
 
 				var members = db.Select<Member>().ToArray();
 

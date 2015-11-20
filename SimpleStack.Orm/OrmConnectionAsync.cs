@@ -256,26 +256,28 @@ namespace SimpleStack.Orm
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		/// <param name="where"> The where.</param>
 		/// <returns>An int.</returns>
-		public async Task<int> DeleteAsync<T>(Expression<Func<T, bool>> where)
+		public async Task<int> DeleteAllAsync<T>(Expression<Func<T, bool>> where = null)
 		{
 			var ev = DialectProvider.ExpressionVisitor<T>();
-			return await DeleteAsync(ev.Where(where));
+			if (where != null)
+				ev.Where(where);
+			return await DeleteAllAsync(ev.Where(where));
 		}
 
 		/// <summary>An OrmConnection method that deletes this object.</summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		/// <param name="where"> The where.</param>
 		/// <returns>An int.</returns>
-		public async Task<int> DeleteAsync<T>(Func<SqlExpressionVisitor<T>, SqlExpressionVisitor<T>> where)
+		public async Task<int> DeleteAllAsync<T>(Func<SqlExpressionVisitor<T>, SqlExpressionVisitor<T>> where)
 		{
-			return await DeleteAsync(where(DialectProvider.ExpressionVisitor<T>()));
+			return await DeleteAllAsync(where(DialectProvider.ExpressionVisitor<T>()));
 		}
 
 		/// <summary>An OrmConnection method that deletes this object.</summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		/// <param name="where"> The where.</param>
 		/// <returns>An int.</returns>
-		public async Task<int> DeleteAsync<T>(SqlExpressionVisitor<T> where)
+		public async Task<int> DeleteAllAsync<T>(SqlExpressionVisitor<T> where)
 		{
 			return await this.ExecuteScalarAsync<int>(DialectProvider.ToDeleteRowStatement(where));
 		}
@@ -287,11 +289,6 @@ namespace SimpleStack.Orm
 		public async Task<int> DeleteAsync<T>(T obj)
 		{
 			return await this.ExecuteScalarAsync<int>(DialectProvider.ToDeleteRowStatement(obj));
-		}
-
-		public async Task<int> DeleteAllAsync<T>()
-		{
-			return await this.ExecuteScalarAsync<int>(DialectProvider.ToDeleteRowStatement(DialectProvider.ExpressionVisitor<T>()));
 		}
 	}
 }

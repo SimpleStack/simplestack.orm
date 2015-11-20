@@ -292,24 +292,26 @@ namespace SimpleStack.Orm
 
 		/// <param name="where"> The where.</param>
 		/// <returns>An int.</returns>
-		public int Delete<T>(Expression<Func<T, bool>> where)
+		public int DeleteAll<T>(Expression<Func<T, bool>> where = null)
 		{
 			var ev = DialectProvider.ExpressionVisitor<T>();
-			return Delete(ev.Where(where));
+			if (where != null)
+				ev.Where(where);
+			return DeleteAll(ev);
 		}
 
 		/// <summary>An OrmConnection method that deletes this object.</summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		/// <param name="where"> The where.</param>
 		/// <returns>An int.</returns>
-		public int Delete<T>(Func<SqlExpressionVisitor<T>, SqlExpressionVisitor<T>> where)
+		public int DeleteAll<T>(Func<SqlExpressionVisitor<T>, SqlExpressionVisitor<T>> where)
 		{
-			return Delete(where(DialectProvider.ExpressionVisitor<T>()));
+			return DeleteAll(where(DialectProvider.ExpressionVisitor<T>()));
 		}
 
 		/// <param name="where"> The where.</param>
 		/// <returns>An int.</returns>
-		public int Delete<T>(SqlExpressionVisitor<T> where)
+		public int DeleteAll<T>(SqlExpressionVisitor<T> where)
 		{
 			return this.ExecuteScalar<int>(DialectProvider.ToDeleteRowStatement(where));
 		}
@@ -323,16 +325,6 @@ namespace SimpleStack.Orm
 		public int Delete<T>(T obj)
 		{
 			return this.ExecuteScalar<int>(DialectProvider.ToDeleteRowStatement(obj));
-		}
-
-		/// <summary>
-		/// Delete all object of a given type
-		/// </summary>
-		/// <typeparam name="T"></typeparam>
-		/// <returns></returns>
-		public int DeleteAll<T>()
-		{
-			return this.ExecuteScalar<int>(DialectProvider.ToDeleteRowStatement(DialectProvider.ExpressionVisitor<T>()));
 		}
 
 		public void CreateTable<T>(bool dropIfExists)
