@@ -24,10 +24,10 @@ Effectively this allows you to create a table from any POCO type and it should p
 
 ## Depending on the database you want to target:
 
-  - [Sql Server](http://nuget.org/List/Packages/ServiceStack.OrmLite.SqlServer)
-  - [MySql](http://nuget.org/List/Packages/ServiceStack.OrmLite.MySql)
-  - [PostgreSQL](http://nuget.org/List/Packages/ServiceStack.OrmLite.PostgreSQL)
-  - [Sqlite](http://nuget.org/packages/ServiceStack.OrmLite.Sqlite.Mono)
+  - [Sql Server](https://www.nuget.org/packages/SimpleStack.Orm.SqlServer)
+  - [MySql](https://www.nuget.org/packages/SimpleStack.Orm.SqlServer)
+  - [PostgreSQL](https://www.nuget.org/packages/SimpleStack.Orm.PostgreSQL)
+  - [Sqlite](https://www.nuget.org/packages/SimpleStack.Orm.Sqlite/)
 
 ### 2 minutes example
 
