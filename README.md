@@ -245,7 +245,7 @@ Or an Expression Visitor:
 db.DeleteAll<Person>(x => x.Age = 27);
 ```
 
-### Multiple PrimaryKey suppport
+### Primary Keys, Foreign keys and Indexes
 
 TODO
 
