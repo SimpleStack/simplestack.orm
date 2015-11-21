@@ -2,7 +2,7 @@
 
 ## Introduction
 
-Follow [@simplestack](http://twitter.com/servicestack) on twitter for updates.
+Follow [@simplestackproj](http://twitter.com/simplestackproj) on twitter for updates.
 
 SimpleStack.Orm is a set of light-weight C# extension methods around `System.Data.*` interfaces which is designed to persist POCO classes with a minimal amount of intrusion and configuration.
 
