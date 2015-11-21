@@ -244,3 +244,20 @@ Or an Expression Visitor:
 //DELETE FROM "Person" WHERE ("Age" = 27)
 db.DeleteAll<Person>(x => x.Age = 27);
 ```
+
+### Multiple PrimaryKey suppport
+
+TODO
+
+### Available Attributes
+
+TODO
+
+### Select using JOINs
+
+TODO
+
+### TypeMappers
+
+TODO
+
