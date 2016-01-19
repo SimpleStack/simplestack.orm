@@ -53,9 +53,9 @@ namespace Test{
       {
          conn.CreateTable<Dog>();
 
-         conn.Inser(new Dog{Name="Snoopy", BirthDate = new DateTime(1950,10,01), Weight=25.4});
-         conn.Inser(new Dog{Name="Rex", Weight=45.6});
-         conn.Inser(new Dog{Name="Rintintin", BirthDate = new DateTime(1918,09,13), Weight=2});
+         conn.Insert(new Dog{Name="Snoopy", BirthDate = new DateTime(1950,10,01), Weight=25.4});
+         conn.Insert(new Dog{Name="Rex", Weight=45.6});
+         conn.Insert(new Dog{Name="Rintintin", BirthDate = new DateTime(1918,09,13), Weight=2});
 
          var rex = conn.First<Dog>(x => Id == 2);
          rex.BirthDate = new DateTime(1994,11,10);
