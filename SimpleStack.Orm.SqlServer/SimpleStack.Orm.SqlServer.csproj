@@ -61,7 +61,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>if $(ConfigurationName) == Release “$(SolutionDir).nuget\Nuget.exe” pack “$(ProjectPath)” -Verbose -Properties Configuration=$(ConfigurationName) -OutputDirectory "$(SolutionDir).nuget" -IncludeReferencedProjects</PostBuildEvent>
+    <PostBuildEvent>if $(ConfigurationName) == Release $(SolutionDir).nuget\Nuget.exe pack $(ProjectPath) -Verbose -Properties Configuration=$(ConfigurationName) -OutputDirectory "$(SolutionDir).nuget" -IncludeReferencedProjects</PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
     <PreBuildEvent>

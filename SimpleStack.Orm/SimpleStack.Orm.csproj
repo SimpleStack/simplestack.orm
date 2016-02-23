@@ -115,7 +115,7 @@
     </PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PostBuildEvent>if $(ConfigurationName) == Release “$(SolutionDir).nuget\Nuget.exe” pack “$(ProjectPath)” -Verbose -Properties Configuration=$(ConfigurationName) -OutputDirectory "$(SolutionDir).nuget" -IncludeReferencedProjects</PostBuildEvent>
+    <PostBuildEvent>if $(ConfigurationName) == Release $(SolutionDir).nuget\Nuget.exe pack $(ProjectPath) -Verbose -Properties Configuration=$(ConfigurationName) -OutputDirectory "$(SolutionDir).nuget" -IncludeReferencedProjects</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
