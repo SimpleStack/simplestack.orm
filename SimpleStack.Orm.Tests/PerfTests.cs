@@ -42,7 +42,7 @@ namespace SimpleStack.Orm.Tests
 		}
 
 		[Test]
-		[NUnit.Framework.Ignore]
+		[NUnit.Framework.Ignore("perf test shopund not run at each run")]
 		public void BulkInsert()
 		{
 			var members = new List<Member>();

@@ -129,7 +129,7 @@ namespace SimpleStack.Orm.Tests
 
 		/// <summary>Can select using new.</summary>
 		[Test]
-		[NUnit.Framework.Ignore]
+		[NUnit.Framework.Ignore("Rework this")]
 		public void Can_Select_using_new()
 		{
 			SetupContext();

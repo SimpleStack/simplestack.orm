@@ -627,7 +627,9 @@ namespace SimpleStack.Orm
 			string fieldDefinition;
 
 			SqlMapper.ITypeHandler typeHandler = null;
+#pragma warning disable 618
 			var dbType = SqlMapper.LookupDbType(fieldType, fieldName, false, out typeHandler);
+#pragma warning restore 618
 			var typeHandlerColumnType = typeHandler as ITypeHandlerColumnType;
 			if (typeHandlerColumnType != null)
 			{
