@@ -180,7 +180,7 @@ namespace SimpleStack.Orm.Tests
 	}
 	public class MySQLTests : ExpressionTests
 	{
-		protected override string ConnectionString => "server=localhost;user=root;password=depfac$2000;database=df_core_test";
+		protected override string ConnectionString => "server=localhost;user=root;password=depfac$2000;database=test";
 
 		public MySQLTests() : base(new MySqlDialectProvider())
 		{
@@ -192,7 +192,7 @@ namespace SimpleStack.Orm.Tests
 		{
 		}
 
-		protected override string ConnectionString => @"server=.\SqlExpress;Trusted_Connection=true;database=testdb";
+		protected override string ConnectionString => @"server=.\SqlExpress;Trusted_Connection=true;database=test";
 	}
 	public class SQLLiteTests : ExpressionTests
 	{
