@@ -56,5 +56,16 @@ namespace SimpleStack.Orm.Tests
 				db.CreateTable<NoPKClass>(true);
 			}
 		}
+
+		[Test]
+		public void DropTable()
+		{
+			using (var db = OpenDbConnection())
+			{
+				db.CreateTable<Member>(true);
+				db.DropTableIfExists<Member>();
+				Assert.IsFalse(db.TableExists<Member>());
+			}
+		}
 	}
 }

@@ -353,6 +353,16 @@ namespace SimpleStack.Orm
 			return DialectProvider.DoesTableExist(this, tableName);
 		}
 
+		public bool DropTableIfExists<T>()
+		{
+			if (TableExists<T>())
+			{
+				var tableModelDef = typeof(T).GetModelDefinition();
+				DropTable(tableModelDef);
+			}
+			return false;
+		}
+
 		/// <summary>An IDbCommand method that creates a table.</summary>
 		/// <exception cref="Exception">Thrown when an exception error condition occurs.</exception>
 		/// <param name="overwrite">true to overwrite, false to preserve.</param>
