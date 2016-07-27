@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Transactions;
 using SimpleStack.Orm.Attributes;
-using NServiceKit.Text;
 using NUnit.Framework;
 
 namespace SimpleStack.Orm.Tests

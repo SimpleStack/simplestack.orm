@@ -2,7 +2,6 @@
 using System.Data;
 using System.Linq;
 using SimpleStack.Orm.Attributes;
-using NServiceKit.Text;
 using NUnit.Framework;
 using SimpleStack.Orm.MySQL;
 

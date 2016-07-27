@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,6 +14,7 @@ using SimpleStack.Orm.PostgreSQL;
 using SimpleStack.Orm.Sqlite;
 using SimpleStack.Orm.SqlServer;
 using Microsoft.SqlServer.Server;
+using Newtonsoft.Json;
 using NUnit.Framework;
 
 namespace SimpleStack.Orm.Tests
@@ -62,15 +64,26 @@ namespace SimpleStack.Orm.Tests
 
 		public class JsonTypeHandler : SqlMapper.ITypeHandler
 		{
+			private JsonSerializer s = new JsonSerializer();
+
 			public void SetValue(IDbDataParameter parameter, object value)
 			{
 				parameter.DbType = DbType.String;
-				parameter.Value = NServiceKit.Text.JsonSerializer.SerializeToString(value);
+				using (var writer = new StringWriter())
+				using (var rr = new JsonTextWriter(writer))
+				{
+					s.Serialize(rr,value);
+					parameter.Value = rr.ToString();
+				}
 			}
 
 			public object Parse(Type destinationType, object value)
 			{
-				return NServiceKit.Text.JsonSerializer.DeserializeFromString(value.ToString(), destinationType);
+				using (var reader = new StringReader(value.ToString()))
+				using (var rr = new JsonTextReader(reader))
+				{
+					return s.Deserialize(rr, destinationType);
+				}
 			}
 		}
 
