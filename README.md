@@ -124,7 +124,7 @@ db.Select<Dog>(q => Sql.In(q.Breed, "Beagle", "Border Collie", "Golden Retriever
 #### Date part methods
 ```csharp
 // SELECT YEAR("BirthDate") FROM DOG
-conn.GetScalar<Dog, int>(x => Sql.Month(x.BirthDate))
+conn.GetScalar<Dog, int>(x => Sql.Year(x.BirthDate))
 // SELECT "Id","Name","Breed","DareBirth","Weight" FROM DOG WHERE MONTH("BirthDate") = 10
 conn.Select<Dog>(x => Sql.Month(x.BirthDate) = 10)
 ```
