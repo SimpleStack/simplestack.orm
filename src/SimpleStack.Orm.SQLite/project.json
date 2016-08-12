@@ -1,0 +1,25 @@
+{
+  "version": "1.0.0-rc10",
+  "description": "SQLite Provider for SimpleStack.Orm",
+  "authors": [ "SimpleStack Team", "NServiceKit", "ServiceStack" ],
+
+  "dependencies": {
+    "Microsoft.Data.Sqlite": "1.0.0",
+    "NETStandard.Library": "1.6.0",
+    "SimpleStack.Orm": "1.0.0-*"
+  },
+
+  "frameworks": {
+    "netstandard1.5": {
+    },
+    "net451": {
+      "dependencies": {
+      }
+    }
+  },
+  "packOptions": {
+    "owners": [ "SimpleStack Team" ],
+    "tags": [ "Microsoft.Data.SqlIte", "SimpleStack", "Sqlite" ],
+    "licenseUrl": "http://www.opensource.org/licenses/MIT"
+  }
+}

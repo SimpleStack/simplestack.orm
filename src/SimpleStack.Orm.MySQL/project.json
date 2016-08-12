@@ -1,0 +1,26 @@
+{
+  "version": "1.0.0-rc10",
+  "description": "MySQL Provider for SimpleStack.Orm",
+  "authors": [ "SimpleStack Team", "NServiceKit", "ServiceStack" ],
+
+  "dependencies": {
+    "MySql.Data": "6.9.9",
+    "NETStandard.Library": "1.6.0",
+    "SimpleStack.Orm": "1.0.0-*"
+  },
+
+  "frameworks": {
+    "net45": {
+      "frameworkAssemblies": {
+      },
+      "dependencies": {
+      }
+    }
+  },
+  "packOptions": {
+    "owners": [ "SimpleStack Team" ],
+    "tags": [ "MySQL", "SimpleStack", "Orm" ],
+    "licenseUrl": "http://www.gnu.org/licenses/old-licenses/gpl-2.0-standalone.html",
+    "requireLicenseAcceptance": true
+  }
+}
