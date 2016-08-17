@@ -9,7 +9,7 @@
       "target": "project"
     },
     "NUnit": "3.4.1",
-    "dotnet-test-nunit": "3.4.0-beta-1",
+    "dotnet-test-nunit": "3.4.0-beta-2",
     "SimpleStack.Orm.SQLServer": "1.0.0-*",
     "SimpleStack.Orm.SQLite": "1.0.0-*",
     "SimpleStack.Orm.MySQLConnector": "1.0.0-*"
