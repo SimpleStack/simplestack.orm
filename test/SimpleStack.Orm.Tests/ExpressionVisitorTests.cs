@@ -127,31 +127,6 @@ namespace SimpleStack.Orm.Tests
 			}
 		}
 
-		/// <summary>Can select using new.</summary>
-		[Test]
-		[NUnit.Framework.Ignore("Rework this")]
-		public void Can_Select_using_new()
-		{
-			SetupContext();
-
-			using (var con = OpenDbConnection())
-			{
-				con.Insert(new TestType2
-				{
-					Id = 5,
-					BoolCol = false,
-					DateCol = new DateTime(2012, 5, 1),
-					TextCol = "uiop",
-					EnumCol = TestEnum.Val3,
-					ComplexObjCol = new TestType2 { TextCol = "poiu" }
-				});
-
-				var target = con.Select<TestType2>(
-						q => q.ComplexObjCol == new TestType2() { TextCol = "poiu" });
-				Assert.AreEqual(1, target.Count());
-			}
-		}
-
 		[Test]
 		public void Can_Select_Scalar_using_MAX()
 		{
