@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0-beta1",
+  "version": "1.0.0-alpha10",
   "description": "MySQL Provider for SimpleStack.Orm (using MySqlConnector)",
   "authors": [ "SimpleStack Team", "NServiceKit", "ServiceStack" ],
 
