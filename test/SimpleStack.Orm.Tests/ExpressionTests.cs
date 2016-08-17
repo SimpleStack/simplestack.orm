@@ -28,6 +28,24 @@ namespace SimpleStack.Orm.Tests
 	{
 		private readonly IDialectProvider _dialectProvider;
 
+		public class GuidAsByteArray : ITypeHandlerColumnType
+		{
+			public void SetValue(IDbDataParameter parameter, object value)
+			{
+				parameter.DbType = DbType.Binary;
+				parameter.Value = ((Guid)value).ToByteArray();
+			}
+
+			public object Parse(Type destinationType, object value)
+			{
+				return new Guid((byte[])value);
+			}
+
+			public int? Length => (Guid.Empty.ToByteArray().Length);
+
+			public DbType ColumnType => DbType.Binary;
+		}
+
 		public class EnumAsStringTypeHandler<T> : ITypeHandlerColumnType
 		{
 			public void SetValue(IDbDataParameter parameter, object value)
@@ -97,7 +115,7 @@ namespace SimpleStack.Orm.Tests
 		}
 
 		[SetUp]
-		public void Setup()
+		public virtual void Setup()
 		{
 			if (_conn != null)
 			{
@@ -227,6 +245,15 @@ namespace SimpleStack.Orm.Tests
 			builder.DataSource = Path.Combine(Path.GetTempPath(),"test.db");
 			builder.Mode = SqliteOpenMode.ReadWriteCreate;
 			builder.Cache = SqliteCacheMode.Shared;
+
+			
+		}
+
+		public override void Setup()
+		{
+			base.Setup();
+
+			SqlMapper.AddTypeHandler(typeof(Guid), new GuidAsByteArray());
 		}
 
 		protected override string ConnectionString => builder.ToString();
