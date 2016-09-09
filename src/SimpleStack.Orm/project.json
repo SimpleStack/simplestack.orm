@@ -4,19 +4,16 @@
   "authors": [ "SimpleStack Team", "NServiceKit", "ServiceStack" ],
 
   "dependencies": {
-    "Dapper": "1.50.2",
-    "NETStandard.Library": "1.6.0"
+    "Dapper": "1.50.2"    
   },
 
   "frameworks": {
     "netstandard1.5": {
-    },
-    "net45": {
-      "frameworkAssemblies": {
-      },
       "dependencies": {
-        "System.Reflection.Extensions": "4.0.0"
+        "NETStandard.Library": "1.6.0"        
       }
+    },
+    "net45": { 
     }
   },
   "packOptions": {
