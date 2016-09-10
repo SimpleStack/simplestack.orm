@@ -730,7 +730,7 @@ namespace SimpleStack.Orm
 
 				if (join.JoinType == JoinType.CROSS)
 				{
-					sb.AppendFormat(" {0}{1} ON {2} = {3}  \n", join.RefTypeSchema, _dialectProvider.GetQuotedTableName(join.RefTypeTableName));
+					sb.AppendFormat(" {0}{1} \n", join.RefTypeSchema, _dialectProvider.GetQuotedTableName(join.RefTypeTableName));
 				}
 				else
 				{
