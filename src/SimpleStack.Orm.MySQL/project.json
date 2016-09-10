@@ -5,16 +5,11 @@
 
   "dependencies": {
     "MySql.Data": "6.9.9",
-    "NETStandard.Library": "1.6.0",
     "SimpleStack.Orm": "1.0.0-*"
   },
 
   "frameworks": {
-    "net45": {
-      "frameworkAssemblies": {
-      },
-      "dependencies": {
-      }
+    "net451": {
     }
   },
   "packOptions": {
