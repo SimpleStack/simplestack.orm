@@ -4,17 +4,12 @@
   "authors": [ "SimpleStack Team", "NServiceKit", "ServiceStack" ],
 
   "dependencies": {
-    "MySql.Data": "7.0.5-IR21",
+    "MySql.Data": "6.9.9",
     "SimpleStack.Orm": "1.0.0-*"
   },
 
   "frameworks": {
     "net451": {
-    },
-    "netstandard1.6": {
-      "dependencies": {
-        "NETStandard.Library": "1.6.0"
-      }
     }
   },
   "packOptions": {
