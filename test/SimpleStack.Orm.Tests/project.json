@@ -1,0 +1,39 @@
+{
+  "version": "1.0.0-*",
+
+  "dependencies": {
+    "SimpleStack.Orm": {
+      "target": "project"
+    },
+    "SimpleStack.Orm.PostgreSQL": {
+      "target": "project"
+    },
+    "NUnit": "3.4.1",
+    "dotnet-test-nunit": "3.4.0-beta-2",
+    "SimpleStack.Orm.SQLServer": "1.0.0-*",
+    "SimpleStack.Orm.SQLite": "1.0.0-*",
+    "SimpleStack.Orm.MySQLConnector": "1.0.0-*"
+  },
+
+  "testRunner": "nunit",
+
+  "frameworks": {
+    "netcoreapp1.0": {
+      "imports": "portable-net45+win8",
+      "dependencies": {
+        "Microsoft.NETCore.App": {
+          "version": "1.0.0-*",
+          "type": "platform"
+        }
+      }
+    },
+    "net451": {
+      "frameworkAssemblies": {
+        "System.Transactions": "4.0.0.0"
+      },
+      "dependencies": {
+        "SimpleStack.Orm.MySQL": "1.0.0-*"
+      }
+    }
+  }
+}

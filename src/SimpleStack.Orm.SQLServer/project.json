@@ -1,0 +1,24 @@
+{
+  "version": "1.0.0-rc10",
+  "description": "SQLServer Provider for SimpleStack.Orm",
+  "authors": [ "SimpleStack Team", "NServiceKit", "ServiceStack" ],
+
+  "dependencies": {    
+    "SimpleStack.Orm": "1.0.0-*"
+  },
+
+  "frameworks": {
+    "netstandard1.5": {
+      "dependencies": {
+        "NETStandard.Library": "1.6.0"
+      }
+    },
+    "net45": {      
+    }
+  },
+  "packOptions": {
+    "owners": [ "SimpleStack Team" ],
+    "tags": [ "SimpleStack", "SQLServer" ],
+    "licenseUrl": "http://www.opensource.org/licenses/MIT"
+  }
+}
