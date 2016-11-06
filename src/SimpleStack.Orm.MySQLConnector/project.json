@@ -4,7 +4,7 @@
   "authors": [ "SimpleStack Team", "NServiceKit", "ServiceStack" ],
 
   "dependencies": {
-    "MySqlConnector": "0.1.0-alpha18",    
+    "MySqlConnector": "0.6.2",
     "SimpleStack.Orm": "1.0.0-*"
   },
 
