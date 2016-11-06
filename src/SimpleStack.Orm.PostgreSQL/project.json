@@ -3,8 +3,8 @@
   "description": "PostgreSQL Provider for SimpleStack.Orm",
   "authors": [ "SimpleStack Team", "NServiceKit", "ServiceStack" ],
 
-  "dependencies": {    
-    "Npgsql": "3.1.7",
+  "dependencies": {
+    "Npgsql": "3.1.8",
     "SimpleStack.Orm": "1.0.0-*"
   },
 
