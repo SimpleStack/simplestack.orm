@@ -1,10 +1,12 @@
 {
-  "version": "1.0.0-rc10",
+  "version": "1.0.1",
   "description": "SQLServer Provider for SimpleStack.Orm",
   "authors": [ "SimpleStack Team", "NServiceKit", "ServiceStack" ],
 
-  "dependencies": {    
-    "SimpleStack.Orm": "1.0.0-*"
+  "dependencies": {
+    "SimpleStack.Orm": {
+      "target": "project"
+    }
   },
 
   "frameworks": {

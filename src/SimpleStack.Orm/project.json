@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0-rc10",
+  "version": "1.0.1",
   "description": "Lite ORM framework based on Dapper and SQL Query Generation from ServiceStack/NServicekit",
   "authors": [ "SimpleStack Team", "NServiceKit", "ServiceStack" ],
 

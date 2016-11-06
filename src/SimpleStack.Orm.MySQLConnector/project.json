@@ -1,11 +1,13 @@
 {
-  "version": "1.0.0-alpha18",
+  "version": "1.0.1",
   "description": "MySQL Provider for SimpleStack.Orm (using MySqlConnector)",
   "authors": [ "SimpleStack Team", "NServiceKit", "ServiceStack" ],
 
   "dependencies": {
     "MySqlConnector": "0.6.2",
-    "SimpleStack.Orm": "1.0.0-*"
+    "SimpleStack.Orm": {
+      "target": "project"
+    }
   },
 
   "frameworks": {

@@ -1,11 +1,13 @@
 {
-  "version": "1.0.0-rc10",
+  "version": "1.0.1",
   "description": "SQLite Provider for SimpleStack.Orm",
   "authors": [ "SimpleStack Team", "NServiceKit", "ServiceStack" ],
 
   "dependencies": {
-    "Microsoft.Data.Sqlite": "1.0.0",    
-    "SimpleStack.Orm": "1.0.0-*"
+    "Microsoft.Data.Sqlite": "1.0.0",
+    "SimpleStack.Orm": {
+      "target": "project"
+    }
   },
 
   "frameworks": {
