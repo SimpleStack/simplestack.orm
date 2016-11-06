@@ -37,7 +37,9 @@
         "System.Transactions": "4.0.0.0"
       },
       "dependencies": {
-        "SimpleStack.Orm.MySQL": "1.0.0-*"
+        "SimpleStack.Orm.MySQL": {
+          "target": "project"
+        }
       }
     }
   }
