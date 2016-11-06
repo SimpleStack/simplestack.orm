@@ -22,14 +22,14 @@
   },
 
   "testRunner": "nunit",
-  "runtimes": {
-    "win10-x64": {}
-  },
   "frameworks": {
     "netcoreapp1.0": {
       "imports": "portable-net45+win8",
       "dependencies": {
-        "Microsoft.NETCore.App": "1.0.1"
+        "Microsoft.NETCore.App":{
+            "type": "platform",
+            "version" : "1.0.1"
+        }
       }
     },
     "net451": {
