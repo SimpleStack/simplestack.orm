@@ -1,0 +1,27 @@
+{
+  "version": "1.0.1",
+  "description": "MySQL Provider for SimpleStack.Orm (using MySqlConnector)",
+  "authors": [ "SimpleStack Team", "NServiceKit", "ServiceStack" ],
+
+  "dependencies": {
+    "MySqlConnector": "0.6.2",
+    "SimpleStack.Orm": {
+      "target": "project"
+    }
+  },
+
+  "frameworks": {
+    "netstandard1.5": {
+      "dependencies": {
+        "NETStandard.Library": "1.6.0"
+      }
+    },
+    "net45": {      
+    }
+  },
+  "packOptions": {
+    "owners": [ "SimpleStack Team" ],
+    "tags": [ "MySQLConnector", "SimpleStack", "MySQL" ],
+    "licenseUrl": "http://www.opensource.org/licenses/MIT"
+  }
+}

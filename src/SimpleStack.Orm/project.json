@@ -1,0 +1,24 @@
+{
+  "version": "1.0.1",
+  "description": "Lite ORM framework based on Dapper and SQL Query Generation from ServiceStack/NServicekit",
+  "authors": [ "SimpleStack Team", "NServiceKit", "ServiceStack" ],
+
+  "dependencies": {
+    "Dapper": "1.50.2"    
+  },
+
+  "frameworks": {
+    "netstandard1.5": {
+      "dependencies": {
+        "NETStandard.Library": "1.6.0"        
+      }
+    },
+    "net45": { 
+    }
+  },
+  "packOptions": {
+    "owners": [ "SimpleStack Team" ],
+    "tags": [ "Orm", "Dapper", "SQL Generator" ],
+    "licenseUrl": "http://www.opensource.org/licenses/MIT"
+  }
+}
