@@ -1,5 +1,5 @@
 {
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Lite ORM framework based on Dapper and SQL Query Generation from ServiceStack/NServicekit",
   "authors": [ "SimpleStack Team", "NServiceKit", "ServiceStack" ],
 
@@ -10,7 +10,24 @@
   "frameworks": {
     "netstandard1.5": {
       "dependencies": {
-        "NETStandard.Library": "1.6.0"        
+        "System.Collections": "4.0.11",
+        "System.Collections.Concurrent": "4.0.12",
+        "System.Collections.NonGeneric": "4.0.1",
+        "System.Data.SqlClient": "4.1.0",
+        "System.Dynamic.Runtime": "4.0.11",
+        "System.Linq": "4.1.0",
+        "System.Reflection": "4.1.0",
+        "System.Reflection.Emit": "4.0.1",
+        "System.Reflection.Emit.Lightweight": "4.0.1",
+        "System.Reflection.Extensions": "4.0.1",
+        "System.Reflection.TypeExtensions": "4.1.0",
+        "System.Runtime": "4.1.0",
+        "System.Runtime.Extensions": "4.1.0",
+        "System.Runtime.InteropServices": "4.1.0",
+        "System.Text.RegularExpressions": "4.1.0",
+        "System.Threading": "4.0.11",
+        "System.Xml.XDocument": "4.0.11",
+        "System.Xml.XmlDocument": "4.0.1"
       }
     },
     "net45": { 
