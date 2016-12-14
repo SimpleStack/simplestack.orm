@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data;
 using System.Linq;
+using Dapper;
 using SimpleStack.Orm.Attributes;
 using NUnit.Framework;
 

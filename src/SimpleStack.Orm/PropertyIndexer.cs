@@ -75,7 +75,6 @@ namespace SimpleStack.Orm
 			}
 			catch (Exception ex)
 			{
-				Console.Write(ex.Message);
 				throw;
 			}
 #endif
