@@ -605,7 +605,7 @@ namespace SimpleStack.Orm
 			{
 				var indexName = GetCompositeIndexName(compositeIndex, modelDef);
 				var indexNames = string.Join(" ASC, ",
-					compositeIndex.FieldNames.Select(GetQuotedName).ToArray());
+					compositeIndex.FieldNames.Select(GetQuotedColumnName).ToArray());
 
 				sqlIndexes.Add(
 					ToCreateIndexStatement(compositeIndex.Unique, indexName, modelDef, indexNames, true));
