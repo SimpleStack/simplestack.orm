@@ -2,12 +2,10 @@
 using System.Linq;
 using Dapper;
 using NUnit.Framework;
-using SimpleStacl.Orm;
-using SimpleStack.Orm;
 using SimpleStack.Orm.Expressions;
 using SimpleStack.Orm.PostgreSQL;
 
-namespace SimpleStacl.Orm.Tests
+namespace SimpleStack.Orm.Tests
 {
 	[TestFixture]
     public class CalculatorTests

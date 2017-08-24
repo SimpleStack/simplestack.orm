@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>MySQL Provider for SimpleStack.Orm</Description>
+    <VersionPrefix>1.0.2</VersionPrefix>
+    <Authors>SimpleStack Team;NServiceKit;ServiceStack</Authors>
+    <TargetFramework>net451</TargetFramework>
+    <AssemblyName>SimpleStack.Orm.MySQL</AssemblyName>
+    <PackageId>SimpleStack.Orm.MySQL</PackageId>
+    <PackageTags>MySQL;SimpleStack;Orm</PackageTags>
+    <PackageLicenseUrl>http://www.gnu.org/licenses/old-licenses/gpl-2.0-standalone.html</PackageLicenseUrl>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+    <Version>1.0.3</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SimpleStack.Orm\SimpleStack.Orm.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MySql.Data" Version="6.9.9" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
+    <Reference Include="System" />
+    <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+
+</Project>

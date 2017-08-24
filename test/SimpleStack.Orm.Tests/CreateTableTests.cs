@@ -67,5 +67,15 @@ namespace SimpleStack.Orm.Tests
 				Assert.IsFalse(db.TableExists<Member>());
 			}
 		}
+
+		[Test]
+		public void CreateTableWithCompositeIndex()
+		{
+			using (var db = OpenDbConnection())
+			{
+				db.CreateTable<CompositeMember>(true);
+			}
+		}
+
 	}
 }
