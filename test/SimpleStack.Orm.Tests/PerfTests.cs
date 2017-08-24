@@ -42,6 +42,19 @@ namespace SimpleStack.Orm.Tests
 			[StringLength(255)]
 			public string Val10 { get; set; }
 		}
+
+		[CompositeIndex(true, nameof(Val1), nameof(Val2))]
+		public class CompositeMember
+		{
+			[PrimaryKey]
+			[AutoIncrement]
+			public long Id { get; set; }
+			[StringLength(255)]
+			public string Val1 { get; set; }
+			[StringLength(255)]
+			public string Val2 { get; set; }
+		}
+
 #if NET45
 		[Test]
 		[NUnit.Framework.Ignore("perf test shopund not run at each run")]
