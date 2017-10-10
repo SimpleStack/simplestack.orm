@@ -235,7 +235,7 @@ The "Delete" method will always delete up to one row by generating the where cla
 
 ```csharp
 //DELETE FROM "Person" WHERE ("Id" = 2)
-db.Delete(new Person{Id = 2, F});
+db.Delete(new Person{Id = 2});
 ```
 
 ### DeleteAll
