@@ -95,6 +95,27 @@ namespace SimpleStack.Orm.Tests
 			}
 		}
 
+
+		/// <summary>Can select logical bitwise operator.</summary> 
+		[Test]
+		public void Can_Select_Logica_Bitwise_int_expression()
+		{
+			var p = 3;
+
+			using (var conn = OpenDbConnection())
+			{
+				conn.Insert(new TestType { Id = 1, BoolColumn = false, IntColumn = 1, StringColumn = "test" });
+				conn.Insert(new TestType { Id = 2, BoolColumn = false, IntColumn = 2, StringColumn = "test" });
+				conn.Insert(new TestType { Id = 3, BoolColumn = false, IntColumn = 4, StringColumn = "test" });
+
+				var actual = conn.Select<TestType>(x => (x.IntColumn & p) == p);
+				Assert.IsNotNull(actual);
+				Assert.Greater(actual.Count(), 0);
+				Assert.True(actual.Any(x => x.Id == 1));
+				Assert.True(actual.Any(x => x.Id == 2));
+			}
+		}
+
 		#endregion
 
 		#region method
