@@ -164,6 +164,60 @@ namespace SimpleStack.Orm.Tests
 			}
 		}
 
-		#endregion
-	}
+		[Test]
+		public void Can_Select_Logical_Bitwise_and_int_expression()
+		{
+			var p = 3;
+
+			using (var conn = OpenDbConnection())
+			{
+				conn.Insert(new TestType { Id = 1, BoolColumn = false, IntColumn = 1, StringColumn = "test" });
+				conn.Insert(new TestType { Id = 2, BoolColumn = false, IntColumn = 2, StringColumn = "test" });
+				conn.Insert(new TestType { Id = 3, BoolColumn = false, IntColumn = 4, StringColumn = "test" });
+
+				var actual = conn.Select<TestType>(x => (x.IntColumn & p) != 0);
+				Assert.IsNotNull(actual);
+				Assert.AreEqual(2, actual.Count());
+				Assert.True(actual.Any(x => x.Id == 1));
+				Assert.True(actual.Any(x => x.Id == 2));
+			}
+		}
+		[Test]
+		public void Can_Select_Logical_Bitwise_or_int_expression()
+		{
+			var p = 3;
+
+			using (var conn = OpenDbConnection())
+			{
+				conn.Insert(new TestType { Id = 1, BoolColumn = false, IntColumn = 1, StringColumn = "test" });
+				conn.Insert(new TestType { Id = 2, BoolColumn = false, IntColumn = 2, StringColumn = "test" });
+				conn.Insert(new TestType { Id = 3, BoolColumn = false, IntColumn = 4, StringColumn = "test" });
+
+				var actual = conn.Select<TestType>(x => (x.IntColumn | p) == p);
+				Assert.IsNotNull(actual);
+				Assert.AreEqual(2, actual.Count());
+				Assert.True(actual.Any(x => x.Id == 1));
+				Assert.True(actual.Any(x => x.Id == 2));
+			}
+		}
+		[Test]
+		public void Can_Select_Logical_Bitwise_xor_int_expression()
+		{
+			var p = 3;
+
+			using (var conn = OpenDbConnection())
+			{
+				conn.Insert(new TestType { Id = 1, BoolColumn = false, IntColumn = 1, StringColumn = "test" });
+				conn.Insert(new TestType { Id = 2, BoolColumn = false, IntColumn = 2, StringColumn = "test" });
+				conn.Insert(new TestType { Id = 3, BoolColumn = false, IntColumn = 4, StringColumn = "test" });
+
+				var actual = conn.Select<TestType>(x => (x.IntColumn ^ p) == 7);
+				Assert.IsNotNull(actual);
+				Assert.AreEqual(1, actual.Count());
+				Assert.True(actual.Any(x => x.Id == 3));
+			}
+		}
+
+        #endregion
+    }
 }

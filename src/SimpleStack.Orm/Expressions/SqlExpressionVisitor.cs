@@ -950,7 +950,13 @@ namespace SimpleStack.Orm.Expressions
 					return "MOD";
 				case ExpressionType.Coalesce:
 					return "COALESCE";
-				default:
+                case ExpressionType.And:
+                    return "&";
+                case ExpressionType.Or:
+                    return "|";
+			    case ExpressionType.ExclusiveOr:
+			        return "^";
+                default:
 					return e.ToString();
 			}
 		}
