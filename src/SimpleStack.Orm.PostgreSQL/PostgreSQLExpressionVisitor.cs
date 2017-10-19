@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using SimpleStack.Orm.Expressions;
 
 namespace SimpleStack.Orm.PostgreSQL
@@ -8,6 +9,17 @@ namespace SimpleStack.Orm.PostgreSQL
 	{
 	    public PostgreSQLExpressionVisitor(IDialectProvider dialectProvider) : base(dialectProvider)
 	    {
+	    }
+
+	    protected override string BindOperant(ExpressionType e)
+	    {
+	        switch (e)
+	        {
+                case ExpressionType.ExclusiveOr:
+                    return "#";
+            }
+
+            return base.BindOperant(e);
 	    }
 
 	    /// <summary>Gets the limit expression.</summary>
