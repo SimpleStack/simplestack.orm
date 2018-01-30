@@ -211,8 +211,23 @@ namespace SimpleStack.Orm.Tests
 			}
 		}
 
-		/// <summary>Can select using in.</summary>
-		[Test]
+	    [Test]
+	    public void Can_Select_Scalar_using_Date_Property_Functions()
+	    {
+	        SetupContext();
+
+	        using (var conn = OpenDbConnection())
+	        {
+                DateTime d = new DateTime(2017,12,02);
+
+	            var v = conn.FirstOrDefault<TestType2>(x => x.DateCol.Month == 11);
+                Assert.AreEqual(2017, conn.GetScalar<TestType2, int>(x => d.Year));
+	            Assert.AreEqual(2017, conn.GetScalar<TestType2, int>(x => x.DateCol.Year));
+            }
+	    }
+
+        /// <summary>Can select using in.</summary>
+        [Test]
 		public void Can_Select_using_IN()
 		{
 			SetupContext();

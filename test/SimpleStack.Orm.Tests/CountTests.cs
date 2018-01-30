@@ -62,11 +62,39 @@ namespace SimpleStack.Orm.Tests
 			}
 		}
 
-		/// <summary>Counts.</summary>
-		/// <typeparam name="T">Generic type parameter.</typeparam>
-		/// <param name="db">The database.</param>
-		/// <returns>An int.</returns>
-		long Count<T>(OrmConnection db) where T : IHasId<int>, new()
+	    [Test]
+	    public void CanDoCountWithNullVariables()
+	    {
+	        using (var db = OpenDbConnection())
+	        {
+	            db.CreateTable<CountTestTable>(true);
+	            db.Insert(new CountTestTable { Id = 1, StringValue = null });
+
+	            Expression<Func<CountTestTable, bool>> exp = q => q.StringValue == null;
+	            var count = Count(db, exp);
+	            Assert.That(count, Is.EqualTo(1));
+
+	            string compare = null;
+	            exp = q => q.StringValue == compare;
+	            count = Count(db, exp);
+	            Assert.That(count, Is.EqualTo(1));
+                
+	            exp = q => q.StringValue == ReturnNull();
+	            count = Count(db, exp);
+	            Assert.That(count, Is.EqualTo(1));
+            }
+	    }
+
+	    public string ReturnNull()
+	    {
+	        return null;
+	    }
+
+        /// <summary>Counts.</summary>
+        /// <typeparam name="T">Generic type parameter.</typeparam>
+        /// <param name="db">The database.</param>
+        /// <returns>An int.</returns>
+        long Count<T>(OrmConnection db) where T : IHasId<int>, new()
 		{
 			T request = new T();
 			return db.GetScalar<T, long>(e => Sql.Count(request.Id));

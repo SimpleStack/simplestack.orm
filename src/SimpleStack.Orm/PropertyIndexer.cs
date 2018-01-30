@@ -26,11 +26,11 @@ namespace SimpleStack.Orm
 			if (propertySetMethod == null) return null;
 
 #if NO_EXPRESSIONS
-            return (o, convertedValue) =>
-            {
-                propertySetMethod.Invoke(o, new[] { convertedValue });
-                return;
-            };
+			return (o, convertedValue) =>
+			{
+				propertySetMethod.Invoke(o, new[] { convertedValue });
+				return;
+			};
 #else
 			var instance = Expression.Parameter(typeof(object), "i");
 			var argument = Expression.Parameter(typeof(object), "a");
@@ -56,27 +56,19 @@ namespace SimpleStack.Orm
 #if NO_EXPRESSIONS
 			return o => propertyInfo.GetGetMethod().Invoke(o, new object[] { });
 #else
-			try
-			{
-				var oInstanceParam = Expression.Parameter(typeof(object), "oInstanceParam");
-				var instanceParam = Expression.Convert(oInstanceParam, propertyInfo.DeclaringType);
+			var oInstanceParam = Expression.Parameter(typeof(object), "oInstanceParam");
+			var instanceParam = Expression.Convert(oInstanceParam, propertyInfo.DeclaringType);
 
-				var exprCallPropertyGetFn = Expression.Call(instanceParam, getMethodInfo);
-				var oExprCallPropertyGetFn = Expression.Convert(exprCallPropertyGetFn, typeof(object));
+			var exprCallPropertyGetFn = Expression.Call(instanceParam, getMethodInfo);
+			var oExprCallPropertyGetFn = Expression.Convert(exprCallPropertyGetFn, typeof(object));
 
-				var propertyGetFn = Expression.Lambda<PropertyGetterDelegate>
-					(
-						oExprCallPropertyGetFn,
-						oInstanceParam
-					).Compile();
+			var propertyGetFn = Expression.Lambda<PropertyGetterDelegate>
+			(
+				oExprCallPropertyGetFn,
+				oInstanceParam
+			).Compile();
 
-				return propertyGetFn;
-
-			}
-			catch (Exception ex)
-			{
-				throw;
-			}
+			return propertyGetFn;
 #endif
 		}
 	}

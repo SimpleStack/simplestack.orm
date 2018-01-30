@@ -759,7 +759,8 @@ namespace SimpleStack.Orm.Expressions
 			var member = Expression.Convert(m, typeof(object));
 			var lambda = Expression.Lambda<Func<object>>(member);
 			var getter = lambda.Compile();
-			return getter();
+			var r = getter();
+			return r ?? new PartialSqlString("null");
 		}
 
 		/// <summary>Visit member initialise.</summary>
@@ -767,7 +768,7 @@ namespace SimpleStack.Orm.Expressions
 		/// <returns>An object.</returns>
 		protected virtual object VisitMemberInit(MemberInitExpression exp)
 		{
-			return Expression.Lambda(exp).Compile().DynamicInvoke();
+			return Expression.Lambda(exp).Compile().DynamicInvoke() ?? new PartialSqlString("null");
 		}
 
 		/// <summary>Visit new.</summary>
@@ -869,7 +870,7 @@ namespace SimpleStack.Orm.Expressions
 			if (IsColumnAccess(m))
 				return VisitColumnAccessMethod(m);
 
-			return Expression.Lambda(m).Compile().DynamicInvoke();
+			return Expression.Lambda(m).Compile().DynamicInvoke() ?? new PartialSqlString("null");
 		}
 
 		/// <summary>Visit expression list.</summary>
@@ -950,6 +951,16 @@ namespace SimpleStack.Orm.Expressions
 					return "MOD";
 				case ExpressionType.Coalesce:
 					return "COALESCE";
+				case ExpressionType.And:
+					return "&";
+				case ExpressionType.Or:
+					return "|";
+				case ExpressionType.ExclusiveOr:
+					return "^";
+				case ExpressionType.LeftShift:
+					return "<<";
+				case ExpressionType.RightShift:
+					return ">>";
 				default:
 					return e.ToString();
 			}
@@ -1149,13 +1160,13 @@ namespace SimpleStack.Orm.Expressions
 						var listArgs = e as ICollection;
 						if (listArgs == null)
 						{
-							sIn.AppendFormat("{0}{1}",sIn.Length > 0 ? "," : string.Empty,AddParameter(e));
+							sIn.AppendFormat("{0}{1}", sIn.Length > 0 ? "," : string.Empty, AddParameter(e));
 						}
 						else
 						{
 							foreach (var el in listArgs)
 							{
-								sIn.AppendFormat("{0}{1}",sIn.Length > 0 ? "," : string.Empty, AddParameter(el));
+								sIn.AppendFormat("{0}{1}", sIn.Length > 0 ? "," : string.Empty, AddParameter(el));
 							}
 						}
 					}
@@ -1186,14 +1197,38 @@ namespace SimpleStack.Orm.Expressions
 				case "Minute":
 				case "Second":
 				case "Quarter":
-					statement = DialectProvider.GetDatePartFunction(m.Method.Name,quotedColName);
-               break;
+					statement = DialectProvider.GetDatePartFunction(m.Method.Name, quotedColName);
+					break;
 				default:
 					throw new NotSupportedException();
 			}
 
 			return new PartialSqlString(statement);
 		}
+		protected virtual object VisitDateTimeMethodCall(MethodCallExpression m)
+		{
+			var args = VisitSqlParameters(m.Arguments);
+			string quotedColName = args.Dequeue().ToString();
+
+			string statement;
+
+			switch (m.Method.Name)
+			{
+				case "Year":
+				case "Month":
+				case "Day":
+				case "Hour":
+				case "Minute":
+				case "Second":
+					statement = DialectProvider.GetDatePartFunction(m.Method.Name, quotedColName);
+					break;
+				default:
+					throw new NotSupportedException();
+			}
+
+			return new PartialSqlString(statement);
+		}
+
 		protected virtual List<object> VisitInSqlExpressionList(ReadOnlyCollection<Expression> original)
 		{
 			var list = new List<object>();
@@ -1251,7 +1286,7 @@ namespace SimpleStack.Orm.Expressions
 						else
 						{
 							list.Enqueue(new PartialSqlString((PrefixFieldWithTableName ? DialectProvider.GetQuotedTableName(_modelDef.ModelName) + "." : string.Empty)
-							                                  + GetQuotedColumnName(m.Member.Name)));
+															  + GetQuotedColumnName(m.Member.Name)));
 						}
 						break;
 					default:
