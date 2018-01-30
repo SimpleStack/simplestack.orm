@@ -217,6 +217,41 @@ namespace SimpleStack.Orm.Tests
 				Assert.True(actual.Any(x => x.Id == 3));
 			}
 		}
+	    [Test]
+        public void Can_Select_Logical_Bitwise_leftshift_int_expression()
+	    {
+	        var p = 3;
+
+	        using (var conn = OpenDbConnection())
+	        {
+	            conn.Insert(new TestType { Id = 1, BoolColumn = false, IntColumn = 1, StringColumn = "test" });
+	            conn.Insert(new TestType { Id = 2, BoolColumn = false, IntColumn = 2, StringColumn = "test" });
+	            conn.Insert(new TestType { Id = 3, BoolColumn = false, IntColumn = 4, StringColumn = "test" });
+
+	            var actual = conn.Select<TestType>(x => (x.IntColumn << 2) == 4);
+	            Assert.IsNotNull(actual);
+	            Assert.AreEqual(1, actual.Count());
+	            Assert.True(actual.Any(x => x.Id == 1));
+	        }
+	    }
+
+	    [Test]
+	    public void Can_Select_Logical_Bitwise_rightshift_int_expression()
+	    {
+	        var p = 3;
+
+	        using (var conn = OpenDbConnection())
+	        {
+	            conn.Insert(new TestType { Id = 1, BoolColumn = false, IntColumn = 1, StringColumn = "test" });
+	            conn.Insert(new TestType { Id = 2, BoolColumn = false, IntColumn = 2, StringColumn = "test" });
+	            conn.Insert(new TestType { Id = 3, BoolColumn = false, IntColumn = 4, StringColumn = "test" });
+
+	            var actual = conn.Select<TestType>(x => (x.IntColumn >> 2) == 1);
+	            Assert.IsNotNull(actual);
+	            Assert.AreEqual(1, actual.Count());
+	            Assert.True(actual.Any(x => x.Id == 3));
+	        }
+	    }
 
         #endregion
     }

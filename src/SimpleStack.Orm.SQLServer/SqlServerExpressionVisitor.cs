@@ -1,4 +1,5 @@
 using System;
+using System.Linq.Expressions;
 using System.Text;
 using SimpleStack.Orm;
 using SimpleStack.Orm.Expressions;
@@ -9,7 +10,19 @@ namespace SimpleStack.Orm.SqlServer
 	/// <typeparam name="T">Generic type parameter.</typeparam>
 	public class SqlServerExpressionVisitor<T> : SqlExpressionVisitor<T>
 	{
-		public SqlServerExpressionVisitor(IDialectProvider dialectProvider) : base(dialectProvider)
+	    protected override string BindOperant(ExpressionType e)
+	    {
+	        switch (e)
+	        {
+	            case ExpressionType.LeftShift:
+	            case ExpressionType.RightShift:
+	                throw new NotSupportedException("SQLServer does not support Bit shift << or >>");
+            }
+
+	        return base.BindOperant(e);
+	    }
+
+        public SqlServerExpressionVisitor(IDialectProvider dialectProvider) : base(dialectProvider)
 		{
 		}
 	}
