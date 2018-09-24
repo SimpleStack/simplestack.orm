@@ -739,7 +739,10 @@ namespace SimpleStack.Orm.Expressions
 		/// <returns>An object.</returns>
 		protected virtual object VisitMemberAccess(MemberExpression m)
 		{
-			if (m.Expression != null
+            if (m.Member.DeclaringType == typeof(DateTime))
+                return VisitDateTimeMemberAccess(m);
+
+            if (m.Expression != null
 				&& (m.Expression.NodeType == ExpressionType.Parameter || m.Expression.NodeType == ExpressionType.Convert))
 			{
 				var propertyInfo = m.Member as PropertyInfo;
@@ -1205,14 +1208,13 @@ namespace SimpleStack.Orm.Expressions
 
 			return new PartialSqlString(statement);
 		}
-		protected virtual object VisitDateTimeMethodCall(MethodCallExpression m)
+		protected virtual object VisitDateTimeMemberAccess(MemberExpression m)
 		{
-			var args = VisitSqlParameters(m.Arguments);
-			string quotedColName = args.Dequeue().ToString();
+		    string quotedColName = GetQuotedColumnName(((MemberExpression)m.Expression).Member.Name);
 
 			string statement;
 
-			switch (m.Method.Name)
+			switch (m.Member.Name)
 			{
 				case "Year":
 				case "Month":
@@ -1220,7 +1222,7 @@ namespace SimpleStack.Orm.Expressions
 				case "Hour":
 				case "Minute":
 				case "Second":
-					statement = DialectProvider.GetDatePartFunction(m.Method.Name, quotedColName);
+					statement = DialectProvider.GetDatePartFunction(m.Member.Name, quotedColName);
 					break;
 				default:
 					throw new NotSupportedException();

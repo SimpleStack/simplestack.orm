@@ -164,7 +164,7 @@ namespace SimpleStack.Orm.Tests
 		}
 
 		[Test]
-		public void Can_Select_Scalar_using_Date_Functions()
+		public void Can_Select_Scalar_using_Date_Functions_And_Properties()
 		{
 			SetupContext();
 
@@ -190,7 +190,14 @@ namespace SimpleStack.Orm.Tests
 				Assert.AreEqual(3, conn.GetScalar<TestType2, int>(x => Sql.Hour(x.DateCol)));
 				Assert.AreEqual(4, conn.GetScalar<TestType2, int>(x => Sql.Minute(x.DateCol)));
 				Assert.AreEqual(5, conn.GetScalar<TestType2, int>(x => Sql.Second(x.DateCol)));
-			}
+
+			    Assert.AreEqual(2012, conn.GetScalar<TestType2, int>(x => x.DateCol.Year));
+			    Assert.AreEqual(11, conn.GetScalar<TestType2, int>(x => x.DateCol.Month));
+			    Assert.AreEqual(2, conn.GetScalar<TestType2, int>(x => x.DateCol.Day));
+			    Assert.AreEqual(3, conn.GetScalar<TestType2, int>(x => x.DateCol.Hour));
+			    Assert.AreEqual(4, conn.GetScalar<TestType2, int>(x => x.DateCol.Minute));
+			    Assert.AreEqual(5, conn.GetScalar<TestType2, int>(x => x.DateCol.Second));
+            }
 		}
 
 		[Test]
@@ -218,11 +225,8 @@ namespace SimpleStack.Orm.Tests
 
 	        using (var conn = OpenDbConnection())
 	        {
-                DateTime d = new DateTime(2017,12,02);
-
-	            var v = conn.FirstOrDefault<TestType2>(x => x.DateCol.Month == 11);
-                Assert.AreEqual(2017, conn.GetScalar<TestType2, int>(x => d.Year));
-	            Assert.AreEqual(2017, conn.GetScalar<TestType2, int>(x => x.DateCol.Year));
+	            Assert.AreEqual(2012, conn.GetScalar<TestType2, int>(x => Sql.Year(x.DateCol)));
+	            Assert.AreEqual(2012, conn.GetScalar<TestType2, int>(x =>  x.DateCol.Year));
             }
 	    }
 
