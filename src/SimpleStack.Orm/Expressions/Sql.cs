@@ -107,31 +107,38 @@ namespace SimpleStack.Orm.Expressions
 		{
 			return value;
 		}
+        [Obsolete("Use DateTime property instead")]
 		public static int Year(DateTime value)
 		{
 			return value.Year;
 		}
-		public static int Month(DateTime value)
+	    [Obsolete("Use DateTime property instead")]
+        public static int Month(DateTime value)
 		{
 			return value.Month;
 		}
-		public static int Day(DateTime value)
+	    [Obsolete("Use DateTime property instead")]
+        public static int Day(DateTime value)
 		{
 			return value.Day;
 		}
-		public static int Hour(DateTime value)
+	    [Obsolete("Use DateTime property instead")]
+        public static int Hour(DateTime value)
 		{
 			return value.Hour;
 		}
-		public static int Minute(DateTime value)
+	    [Obsolete("Use DateTime property instead")]
+        public static int Minute(DateTime value)
 		{
 			return value.Minute;
 		}
-		public static int Second(DateTime value)
+	    [Obsolete("Use DateTime property instead")]
+        public static int Second(DateTime value)
 		{
 			return value.Second;
 		}
-		public static int Quarter(DateTime value)
+	    [Obsolete("Use DateTime property instead")]
+        public static int Quarter(DateTime value)
 		{
 			return ((value.Month - 1) / 3) + 1;
 		}
