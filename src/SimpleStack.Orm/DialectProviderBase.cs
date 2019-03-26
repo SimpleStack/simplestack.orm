@@ -873,15 +873,15 @@ namespace SimpleStack.Orm
         public virtual string ToCreateIndexStatement<T>(Expression<Func<T, object>> field,
             string indexName = null, bool unique = false)
         {
-            var sourceMD = ModelDefinition<T>.Definition;
-            var fieldName = sourceMD.GetFieldDefinition(field).FieldName;
+            var sourceMd = ModelDefinition<T>.Definition;
+            var fieldName = sourceMd.GetFieldDefinition(field).FieldName;
 
             var name = GetQuotedName(string.IsNullOrWhiteSpace(indexName)
-                ? (unique ? "uidx" : "idx") + "_" + sourceMD.ModelName + "_" + fieldName
+                ? (unique ? "uidx" : "idx") + "_" + sourceMd.ModelName + "_" + fieldName
                 : indexName);
 
             var command = $"CREATE{(unique ? " UNIQUE " : " ")}INDEX {name} " +
-                          $"ON {GetQuotedTableName(sourceMD.ModelName)}({GetQuotedColumnName(fieldName)});";
+                          $"ON {GetQuotedTableName(sourceMd.ModelName)}({GetQuotedColumnName(fieldName)});";
             return command;
         }
 
