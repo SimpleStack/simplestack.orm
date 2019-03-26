@@ -4,7 +4,7 @@
     <Description>SQLite Provider for SimpleStack.Orm</Description>
     <VersionPrefix>1.0.2</VersionPrefix>
     <Authors>SimpleStack Team;NServiceKit;ServiceStack</Authors>
-    <TargetFrameworks>netstandard1.5;net451</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <AssemblyName>SimpleStack.Orm.SQLite</AssemblyName>
     <PackageId>SimpleStack.Orm.SQLite</PackageId>
     <PackageTags>Microsoft.Data.SqlIte;SimpleStack;Sqlite</PackageTags>
@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Data.Sqlite" Version="1.0.1" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="2.2.3" />
   </ItemGroup>
   
 </Project>

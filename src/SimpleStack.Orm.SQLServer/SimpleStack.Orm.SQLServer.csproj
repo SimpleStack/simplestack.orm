@@ -4,7 +4,7 @@
     <Description>SQLServer Provider for SimpleStack.Orm</Description>
     <VersionPrefix>1.0.2</VersionPrefix>
     <Authors>SimpleStack Team;NServiceKit;ServiceStack</Authors>
-    <TargetFrameworks>netstandard1.5;net45</TargetFrameworks>
+    <TargetFrameworks>netstandard1.5</TargetFrameworks>
     <AssemblyName>SimpleStack.Orm.SQLServer</AssemblyName>
     <PackageId>SimpleStack.Orm.SQLServer</PackageId>
     <PackageTags>SimpleStack;SQLServer</PackageTags>

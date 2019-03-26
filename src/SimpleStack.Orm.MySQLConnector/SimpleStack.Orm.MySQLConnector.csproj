@@ -4,7 +4,7 @@
     <Description>MySQL Provider for SimpleStack.Orm (using MySqlConnector)</Description>
     <VersionPrefix>1.0.2</VersionPrefix>
     <Authors>SimpleStack Team;NServiceKit;ServiceStack</Authors>
-    <TargetFrameworks>netstandard1.5;net45</TargetFrameworks>
+    <TargetFrameworks>netstandard1.5</TargetFrameworks>
     <AssemblyName>SimpleStack.Orm.MySQLConnector</AssemblyName>
     <PackageId>SimpleStack.Orm.MySQLConnector</PackageId>
     <PackageTags>MySQLConnector;SimpleStack;MySQL</PackageTags>
@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="MySqlConnector" Version="0.28.2" />
+    <PackageReference Include="MySqlConnector" Version="0.50.0" />
   </ItemGroup>
 
 </Project>

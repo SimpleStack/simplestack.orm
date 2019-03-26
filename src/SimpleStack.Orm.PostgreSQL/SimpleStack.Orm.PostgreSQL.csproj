@@ -4,7 +4,7 @@
     <Description>PostgreSQL Provider for SimpleStack.Orm</Description>
     <VersionPrefix>1.0.2</VersionPrefix>
     <Authors>SimpleStack Team;NServiceKit;ServiceStack</Authors>
-    <TargetFrameworks>netstandard1.5;net45</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <AssemblyName>SimpleStack.Orm.PostgreSQL</AssemblyName>
     <PackageId>SimpleStack.Orm.PostgreSQL</PackageId>
     <PackageTags>npgsql;SimpleStack;PostgreSQL</PackageTags>
@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Npgsql" Version="3.2.5" />
+    <PackageReference Include="Npgsql" Version="4.0.5" />
   </ItemGroup>
 
 </Project>

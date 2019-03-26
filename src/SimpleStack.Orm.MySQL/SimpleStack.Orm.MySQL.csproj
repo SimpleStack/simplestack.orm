@@ -4,7 +4,7 @@
     <Description>MySQL Provider for SimpleStack.Orm</Description>
     <VersionPrefix>1.0.2</VersionPrefix>
     <Authors>SimpleStack Team;NServiceKit;ServiceStack</Authors>
-    <TargetFramework>net451</TargetFramework>
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <AssemblyName>SimpleStack.Orm.MySQL</AssemblyName>
     <PackageId>SimpleStack.Orm.MySQL</PackageId>
     <PackageTags>MySQL;SimpleStack;Orm</PackageTags>
@@ -23,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="MySql.Data" Version="6.9.9" />
+    <PackageReference Include="MySql.Data" Version="8.0.15" />
   </ItemGroup>
 
 </Project>
