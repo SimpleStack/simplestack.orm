@@ -23,13 +23,10 @@ using SimpleStack.Orm.Expressions;
 
 namespace SimpleStack.Orm
 {
-	/// <summary>An ORM lite dialect provider base.</summary>
-	/// <typeparam name="TDialect">Type of the dialect.</typeparam>
-	public abstract class DialectProviderBase<TDialect>
-		: IDialectProvider
-		where TDialect : IDialectProvider
+    /// <summary>An ORM lite dialect provider base.</summary>
+    public abstract class DialectProviderBase : IDialectProvider
 	{
-		/// <summary>SqlServer express limit.</summary>
+		/// <summary>The AutoIncrement column definition.</summary>
 		public string AutoIncrementDefinition = "AUTOINCREMENT";
 
 		/// <summary>The BLOB column definition.</summary>
@@ -152,7 +149,7 @@ namespace SimpleStack.Orm
 
 		public string GetParameterName(int parameterCount)
 		{
-			return String.Format("{0}p_{1}", ParamPrefix, parameterCount);
+			return $"{ParamPrefix}p_{parameterCount}";
 		}
 
 		/// <summary>Gets quoted table name.</summary>
@@ -168,7 +165,7 @@ namespace SimpleStack.Orm
 		/// <returns>The quoted table name.</returns>
 		public virtual string GetQuotedTableName(string tableName)
 		{
-			return string.Format("\"{0}\"", NamingStrategy.GetTableName(tableName));
+			return $"\"{NamingStrategy.GetTableName(tableName)}\"";
 		}
 
 		/// <summary>Gets quoted column name.</summary>
@@ -176,7 +173,7 @@ namespace SimpleStack.Orm
 		/// <returns>The quoted column name.</returns>
 		public virtual string GetQuotedColumnName(string columnName)
 		{
-			return string.Format("\"{0}\"", NamingStrategy.GetColumnName(columnName));
+			return $"\"{NamingStrategy.GetColumnName(columnName)}\"";
 		}
 
 		/// <summary>Gets quoted name.</summary>
@@ -184,7 +181,7 @@ namespace SimpleStack.Orm
 		/// <returns>The quoted name.</returns>
 		public virtual string GetQuotedName(string name)
 		{
-			return string.Format("\"{0}\"", name);
+			return $"\"{name}\"";
 		}
 
 		/// <summary>Gets column definition.</summary>
@@ -273,7 +270,6 @@ namespace SimpleStack.Orm
 		}
 
 		public virtual CommandDefinition ToInsertRowStatement<T>(T objWithProperties, ICollection<string> insertFields = null)
-			// where T : new()
 		{
 			if (insertFields == null)
 				insertFields = new List<string>();
@@ -313,75 +309,10 @@ namespace SimpleStack.Orm
 			}
 			sbColumnValues.Append(')');
 
-			var sql = string.Format("INSERT INTO {0} ({1}) VALUES {2}", GetQuotedTableName(modelDef), sbColumnNames,
-				sbColumnValues);
+			var sql = $"INSERT INTO {GetQuotedTableName(modelDef)} ({sbColumnNames}) VALUES {sbColumnValues}";
 
 			return new CommandDefinition(sql, parameters);
 		}
-
-		//public virtual CommandDefinition ToInsertRowStatement<T>(IEnumerable<T> objsWithProperties, ICollection<string> insertFields = null)// where T : new()
-		//{
-		//	if (insertFields == null)
-		//		insertFields = new List<string>();
-
-		//	var sbColumnNames = new StringBuilder();
-		//	var sbColumnValues = new StringBuilder();
-
-		//	ModelDefinition modelDef = null;
-		//	List<FieldDefinition> fieldDefs = null;
-
-		//	var parameters = new Dictionary<string, object>();
-
-		//	var mustLoadColumnNames = true;
-		//	foreach (var obj in objsWithProperties)
-		//	{
-		//		if (modelDef == null)
-		//		{
-		//			modelDef = obj.GetType().GetModelDefinition();
-		//			fieldDefs = modelDef.FieldDefinitions
-		//				.Where(fieldDef => !fieldDef.IsComputed)
-		//				.Where(fieldDef => !fieldDef.AutoIncrement)
-		//				.Where(fieldDef => insertFields.Count <= 0 || insertFields.Contains(fieldDef.Name)).ToList();
-		//		}
-
-		//		if (!mustLoadColumnNames)
-		//		{
-		//			sbColumnValues.Append(',');
-		//		}
-		//		sbColumnValues.Append('(');
-
-
-		//		var isFirstField = true;
-		//		foreach (var fieldDef in fieldDefs)
-		//		{
-		//			if (mustLoadColumnNames)
-		//			{
-		//				if (!isFirstField)
-		//				{
-		//					sbColumnNames.Append(',');
-		//				}
-		//				sbColumnNames.Append(GetQuotedColumnName(fieldDef.FieldName));
-		//			}
-
-		//			if (!isFirstField)
-		//			{
-		//				sbColumnValues.Append(',');
-		//			}
-
-		//			string paramName = Config.DialectProvider.GetParameterName(parameters.Count);
-		//			sbColumnValues.Append(paramName);
-		//			parameters.Add(paramName, fieldDef.GetValue(obj));
-		//			isFirstField = false;
-		//		}
-		//		sbColumnValues.Append(')');
-		//		mustLoadColumnNames = false;
-		//	}
-
-		//	var sql = string.Format("INSERT INTO {0} ({1}) VALUES {2}", GetQuotedTableName(modelDef), sbColumnNames,
-		//		sbColumnValues);
-
-		//	return new CommandDefinition(sql, parameters);
-		//}
 
 		/// <summary>Converts this object to an update row statement.</summary>
 		/// <exception cref="Exception">Thrown when an exception error condition occurs.</exception>
@@ -496,37 +427,6 @@ namespace SimpleStack.Orm
 			return new CommandDefinition($"DELETE FROM {GetQuotedTableName(modelDef)} WHERE {whereSql}", parameters);
 		}
 
-		public virtual string ToCompleteCreateTableStatement(ModelDefinition modelDefinition)
-		{
-			StringBuilder result = new StringBuilder();
-
-			result.AppendFormat("{0};\n", ToCreateTableStatement(modelDefinition));
-
-			foreach (var sqlIndex in ToCreateIndexStatements(modelDefinition))
-			{
-				result.AppendFormat("{0};\n", sqlIndex);
-			}
-
-			var sequenceList = SequenceList(modelDefinition);
-
-			if (sequenceList.Count > 0)
-			{
-				foreach (var sequence in sequenceList)
-				{
-					result.AppendFormat("{0};\n", ToCreateSequenceStatement(modelDefinition, sequence));
-				}
-			}
-			else
-			{
-				foreach (var seq in ToCreateSequenceStatements(modelDefinition))
-				{
-					result.AppendFormat("{0};\n", seq);
-				}
-			}
-
-			return result.ToString();
-		}
-
 		/// <summary>Converts a tableType to a create table statement.</summary>
 		/// <param name="modelDef">Model Definition.</param>
 		/// <returns>tableType as a string.</returns>
@@ -578,10 +478,7 @@ namespace SimpleStack.Orm
 				sbPrimaryKeys.Append(")");
 			}
 
-			var sql = new StringBuilder(string.Format(
-				"CREATE TABLE {0} \n(\n  {1}{2}{3} \n); \n", GetQuotedTableName(modelDef), sbColumns, sbPrimaryKeys, sbConstraints));
-
-			return sql.ToString();
+			return $"CREATE TABLE {GetQuotedTableName(modelDef)} \n(\n  {sbColumns}{sbPrimaryKeys}{sbConstraints} \n); \n";
 		}
 
 		/// <summary>Converts a tableType to a create index statements.</summary>
@@ -625,13 +522,10 @@ namespace SimpleStack.Orm
 		public virtual string GetColumnTypeDefinition(Type fieldType, string fieldName, int? fieldLength)
 		{
 			string fieldDefinition;
-
-			SqlMapper.ITypeHandler typeHandler = null;
 #pragma warning disable 618
-			var dbType = SqlMapper.LookupDbType(fieldType, fieldName, false, out typeHandler);
+			var dbType = SqlMapper.LookupDbType(fieldType, fieldName, false, out var typeHandler);
 #pragma warning restore 618
-			var typeHandlerColumnType = typeHandler as ITypeHandlerColumnType;
-			if (typeHandlerColumnType != null)
+			if (typeHandler is ITypeHandlerColumnType typeHandlerColumnType)
 			{
 				dbType = typeHandlerColumnType.ColumnType;
 				fieldLength = typeHandlerColumnType.Length;
@@ -711,7 +605,7 @@ namespace SimpleStack.Orm
 		/// <returns>The given data converted to a string.</returns>
 		public virtual string ToCreateSequenceStatement(ModelDefinition modelDef, string sequenceName)
 		{
-			return "";
+			return string.Empty;
 		}
 
 		/// <summary>Sequence list.</summary>
@@ -722,45 +616,11 @@ namespace SimpleStack.Orm
 			return new List<string>();
 		}
 
-		/// <summary>TODO : make abstract  ??</summary>
-		/// <exception cref="NotImplementedException">Thrown when the requested operation is unimplemented.</exception>
-		/// <param name="fromTableType">    Type of from table.</param>
-		/// <param name="objWithProperties">The object with properties.</param>
-		/// <param name="sqlFilter">        A filter specifying the SQL.</param>
-		/// <param name="filterParams">     Options for controlling the filter.</param>
-		/// <returns>The given data converted to a string.</returns>
-		public virtual string ToExistStatement(Type fromTableType,
-			object objWithProperties,
-			string sqlFilter,
-			params object[] filterParams)
-		{
-			throw new NotImplementedException();
-		}
-
-		/// <summary>TODO : make abstract  ??</summary>
-		/// <exception cref="NotImplementedException">Thrown when the requested operation is unimplemented.</exception>
-		/// <param name="objWithProperties">The object with properties.</param>
-		/// <returns>objWithProperties as a string.</returns>
-		public virtual string ToExecuteProcedureStatement(object objWithProperties)
-		{
-			throw new NotImplementedException();
-		}
-
 		/// <summary>Expression visitor.</summary>
 		/// <exception cref="NotImplementedException">Thrown when the requested operation is unimplemented.</exception>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		/// <returns>A SqlExpressionVisitor&lt;T&gt;</returns>
 		public virtual SqlExpressionVisitor<T> ExpressionVisitor<T>()
-		{
-			throw new NotImplementedException();
-		}
-
-		/// <summary>Creates parameterized delete statement.</summary>
-		/// <exception cref="NotImplementedException">Thrown when the requested operation is unimplemented.</exception>
-		/// <param name="connection">       The connection.</param>
-		/// <param name="objWithProperties">The object with properties.</param>
-		/// <returns>The new parameterized delete statement.</returns>
-		public IDbCommand CreateParameterizedDeleteStatement(IDbConnection connection, object objWithProperties)
 		{
 			throw new NotImplementedException();
 		}
@@ -784,7 +644,7 @@ namespace SimpleStack.Orm
 				StringLengthColumnDefinitionFormat, DefaultStringLength);
 		}
 
-		/// <summary>Initialises the column type map.</summary>
+		/// <summary>Initialise the column type map.</summary>
 		protected void InitColumnTypeMap()
 		{
 			DbTypeMap.Set(DbType.String, StringColumnDefinition);
@@ -842,39 +702,10 @@ namespace SimpleStack.Orm
 		/// <returns>The undefined column definition.</returns>
 		protected virtual string GetUndefinedColumnDefinition(Type fieldType, int? fieldLength)
 		{
-			//TODO: vdaron
-			// if (TypeSerializer.CanCreateFromString(fieldType))
-			{
-				return string.Format(StringLengthColumnDefinitionFormat, fieldLength.GetValueOrDefault(DefaultStringLength));
-			}
+            return string.Format(StringLengthColumnDefinitionFormat, fieldLength.GetValueOrDefault(DefaultStringLength));
+        }
 
-			//throw new NotSupportedException(
-			//	string.Format("Property of type: {0} is not supported", fieldType.FullName));
-		}
-
-		/// <summary>Gets the last insert identifier.</summary>
-		/// <exception cref="NotImplementedException">Thrown when the requested operation is unimplemented.</exception>
-		/// <param name="dbConnection">The command.</param>
-		/// <returns>The last insert identifier.</returns>
-		public virtual long GetLastInsertId(IDbConnection dbConnection)
-		{
-			if (SelectIdentitySql == null)
-				throw new NotImplementedException("Returning last inserted identity is not implemented on this DB Provider.");
-
-			return dbConnection.ExecuteScalar<long>(SelectIdentitySql);
-		}
-
-		/// <returns>The new parameterized insert statement.</returns>
-		/// <summary>Gets value or database null.</summary>
-		/// <param name="fieldDef">         The field definition.</param>
-		/// <param name="objWithProperties">The object with properties.</param>
-		/// <returns>The value or database null.</returns>
-		protected object GetValueOrDbNull(FieldDefinition fieldDef, object objWithProperties)
-		{
-			return fieldDef.GetValue(objWithProperties) ?? DBNull.Value;
-		}
-
-		/// <summary>Gets foreign key on delete clause.</summary>
+        /// <summary>Gets foreign key on delete clause.</summary>
 		/// <param name="foreignKey">The foreign key.</param>
 		/// <returns>The foreign key on delete clause.</returns>
 		public virtual string GetForeignKeyOnDeleteClause(ForeignKeyConstraint foreignKey)
@@ -897,7 +728,7 @@ namespace SimpleStack.Orm
 		/// <returns>The index name.</returns>
 		public virtual string GetIndexName(bool isUnique, string modelName, string fieldName)
 		{
-			return string.Format("{0}idx_{1}_{2}", isUnique ? "u" : "", modelName, fieldName).ToLower();
+			return $"{(isUnique ? "u" : "")}idx_{modelName}_{fieldName}".ToLower();
 		}
 
 		public virtual string GetDatePartFunction(string name, string quotedColName)
@@ -915,21 +746,7 @@ namespace SimpleStack.Orm
 				string.Join("_", compositeIndex.FieldNames.ToArray()));
 		}
 
-		/// <summary>Gets composite index name with schema.</summary>
-		/// <param name="compositeIndex">Zero-based index of the composite.</param>
-		/// <param name="modelDef">      The model definition.</param>
-		/// <returns>The composite index name with schema.</returns>
-		protected virtual string GetCompositeIndexNameWithSchema(CompositeIndexAttribute compositeIndex,
-			ModelDefinition modelDef)
-		{
-			return compositeIndex.Name ?? GetIndexName(compositeIndex.Unique,
-				(modelDef.IsInSchema
-					? modelDef.Schema + "_" + GetQuotedTableName(modelDef)
-					: GetQuotedTableName(modelDef)).SafeVarName(),
-				string.Join("_", compositeIndex.FieldNames.ToArray()));
-		}
-
-		/// <summary>Converts this object to a create index statement.</summary>
+        /// <summary>Converts this object to a create index statement.</summary>
 		/// <param name="isUnique">  true if this object is unique.</param>
 		/// <param name="indexName"> Name of the index.</param>
 		/// <param name="modelDef">  The model definition.</param>
@@ -939,10 +756,7 @@ namespace SimpleStack.Orm
 		protected virtual string ToCreateIndexStatement(bool isUnique, string indexName, ModelDefinition modelDef,
 			string fieldName, bool isCombined = false)
 		{
-			return string.Format("CREATE {0} INDEX {1} ON {2} ({3} ASC); \n",
-				isUnique ? "UNIQUE" : "", indexName,
-				GetQuotedTableName(modelDef),
-				(isCombined) ? fieldName : GetQuotedColumnName(fieldName));
+			return $"CREATE {(isUnique ? "UNIQUE" : string.Empty)} INDEX {indexName} ON {GetQuotedTableName(modelDef)} ({((isCombined) ? fieldName : GetQuotedColumnName(fieldName))} ASC); \n";
 		}
 
 		/// <summary>Gets a model.</summary>
@@ -1002,7 +816,8 @@ namespace SimpleStack.Orm
 		/// <param name="fieldDef">     The field definition.</param>
 		/// <param name="oldColumnName">Name of the old column.</param>
 		/// <returns>The given data converted to a string.</returns>
-		public virtual string ToChangeColumnNameStatement(Type modelType,
+		public virtual string ToChangeColumnNameStatement(
+            Type modelType,
 			FieldDefinition fieldDef,
 			string oldColumnName)
 		{
@@ -1033,24 +848,21 @@ namespace SimpleStack.Orm
 			OnFkOption onDelete,
 			string foreignKeyName = null)
 		{
-			var sourceMD = ModelDefinition<T>.Definition;
-			var fieldName = sourceMD.GetFieldDefinition(field).FieldName;
+			var sourceMd = ModelDefinition<T>.Definition;
+			var fieldName = sourceMd.GetFieldDefinition(field).FieldName;
 
-			var referenceMD = ModelDefinition<TForeign>.Definition;
-			var referenceFieldName = referenceMD.GetFieldDefinition(foreignField).FieldName;
+			var referenceMd = ModelDefinition<TForeign>.Definition;
+			var referenceFieldName = referenceMd.GetFieldDefinition(foreignField).FieldName;
 
 			var name = GetQuotedName(string.IsNullOrEmpty(foreignKeyName)
-				? "fk_" + sourceMD.ModelName + "_" + fieldName + "_" + referenceFieldName
+				? "fk_" + sourceMd.ModelName + "_" + fieldName + "_" + referenceFieldName
 				: foreignKeyName);
 
-			return string.Format("ALTER TABLE {0} ADD CONSTRAINT {1} FOREIGN KEY ({2}) REFERENCES {3} ({4}){5}{6};",
-				GetQuotedTableName(sourceMD.ModelName),
-				name,
-				GetQuotedColumnName(fieldName),
-				GetQuotedTableName(referenceMD.ModelName),
-				GetQuotedColumnName(referenceFieldName),
-				GetForeignKeyOnDeleteClause(new ForeignKeyConstraint(typeof(T), FkOptionToString(onDelete))),
-				GetForeignKeyOnUpdateClause(new ForeignKeyConstraint(typeof(T), onUpdate: FkOptionToString(onUpdate))));
+			return $"ALTER TABLE {GetQuotedTableName(sourceMd.ModelName)} " +
+                   $"ADD CONSTRAINT {name} FOREIGN KEY ({GetQuotedColumnName(fieldName)}) " +
+                   $"REFERENCES {GetQuotedTableName(referenceMd.ModelName)} ({GetQuotedColumnName(referenceFieldName)})" +
+                   $"{GetForeignKeyOnDeleteClause(new ForeignKeyConstraint(typeof(T), FkOptionToString(onDelete)))}" +
+                   $"{GetForeignKeyOnUpdateClause(new ForeignKeyConstraint(typeof(T), onUpdate: FkOptionToString(onUpdate)))};";
 		}
 
 		/// <summary>Converts this object to a create index statement.</summary>
@@ -1065,15 +877,12 @@ namespace SimpleStack.Orm
 			var sourceMD = ModelDefinition<T>.Definition;
 			var fieldName = sourceMD.GetFieldDefinition(field).FieldName;
 
-			var name = GetQuotedName(String.IsNullOrWhiteSpace(indexName)
+			var name = GetQuotedName(string.IsNullOrWhiteSpace(indexName)
 				? (unique ? "uidx" : "idx") + "_" + sourceMD.ModelName + "_" + fieldName
 				: indexName);
 
-			var command = string.Format("CREATE{0}INDEX {1} ON {2}({3});",
-				unique ? " UNIQUE " : " ",
-				name,
-				GetQuotedTableName(sourceMD.ModelName),
-				GetQuotedColumnName(fieldName));
+			var command = $"CREATE{(unique ? " UNIQUE " : " ")}INDEX {name} " +
+                          $"ON {GetQuotedTableName(sourceMD.ModelName)}({GetQuotedColumnName(fieldName)});";
 			return command;
 		}
 

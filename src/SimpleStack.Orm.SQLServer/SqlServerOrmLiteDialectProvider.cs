@@ -12,7 +12,7 @@ using SimpleStack.Orm.Expressions;
 namespace SimpleStack.Orm.SqlServer
 {
 	/// <summary>A SQL server ORM lite dialect provider.</summary>
-	public class SqlServerDialectProvider : DialectProviderBase<SqlServerDialectProvider>
+	public class SqlServerDialectProvider : DialectProviderBase
 	{
 		/// <summary>The time span offset.</summary>
 		private static readonly DateTime timeSpanOffset = new DateTime(1900, 01, 01);

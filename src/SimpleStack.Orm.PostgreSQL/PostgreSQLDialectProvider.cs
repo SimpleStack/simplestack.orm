@@ -10,7 +10,7 @@ using Npgsql;
 namespace SimpleStack.Orm.PostgreSQL
 {
 	/// <summary>A postgre SQL dialect provider.</summary>
-	public class PostgreSQLDialectProvider : DialectProviderBase<PostgreSQLDialectProvider>
+	public class PostgreSQLDialectProvider : DialectProviderBase
 	{
 		/// <summary>The text column definition.</summary>
 		const string textColumnDefinition = "text";

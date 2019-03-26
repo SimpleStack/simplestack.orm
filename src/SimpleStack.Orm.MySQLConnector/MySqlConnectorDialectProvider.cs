@@ -11,7 +11,7 @@ using MySql.Data.MySqlClient;
 namespace SimpleStack.Orm.MySQLConnector
 {
 	/// <summary>my SQL dialect provider.</summary>
-	public class MySqlConnectorDialectProvider : DialectProviderBase<MySqlConnectorDialectProvider>
+	public class MySqlConnectorDialectProvider : DialectProviderBase
 	{
 		/// <summary>The instance.</summary>
 		public static MySqlConnectorDialectProvider Instance = new MySqlConnectorDialectProvider();

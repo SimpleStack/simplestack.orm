@@ -134,13 +134,7 @@ namespace SimpleStack.Orm
 		/// <returns>The given data converted to a string.</returns>
 		//string ToDeleteStatement(Type tableType, string sqlFilter, params object[] filterParams);
 
-		/// <summary>Creates parameterized delete statement.</summary>
-		/// <param name="connection">       The connection.</param>
-		/// <param name="objWithProperties">The object with properties.</param>
-		/// <returns>The new parameterized delete statement.</returns>
-		IDbCommand CreateParameterizedDeleteStatement(IDbConnection connection, object objWithProperties);
-
-		/// <summary>Converts this object to an exist statement.</summary>
+        /// <summary>Converts this object to an exist statement.</summary>
 		/// <param name="fromTableType">    Type of from table.</param>
 		/// <param name="objWithProperties">The object with properties.</param>
 		/// <param name="sqlFilter">        A filter specifying the SQL.</param>
@@ -174,14 +168,9 @@ namespace SimpleStack.Orm
 		/// <summary>Converts the objWithProperties to an execute procedure statement.</summary>
 		/// <param name="objWithProperties">The object with properties.</param>
 		/// <returns>objWithProperties as a string.</returns>
-		string ToExecuteProcedureStatement(object objWithProperties);
+		//string ToExecuteProcedureStatement(object objWithProperties);
 
-		/// <summary>Converts a modelDefinition to a complete create table statement.</summary>
-		/// <param name="modelDef">Type of the table.</param>
-		/// <returns>tableType as a string.</returns>
-		string ToCompleteCreateTableStatement(ModelDefinition modelDef);
-
-		/// <summary>Converts a tableType to a create table statement.</summary>
+        /// <summary>Converts a tableType to a create table statement.</summary>
 		/// <param name="modelDefinition">Model Definition.</param>
 		/// <returns>tableType as a string.</returns>
 		string ToCreateTableStatement(ModelDefinition modelDefinition);
@@ -300,6 +289,14 @@ namespace SimpleStack.Orm
 		/// <returns>The index name.</returns>
 		string GetIndexName(bool isUnique, string modelName, string fieldName);
 
+        /// <summary>
+        /// Return the Function to retrieve part of a date in SQL.
+        /// The name is the date part requested
+        /// 
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="quotedColName"></param>
+        /// <returns></returns>
 		string GetDatePartFunction(string name, string quotedColName);
         IEnumerable<ColumnDefinition> TableColumnsInformation(IDbConnection connection, string tableName, string schemaName);
         IEnumerable<TableDefinition> GetTablesInformation(IDbConnection connection, string dbName, string schemaName);

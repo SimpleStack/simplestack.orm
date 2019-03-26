@@ -11,7 +11,7 @@ using SimpleStack.Orm.Expressions;
 namespace SimpleStack.Orm.Sqlite
 {
 	/// <summary>A sqlite ORM lite dialect provider base.</summary>
-	public class SqliteDialectProvider : DialectProviderBase<SqliteDialectProvider>
+	public class SqliteDialectProvider : DialectProviderBase
 	{
 		/// <summary>
 		/// Initializes a new instance of the NServiceKit.OrmLite.Sqlite.SqliteOrmLiteDialectProviderBase
