@@ -434,7 +434,7 @@ namespace SimpleStack.Orm.SqlServer
 
         }
         
-        public override IEnumerable<ColumnDefinition> TableColumnsInformation(IDbConnection connection, string tableName, string schemaName = null)
+        public override IEnumerable<ColumnDefinition> GetTableColumnDefinitions(IDbConnection connection, string tableName, string schemaName = null)
         {
             string sqlQuery = "select * from INFORMATION_SCHEMA.COLUMNS where TABLE_NAME = '@TableName' AND TABLE_SCHEMA = '@SchemaName'";
             foreach (var column in connection.Query<SqlServerColumnDefinition>(sqlQuery, new { TableName = tableName, SchemaName = schemaName }))
@@ -450,7 +450,7 @@ namespace SimpleStack.Orm.SqlServer
             }
         }
 
-        public override IEnumerable<TableDefinition> GetTablesInformation(IDbConnection connection, string dbName, string schemaName)
+        public override IEnumerable<TableDefinition> GetTableDefinitions(IDbConnection connection, string dbName, string schemaName)
         {
             string sqlQuery = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_CATALOG = '@DbName'";
             foreach (var table in connection.Query<TableDefinition>(sqlQuery, new { DbName = dbName }))

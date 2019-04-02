@@ -430,11 +430,11 @@ namespace SimpleStack.Orm
 
         public IEnumerable<TableDefinition> GetTablesInformation(string dbName, string schemaName)
         {
-            return DialectProvider.GetTablesInformation(DbConnection, dbName, schemaName);
+            return DialectProvider.GetTableDefinitions(DbConnection, dbName, schemaName);
         }
         public IEnumerable<ColumnDefinition> GetTableColumnsInformation(string tableName, string schemaName)
         {
-            return DialectProvider.TableColumnsInformation(DbConnection, tableName, schemaName);
+            return DialectProvider.GetTableColumnDefinitions(DbConnection, tableName, schemaName);
         }
     }
 }

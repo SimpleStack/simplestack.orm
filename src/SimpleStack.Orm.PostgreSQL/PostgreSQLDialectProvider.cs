@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Text;
@@ -49,25 +50,6 @@ namespace SimpleStack.Orm.PostgreSQL
         public override DbConnection CreateIDbConnection(string connectionString)
         {
             return new NpgsqlConnection(connectionString);
-        }
-
-        /// <summary>Query if 'dbCmd' does table exist.</summary>
-        /// <param name="connection">    The database command.</param>
-        /// <param name="tableName">Name of the table.</param>
-        /// <returns>true if it succeeds, false if it fails.</returns>
-        public override bool DoesTableExist(IDbConnection connection, string tableName)
-        {
-            var result = connection.ExecuteScalar<long>("SELECT COUNT(*) FROM pg_class WHERE relname = :table",
-                                                        new { table = tableName });
-            return result > 0;
-        }
-
-        /// <summary>Expression visitor.</summary>
-        /// <typeparam name="T">Generic type parameter.</typeparam>
-        /// <returns>A SqlExpressionVisitor&lt;T&gt;</returns>
-        public override SqlExpressionVisitor<T> ExpressionVisitor<T>()
-        {
-            return new PostgreSQLExpressionVisitor<T>(this);
         }
 
         /// <summary>Gets column definition.</summary>
@@ -147,29 +129,6 @@ namespace SimpleStack.Orm.PostgreSQL
             return sql.ToString();
         }
 
-        public override string GetDatePartFunction(string name, string quotedColName)
-        {
-            return $"date_part('{name.ToLower()}', {quotedColName})";
-        }
-
-        public override string GetDropTableStatement(ModelDefinition modelDef)
-        {
-            return $"DROP TABLE {GetQuotedTableName(modelDef)} CASCADE";
-        }
-
-        /// <summary>Gets quoted table name.</summary>
-        /// <param name="modelDef">The model definition.</param>
-        /// <returns>The quoted table name.</returns>
-        public override string GetQuotedTableName(ModelDefinition modelDef)
-        {
-            if (!modelDef.IsInSchema)
-            {
-                return base.GetQuotedTableName(modelDef);
-            }
-
-		//	return base.GetQuotedValue(value, fieldType);
-		//}
-
 		/// <summary>Expression visitor.</summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		/// <returns>A SqlExpressionVisitor&lt;T&gt;</returns>
@@ -248,10 +207,9 @@ namespace SimpleStack.Orm.PostgreSQL
         private class PostgreSqlTableDefinition
         {
             public string Table_Name { get; set; }
-
         }
 
-        public override IEnumerable<ColumnDefinition> TableColumnsInformation(IDbConnection connection, string tableName, string schemaName = null)
+        public override IEnumerable<ColumnDefinition> GetTableColumnDefinitions(IDbConnection connection, string tableName, string schemaName = null)
         {
             string sqlQuery =
                 "SELECT * FROM information_schema.columns WHERE table_schema = '@SchemaName' AND table_name = '@TableName';";
@@ -269,7 +227,7 @@ namespace SimpleStack.Orm.PostgreSQL
 
         }
 
-        public override IEnumerable<TableDefinition> GetTablesInformation(IDbConnection connection, string dbName, string schemaName)
+        public override IEnumerable<TableDefinition> GetTableDefinitions(IDbConnection connection, string dbName, string schemaName)
         {
             string sqlQuery = "SELECT * FROM information_schema.tables WHERE table_schema = '@SchemaName';";
             foreach (var table in connection.Query<PostgreSqlTableDefinition>(sqlQuery, new { SchemaName = schemaName }))

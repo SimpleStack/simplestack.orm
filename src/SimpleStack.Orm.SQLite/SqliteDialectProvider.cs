@@ -155,7 +155,7 @@ namespace SimpleStack.Orm.Sqlite
         {
 
         }
-        public override IEnumerable<ColumnDefinition> TableColumnsInformation(IDbConnection connection, string tableName, string schemaName = null)
+        public override IEnumerable<ColumnDefinition> GetTableColumnDefinitions(IDbConnection connection, string tableName, string schemaName = null)
         {
             string sqlQuery = "pragma table_info('@tableName')";
             foreach (var column in connection.Query<SqliteColumnDefinition>(sqlQuery, new { TableName = tableName }))
@@ -173,7 +173,7 @@ namespace SimpleStack.Orm.Sqlite
             }
         }
 
-        public override IEnumerable<TableDefinition> GetTablesInformation(IDbConnection connection, string dbName, string schemaName)
+        public override IEnumerable<TableDefinition> GetTableDefinitions(IDbConnection connection, string dbName, string schemaName)
         {
             string sqlQuery = "SELECT name FROM @DbName.sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%';";
             foreach (var table in connection.Query<TableDefinition>(sqlQuery, new { DbName = dbName }))
