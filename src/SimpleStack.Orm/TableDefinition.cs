@@ -6,6 +6,6 @@ namespace SimpleStack.Orm
 {
     public class TableDefinition
     {
-        public string Name { get; set; }
+        public string Name { get; internal set; }
     }
 }

@@ -218,7 +218,7 @@ namespace SimpleStack.Orm.PostgreSQL
             {
                 yield return new ColumnDefinition
                 {
-                    Character_Length = int.Parse(column.Character_Maximum_Length),
+                    FieldLength = int.Parse(column.Character_Maximum_Length),
                     Nullable = column.Is_Nullable == "YES",
                     Name = column.Column_Name
                 };

@@ -444,7 +444,7 @@ namespace SimpleStack.Orm.SqlServer
                     Name = column.Column_Name,
                     DefaultValue = column.Column_Default,
                     Nullable = column.Is_Nullable == "YES",
-                    Character_Length = column.Character_Maximum_Length,
+                    FieldLength = column.Character_Maximum_Length,
                     Type = column.Data_Type
                 };
             }

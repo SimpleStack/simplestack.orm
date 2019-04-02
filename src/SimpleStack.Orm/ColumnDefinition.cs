@@ -6,11 +6,11 @@ namespace SimpleStack.Orm
 {
     public class ColumnDefinition
     {
-        public string Name { get; set; }
-        public bool Nullable { get; set; }
-        public int Character_Length { get; set; }
-        public string Type { get; set; }
-        public bool PrimaryKey { get; set; }
-        public string DefaultValue { get; set; }
+        public string Name { get; internal set; }
+        public bool Nullable { get; internal set; }
+        public int FieldLength { get; internal set; }
+        public string Type { get; internal set; }
+        public bool PrimaryKey { get; internal set; }
+        public string DefaultValue { get; internal set; }
     }
 }
