@@ -423,5 +423,40 @@ namespace SimpleStack.Orm.SqlServer
 		{
 			return $"DATEPART({name.ToLower()},{quotedColName})";
 		}
-	}
+        private class SqlServerColumnDefinition
+        {
+            public string Column_Name { get; set; }
+            public string Column_Default { get; set; }
+            public string Is_Nullable { get; set; }
+            public string Data_Type { get; set; }
+            public int Character_Maximum_Length { get; set; }
+
+
+        }
+        
+        public override IEnumerable<ColumnDefinition> TableColumnsInformation(IDbConnection connection, string tableName, string schemaName = null)
+        {
+            string sqlQuery = "select * from INFORMATION_SCHEMA.COLUMNS where TABLE_NAME = '@TableName' AND TABLE_SCHEMA = '@SchemaName'";
+            foreach (var column in connection.Query<SqlServerColumnDefinition>(sqlQuery, new { TableName = tableName, SchemaName = schemaName }))
+            {
+                yield return new ColumnDefinition
+                {
+                    Name = column.Column_Name,
+                    DefaultValue = column.Column_Default,
+                    Nullable = column.Is_Nullable == "YES",
+                    Character_Length = column.Character_Maximum_Length,
+                    Type = column.Data_Type
+                };
+            }
+        }
+
+        public override IEnumerable<TableDefinition> GetTablesInformation(IDbConnection connection, string dbName, string schemaName)
+        {
+            string sqlQuery = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_CATALOG = '@DbName'";
+            foreach (var table in connection.Query<TableDefinition>(sqlQuery, new { DbName = dbName }))
+            {
+                yield return table;
+            }
+        }
+    }
 }

@@ -235,5 +235,50 @@ namespace SimpleStack.Orm.PostgreSQL
 		{
 			return $"date_part('{name.ToLower()}', {quotedColName})";
 		}
-	}
+
+        private class PostgreSQLColumnDefinition
+        {
+            public string Column_Name { get; set; }
+            public string Is_Nullable { get; set; }
+            public string Character_Maximum_Length { get; set; }
+
+
+        }
+
+        private class PostgreSqlTableDefinition
+        {
+            public string Table_Name { get; set; }
+
+        }
+
+        public override IEnumerable<ColumnDefinition> TableColumnsInformation(IDbConnection connection, string tableName, string schemaName = null)
+        {
+            string sqlQuery =
+                "SELECT * FROM information_schema.columns WHERE table_schema = '@SchemaName' AND table_name = '@TableName';";
+            foreach (var column in connection.Query<PostgreSQLColumnDefinition>(sqlQuery,
+                new { TableName = tableName, SchemaName = schemaName }))
+            {
+                yield return new ColumnDefinition
+                {
+                    Character_Length = int.Parse(column.Character_Maximum_Length),
+                    Nullable = column.Is_Nullable == "YES",
+                    Name = column.Column_Name
+                };
+            }
+
+
+        }
+
+        public override IEnumerable<TableDefinition> GetTablesInformation(IDbConnection connection, string dbName, string schemaName)
+        {
+            string sqlQuery = "SELECT * FROM information_schema.tables WHERE table_schema = '@SchemaName';";
+            foreach (var table in connection.Query<PostgreSqlTableDefinition>(sqlQuery, new { SchemaName = schemaName }))
+            {
+                yield return new TableDefinition
+                {
+                    Name = table.Table_Name
+                };
+            }
+        }
+    }
 }

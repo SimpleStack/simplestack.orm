@@ -153,5 +153,40 @@ namespace SimpleStack.Orm.MySQLConnector
 					throw new NotImplementedException();
 			}
 		}
-	}
+        private class MySqlColumnDefinition
+        {
+            public string Field { get; set; }
+            public string Type { get; set; }
+            public string Null { get; set; }
+            public string Key { get; set; }
+            public string Default { get; set; }
+            public string Extra { get; set; }
+        }
+        //In this case SchemaName = dbName
+        public override IEnumerable<ColumnDefinition> TableColumnsInformation(IDbConnection connection, string tableName, string schemaName = null)
+        {
+            string sqlQuery = "SHOW FULL COLUMNS FROM @TableName IN @SchemaName";
+            //string sqlQuery = "SELECT COLUMN_NAME FROM information_schema.columns WHERE table_schema='[@SchemaName]' AND table_name='[@TableName]'";
+            foreach (var column in connection.Query<MySqlColumnDefinition>(sqlQuery,
+                new { TableName = tableName, SchemaName = schemaName }))
+            {
+                yield return new ColumnDefinition
+                {
+                    Name = column.Field,
+                    Type = column.Type,
+                    DefaultValue = column.Default,
+                    Nullable = column.Null == "YES"
+                };
+            }
+        }
+
+        public override IEnumerable<TableDefinition> GetTablesInformation(IDbConnection connection, string dbName, string schemaName)
+        {
+            string sqlQuery = "SHOW TABLES FROM '@DbName'";
+            foreach (var table in connection.Query<TableDefinition>(sqlQuery, new { DbName = dbName }))
+            {
+                yield return table;
+            }
+        }
+    }
 }
