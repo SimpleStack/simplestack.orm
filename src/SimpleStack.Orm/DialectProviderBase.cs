@@ -1109,5 +1109,14 @@ namespace SimpleStack.Orm
 		{
 			return "DROP TABLE " + GetQuotedTableName(modelDef);
 		}
-	}
+        public virtual IEnumerable<ColumnDefinition> TableColumnsInformation(IDbConnection connection, string tableName, string schemaName = null)
+        {
+            return new ColumnDefinition[0].AsEnumerable();
+        }
+
+        public virtual IEnumerable<TableDefinition> GetTablesInformation(IDbConnection connection, string dbName, string schemaName)
+        {
+            return new TableDefinition[0].AsEnumerable();
+        }
+    }
 }

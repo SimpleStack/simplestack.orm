@@ -301,5 +301,7 @@ namespace SimpleStack.Orm
 		string GetIndexName(bool isUnique, string modelName, string fieldName);
 
 		string GetDatePartFunction(string name, string quotedColName);
-	}
+        IEnumerable<ColumnDefinition> TableColumnsInformation(IDbConnection connection, string tableName, string schemaName);
+        IEnumerable<TableDefinition> GetTablesInformation(IDbConnection connection, string dbName, string schemaName);
+    }
 }

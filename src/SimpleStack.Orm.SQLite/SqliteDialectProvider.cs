@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.IO;
@@ -138,5 +139,47 @@ namespace SimpleStack.Orm.Sqlite
 					throw new NotImplementedException();
 			}
 		}
-	}
+
+        private class SqliteColumnDefinition
+        {
+            public int Cid { get; set; }
+            public string Name { get; set; }
+            public string Type { get; set; }
+            public int NotNull { get; set; }
+            public string Dflt_Value { get; set; }
+            public int Pk { get; set; }
+
+        }
+
+        private class SqliteTableDefinition
+        {
+
+        }
+        public override IEnumerable<ColumnDefinition> TableColumnsInformation(IDbConnection connection, string tableName, string schemaName = null)
+        {
+            string sqlQuery = "pragma table_info('@tableName')";
+            foreach (var column in connection.Query<SqliteColumnDefinition>(sqlQuery, new { TableName = tableName }))
+            {
+                yield return new ColumnDefinition
+                {
+                    Name = column.Name,
+                    Type = column.Type,
+                    DefaultValue = column.Dflt_Value,
+                    PrimaryKey = column.Pk == 1,
+                    Nullable = column.NotNull == 1,
+
+
+                };
+            }
+        }
+
+        public override IEnumerable<TableDefinition> GetTablesInformation(IDbConnection connection, string dbName, string schemaName)
+        {
+            string sqlQuery = "SELECT name FROM @DbName.sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%';";
+            foreach (var table in connection.Query<TableDefinition>(sqlQuery, new { DbName = dbName }))
+            {
+                yield return table;
+            }
+        }
+    }
 }

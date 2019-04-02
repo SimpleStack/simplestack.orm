@@ -427,5 +427,14 @@ namespace SimpleStack.Orm
 			}
 			this.Execute(DialectProvider.GetDropTableStatement(modelDef));
 		}
-	}
+
+        public IEnumerable<TableDefinition> GetTablesInformation(string dbName, string schemaName)
+        {
+            return DialectProvider.GetTablesInformation(DbConnection, dbName, schemaName);
+        }
+        public IEnumerable<ColumnDefinition> GetTableColumnsInformation(string tableName, string schemaName)
+        {
+            return DialectProvider.TableColumnsInformation(DbConnection, tableName, schemaName);
+        }
+    }
 }
