@@ -153,39 +153,37 @@ namespace SimpleStack.Orm.MySQL
 					throw new NotImplementedException();
 			}
 		}
-        private class MySqlColumnDefinition
+        public override IEnumerable<IColumnDefinition> GetTableColumnDefinitions(IDbConnection connection, string tableName, string schemaName = null)
         {
-            public string Field { get; set; }
-            public string Type { get; set; }
-            public string Null { get; set; }
-            public string Key { get; set; }
-            public string Default { get; set; }
-            public string Extra { get; set; }
-        }
-        //In this case schemaName = dbName
-        //public override IEnumerable<IColumnDefinition> GetTableColumnDefinitions(IDbConnection connection, string tableName, string schemaName = null)
-        //{
-        //    string sql = "SHOW FULL COLUMNS FROM @TableName IN @SchemaName";
-        //    //string sqlQuery = "SELECT COLUMN_NAME FROM information_schema.columns WHERE table_schema='[@SchemaName]' AND table_name='[@TableName]'";
-        //    foreach (var col in connection.Query<MySqlColumnDefinition>(sql, new { TableName = tableName, SchemaName = schemaName }))
-        //    {
-        //        yield return new ColumnDefinition
-        //        {
-        //            Name = col.Field,
-        //            Type = col.Type,
-        //            DefaultValue = col.Default,
-        //            Nullable = col.Null == "YES"
-        //        };
-        //    }
-
-        //}
-
-        public override IEnumerable<TableDefinition> GetTableDefinitions(IDbConnection connection, string dbName, string schemaName)
-        {
-            string sqlQuery = "SHOW TABLES FROM '@DbName'";
-            foreach (var table in connection.Query<TableDefinition>(sqlQuery, new { DbName = dbName }))
+            string sqlQuery = "select * from INFORMATION_SCHEMA.COLUMNS where TABLE_NAME = @TableName";
+            if (!string.IsNullOrWhiteSpace(schemaName))
             {
-                yield return table;
+                sqlQuery += " AND TABLE_SCHEMA = @SchemaName";
+            }
+            foreach (var c in connection.Query(sqlQuery, new { TableName = tableName, SchemaName = schemaName }))
+            {
+                yield return new ColumnDefinition
+                             {
+                                 Name         = c.COLUMN_NAME,
+                                 Type         = c.DATA_TYPE,
+                                 DefaultValue = c.COLUMN_DEFAULT,
+                                 Nullable     = c.IS_NULLABLE == "YES",
+                                 PrimaryKey   = c.COLUMN_KEY == "PRI",
+                                 FieldLength  = (int?)c.CHARACTER_MAXIMUM_LENGTH
+                             };
+            }
+        }
+
+        public override IEnumerable<ITableDefinition> GetTableDefinitions(IDbConnection connection, string schemaName = null)
+        {
+            string sqlQuery = "SELECT * FROM INFORMATION_SCHEMA.TABLES where TABLE_TYPE = 'BASE TABLE'";
+            if (!string.IsNullOrWhiteSpace(schemaName))
+            {
+                sqlQuery += " AND TABLE_SCHEMA=@SchemaName";
+            }
+            foreach (var table in connection.Query(sqlQuery, new { SchemaName = schemaName }))
+            {
+                yield return new TableDefinition { Name = table.TABLE_NAME, SchemaName = table.TABLE_SCHEMA};
             }
         }
     }

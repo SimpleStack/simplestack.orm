@@ -922,7 +922,9 @@ namespace SimpleStack.Orm
             return new IColumnDefinition[0];
         }
 
-        public virtual IEnumerable<TableDefinition> GetTableDefinitions(IDbConnection connection, string dbName, string schemaName)
+        public virtual IEnumerable<ITableDefinition> GetTableDefinitions(
+            IDbConnection connection,
+            string schemaName = null)
         {
             return new TableDefinition[0];
         }

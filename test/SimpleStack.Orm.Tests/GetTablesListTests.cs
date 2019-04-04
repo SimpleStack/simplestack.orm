@@ -13,9 +13,12 @@ namespace SimpleStack.Orm.Tests
         {
             using (var db = OpenDbConnection())
             {
-                AddMembers(db);
                 db.CreateTable<CompositeMember>(true);
-                Assert.Equals(db.GetTablesInformation("postgres", "public").Count(), 2);
+                db.CreateTable<TestType2>(true);
+
+                var tables = db.GetTablesInformation().ToArray();
+                Assert.True(tables.Any(x => x.Name.ToLower() == "testtype2"));
+                Assert.True(tables.All(x => !string.IsNullOrWhiteSpace(x.SchemaName)));
             }
         }
     }

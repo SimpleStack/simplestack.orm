@@ -233,14 +233,19 @@ namespace SimpleStack.Orm.PostgreSQL
             }
         }
 
-        public override IEnumerable<TableDefinition> GetTableDefinitions(IDbConnection connection, string dbName, string schemaName)
+        public override IEnumerable<ITableDefinition> GetTableDefinitions(IDbConnection connection, string schemaName = null)
         {
-            string sqlQuery = "SELECT * FROM information_schema.tables WHERE table_schema = '@SchemaName';";
-            foreach (var table in connection.Query<PostgreSqlTableDefinition>(sqlQuery, new { SchemaName = schemaName }))
+            string sqlQuery = "SELECT * FROM information_schema.tables WHERE table_type = 'BASE TABLE'";
+            if (!string.IsNullOrWhiteSpace(schemaName))
+            {
+                sqlQuery += " AND table_schema = @SchemaName ";
+            }
+            foreach (var table in connection.Query(sqlQuery, new { SchemaName = schemaName }))
             {
                 yield return new TableDefinition
                 {
-                    Name = table.Table_Name
+                    Name = table.table_name,
+                    SchemaName = table.table_schema
                 };
             }
         }

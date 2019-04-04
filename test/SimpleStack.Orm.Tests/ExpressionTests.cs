@@ -17,6 +17,7 @@ using SimpleStack.Orm.MySQLConnector;
 using Microsoft.SqlServer.Server;
 using Newtonsoft.Json;
 using NUnit.Framework;
+using SimpleStack.Orm.MySQL;
 
 namespace SimpleStack.Orm.Tests
 {
@@ -228,7 +229,17 @@ namespace SimpleStack.Orm.Tests
 		{
 		}
 	}
-	public class SQLServerTests : ExpressionTests
+
+    public class MySQLTests : ExpressionTests
+    {
+        protected override string ConnectionString => "server=localhost;user=root;password=depfac$2000;database=test";
+
+        public MySQLTests() : base(new MySqlDialectProvider())
+        {
+        }
+    }
+
+    public class SQLServerTests : ExpressionTests
 	{
 		public SQLServerTests() : base(new SqlServerDialectProvider())
 		{

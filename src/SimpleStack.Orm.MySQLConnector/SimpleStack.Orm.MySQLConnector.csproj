@@ -23,7 +23,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.CSharp" Version="4.5.0" />
-    <PackageReference Include="MySqlConnector" Version="0.50.0" />
+    <PackageReference Include="MySqlConnector" Version="0.51.1" />
   </ItemGroup>
 
 </Project>

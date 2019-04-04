@@ -428,9 +428,9 @@ namespace SimpleStack.Orm
 			this.Execute(DialectProvider.GetDropTableStatement(modelDef));
 		}
 
-        public IEnumerable<TableDefinition> GetTablesInformation(string dbName, string schemaName = null)
+        public IEnumerable<ITableDefinition> GetTablesInformation(string schemaName = null)
         {
-            return DialectProvider.GetTableDefinitions(DbConnection, dbName, schemaName);
+            return DialectProvider.GetTableDefinitions(DbConnection, schemaName);
         }
         public IEnumerable<IColumnDefinition> GetTableColumnsInformation(string tableName, string schemaName = null)
         {

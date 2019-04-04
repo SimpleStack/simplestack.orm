@@ -299,6 +299,6 @@ namespace SimpleStack.Orm
         /// <returns></returns>
 		string GetDatePartFunction(string name, string quotedColName);
         IEnumerable<IColumnDefinition> GetTableColumnDefinitions(IDbConnection connection, string tableName, string schemaName = null);
-        IEnumerable<TableDefinition> GetTableDefinitions(IDbConnection connection, string dbName, string schemaName = null);
+        IEnumerable<ITableDefinition> GetTableDefinitions(IDbConnection connection, string schemaName = null);
     }
 }

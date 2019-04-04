@@ -4,8 +4,14 @@ using System.Text;
 
 namespace SimpleStack.Orm
 {
-    public class TableDefinition
+    public interface ITableDefinition
     {
-        public string Name { get; internal set; }
+        string Name { get; }
+        string SchemaName { get; }
+    }
+    public class TableDefinition : ITableDefinition
+    {
+        public string Name { get; set; }
+        public string SchemaName { get; set; }
     }
 }

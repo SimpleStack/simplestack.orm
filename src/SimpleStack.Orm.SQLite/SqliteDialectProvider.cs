@@ -142,11 +142,6 @@ namespace SimpleStack.Orm.Sqlite
 			}
 		}
 
-
-        private class SqliteTableDefinition
-        {
-
-        }
         public override IEnumerable<IColumnDefinition> GetTableColumnDefinitions(IDbConnection connection, string tableName, string schemaName = null)
         {
             string sqlQuery = $"pragma table_info('{tableName}')";
@@ -163,12 +158,18 @@ namespace SimpleStack.Orm.Sqlite
             }
         }
 
-        public override IEnumerable<TableDefinition> GetTableDefinitions(IDbConnection connection, string dbName, string schemaName)
+        public override IEnumerable<ITableDefinition> GetTableDefinitions(
+            IDbConnection connection,
+            string schemaName = null)
         {
-            string sqlQuery = "SELECT name FROM @DbName.sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%';";
-            foreach (var table in connection.Query<TableDefinition>(sqlQuery, new { DbName = dbName }))
+            string sqlQuery = "SELECT tbl_name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%';";
+            foreach (var table in connection.Query(sqlQuery))
             {
-                yield return table;
+                yield return new TableDefinition
+                             {
+                                 Name = table.tbl_name,
+                                 SchemaName = "default"
+                             };
             }
         }
     }

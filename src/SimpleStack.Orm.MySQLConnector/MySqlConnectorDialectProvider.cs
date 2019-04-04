@@ -176,12 +176,16 @@ namespace SimpleStack.Orm.MySQLConnector
             }
         }
 
-        public override IEnumerable<TableDefinition> GetTableDefinitions(IDbConnection connection, string dbName, string schemaName)
+        public override IEnumerable<ITableDefinition> GetTableDefinitions(IDbConnection connection,string schemaName = null)
         {
-            string sqlQuery = "SHOW TABLES FROM '@DbName'";
-            foreach (var table in connection.Query<TableDefinition>(sqlQuery, new { DbName = dbName }))
+            string sqlQuery = "SELECT * FROM INFORMATION_SCHEMA.TABLES where TABLE_TYPE = 'BASE TABLE'";
+            if (!string.IsNullOrWhiteSpace(schemaName))
             {
-                yield return table;
+                sqlQuery += " AND TABLE_SCHEMA=@SchemaName";
+            }
+            foreach (var table in connection.Query(sqlQuery, new {SchemaName = schemaName}))
+            {
+                yield return new TableDefinition { Name = table.TABLE_NAME, SchemaName = table.TABLE_SCHEMA };
             }
         }
     }
