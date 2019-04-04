@@ -4,13 +4,34 @@ using System.Text;
 
 namespace SimpleStack.Orm
 {
-    public class ColumnDefinition
+    public interface IColumnDefinition
     {
-        public string Name { get; internal set; }
-        public bool Nullable { get; internal set; }
-        public int FieldLength { get; internal set; }
-        public string Type { get; internal set; }
-        public bool PrimaryKey { get; internal set; }
-        public string DefaultValue { get; internal set; }
+        string Name { get; }
+        bool Nullable { get; }
+        int? FieldLength { get; }
+        string Type { get; }
+        bool PrimaryKey { get; }
+        string DefaultValue { get; }
+    }
+
+    public class ColumnDefinition : IColumnDefinition
+    {
+        /// <inheritdoc />
+        public string Name { get; set; }
+
+        /// <inheritdoc />
+        public bool Nullable { get; set; }
+
+        /// <inheritdoc />
+        public int? FieldLength { get; set; }
+
+        /// <inheritdoc />
+        public string Type { get; set; }
+
+        /// <inheritdoc />
+        public bool PrimaryKey { get; set; }
+
+        /// <inheritdoc />
+        public string DefaultValue { get; set; }
     }
 }

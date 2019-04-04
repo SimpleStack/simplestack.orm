@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using Dapper;
+using SimpleStack.Orm.Attributes;
 using SimpleStack.Orm.Expressions;
 
 namespace SimpleStack.Orm.Sqlite
@@ -140,36 +142,24 @@ namespace SimpleStack.Orm.Sqlite
 			}
 		}
 
-        private class SqliteColumnDefinition
-        {
-            public int Cid { get; set; }
-            public string Name { get; set; }
-            public string Type { get; set; }
-            public int NotNull { get; set; }
-            public string Dflt_Value { get; set; }
-            public int Pk { get; set; }
-
-        }
 
         private class SqliteTableDefinition
         {
 
         }
-        public override IEnumerable<ColumnDefinition> GetTableColumnDefinitions(IDbConnection connection, string tableName, string schemaName = null)
+        public override IEnumerable<IColumnDefinition> GetTableColumnDefinitions(IDbConnection connection, string tableName, string schemaName = null)
         {
-            string sqlQuery = "pragma table_info('@tableName')";
-            foreach (var column in connection.Query<SqliteColumnDefinition>(sqlQuery, new { TableName = tableName }))
+            string sqlQuery = $"pragma table_info('{tableName}')";
+            foreach (var c in connection.Query(sqlQuery))
             {
                 yield return new ColumnDefinition
-                {
-                    Name = column.Name,
-                    Type = column.Type,
-                    DefaultValue = column.Dflt_Value,
-                    PrimaryKey = column.Pk == 1,
-                    Nullable = column.NotNull == 1,
-
-
-                };
+                             {
+                                 Name         = c.name,
+                                 Type         = c.type,
+                                 Nullable     = c.notnull == 1,
+                                 PrimaryKey   = c.pk == 1,
+                                 DefaultValue = c.dflt_value
+                             };
             }
         }
 

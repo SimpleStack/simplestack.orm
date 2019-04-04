@@ -917,14 +917,14 @@ namespace SimpleStack.Orm
         {
             return "DROP TABLE " + GetQuotedTableName(modelDef);
         }
-        public virtual IEnumerable<ColumnDefinition> GetTableColumnDefinitions(IDbConnection connection, string tableName, string schemaName = null)
+        public virtual IEnumerable<IColumnDefinition> GetTableColumnDefinitions(IDbConnection connection, string tableName, string schemaName = null)
         {
-            return new ColumnDefinition[0].AsEnumerable();
+            return new IColumnDefinition[0];
         }
 
         public virtual IEnumerable<TableDefinition> GetTableDefinitions(IDbConnection connection, string dbName, string schemaName)
         {
-            return new TableDefinition[0].AsEnumerable();
+            return new TableDefinition[0];
         }
     }
 }

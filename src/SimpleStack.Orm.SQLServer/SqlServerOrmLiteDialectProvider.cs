@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.Text;
 using Dapper;
+using SimpleStack.Orm.Attributes;
 using SimpleStack.Orm.Expressions;
 
 namespace SimpleStack.Orm.SqlServer
@@ -423,30 +424,33 @@ namespace SimpleStack.Orm.SqlServer
 		{
 			return $"DATEPART({name.ToLower()},{quotedColName})";
 		}
-        private class SqlServerColumnDefinition
-        {
-            public string Column_Name { get; set; }
-            public string Column_Default { get; set; }
-            public string Is_Nullable { get; set; }
-            public string Data_Type { get; set; }
-            public int Character_Maximum_Length { get; set; }
-
-
-        }
         
-        public override IEnumerable<ColumnDefinition> GetTableColumnDefinitions(IDbConnection connection, string tableName, string schemaName = null)
+        public override IEnumerable<IColumnDefinition> GetTableColumnDefinitions(IDbConnection connection, string tableName, string schemaName = null)
         {
-            string sqlQuery = "select * from INFORMATION_SCHEMA.COLUMNS where TABLE_NAME = '@TableName' AND TABLE_SCHEMA = '@SchemaName'";
-            foreach (var column in connection.Query<SqlServerColumnDefinition>(sqlQuery, new { TableName = tableName, SchemaName = schemaName }))
+            string sqlQuery = @"SELECT *, OBJECTPROPERTY(OBJECT_ID(CONSTRAINT_SCHEMA + '.' + QUOTENAME(CONSTRAINT_NAME)), 'IsPrimaryKey') as IS_PRIMARY_KEY
+                                FROM INFORMATION_SCHEMA.COLUMNS
+                                LEFT JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE ON INFORMATION_SCHEMA.KEY_COLUMN_USAGE.TABLE_NAME = INFORMATION_SCHEMA.COLUMNS.TABLE_NAME
+                                                                             AND INFORMATION_SCHEMA.KEY_COLUMN_USAGE.TABLE_CATALOG = INFORMATION_SCHEMA.COLUMNS.TABLE_CATALOG
+                                                                             AND INFORMATION_SCHEMA.KEY_COLUMN_USAGE.TABLE_SCHEMA = INFORMATION_SCHEMA.COLUMNS.TABLE_SCHEMA
+                                                                             AND INFORMATION_SCHEMA.KEY_COLUMN_USAGE.COLUMN_NAME = INFORMATION_SCHEMA.COLUMNS.COLUMN_NAME
+                                WHERE INFORMATION_SCHEMA.COLUMNS.TABLE_NAME = @TableName ";
+
+
+            if (!string.IsNullOrWhiteSpace(schemaName))
+            {
+                sqlQuery +=" AND TABLE_SCHEMA = @SchemaName";
+            }
+            foreach (var c in connection.Query(sqlQuery, new { TableName = tableName, SchemaName = schemaName }))
             {
                 yield return new ColumnDefinition
-                {
-                    Name = column.Column_Name,
-                    DefaultValue = column.Column_Default,
-                    Nullable = column.Is_Nullable == "YES",
-                    FieldLength = column.Character_Maximum_Length,
-                    Type = column.Data_Type
-                };
+                             {
+                                 Name         = c.COLUMN_NAME,
+                                 Type         = c.DATA_TYPE,
+                                 DefaultValue = c.COLUMN_DEFAULT,
+                                 PrimaryKey   = c.IS_PRIMARY_KEY == 1,
+                                 FieldLength  = c.CHARACTER_MAXIMUM_LENGTH,
+                                 Nullable     = c.IS_NULLABLE == "YES"
+                             };
             }
         }
 

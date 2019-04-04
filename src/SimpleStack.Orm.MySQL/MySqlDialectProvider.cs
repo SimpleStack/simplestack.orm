@@ -163,22 +163,22 @@ namespace SimpleStack.Orm.MySQL
             public string Extra { get; set; }
         }
         //In this case schemaName = dbName
-        public override IEnumerable<ColumnDefinition> GetTableColumnDefinitions(IDbConnection connection, string tableName, string schemaName = null)
-        {
-            string sql = "SHOW FULL COLUMNS FROM @TableName IN @SchemaName";
-            //string sqlQuery = "SELECT COLUMN_NAME FROM information_schema.columns WHERE table_schema='[@SchemaName]' AND table_name='[@TableName]'";
-            foreach (var col in connection.Query<MySqlColumnDefinition>(sql, new { TableName = tableName, SchemaName = schemaName }))
-            {
-                yield return new ColumnDefinition
-                {
-                    Name = col.Field,
-                    Type = col.Type,
-                    DefaultValue = col.Default,
-                    Nullable = col.Null == "YES"
-                };
-            }
+        //public override IEnumerable<IColumnDefinition> GetTableColumnDefinitions(IDbConnection connection, string tableName, string schemaName = null)
+        //{
+        //    string sql = "SHOW FULL COLUMNS FROM @TableName IN @SchemaName";
+        //    //string sqlQuery = "SELECT COLUMN_NAME FROM information_schema.columns WHERE table_schema='[@SchemaName]' AND table_name='[@TableName]'";
+        //    foreach (var col in connection.Query<MySqlColumnDefinition>(sql, new { TableName = tableName, SchemaName = schemaName }))
+        //    {
+        //        yield return new ColumnDefinition
+        //        {
+        //            Name = col.Field,
+        //            Type = col.Type,
+        //            DefaultValue = col.Default,
+        //            Nullable = col.Null == "YES"
+        //        };
+        //    }
 
-        }
+        //}
 
         public override IEnumerable<TableDefinition> GetTableDefinitions(IDbConnection connection, string dbName, string schemaName)
         {

@@ -428,11 +428,11 @@ namespace SimpleStack.Orm
 			this.Execute(DialectProvider.GetDropTableStatement(modelDef));
 		}
 
-        public IEnumerable<TableDefinition> GetTablesInformation(string dbName, string schemaName)
+        public IEnumerable<TableDefinition> GetTablesInformation(string dbName, string schemaName = null)
         {
             return DialectProvider.GetTableDefinitions(DbConnection, dbName, schemaName);
         }
-        public IEnumerable<ColumnDefinition> GetTableColumnsInformation(string tableName, string schemaName)
+        public IEnumerable<IColumnDefinition> GetTableColumnsInformation(string tableName, string schemaName = null)
         {
             return DialectProvider.GetTableColumnDefinitions(DbConnection, tableName, schemaName);
         }

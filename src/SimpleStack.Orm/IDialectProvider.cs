@@ -298,7 +298,7 @@ namespace SimpleStack.Orm
         /// <param name="quotedColName"></param>
         /// <returns></returns>
 		string GetDatePartFunction(string name, string quotedColName);
-        IEnumerable<ColumnDefinition> GetTableColumnDefinitions(IDbConnection connection, string tableName, string schemaName);
-        IEnumerable<TableDefinition> GetTableDefinitions(IDbConnection connection, string dbName, string schemaName);
+        IEnumerable<IColumnDefinition> GetTableColumnDefinitions(IDbConnection connection, string tableName, string schemaName = null);
+        IEnumerable<TableDefinition> GetTableDefinitions(IDbConnection connection, string dbName, string schemaName = null);
     }
 }

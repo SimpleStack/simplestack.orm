@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Linq;
 using System.Text;
 using Dapper;
 using Npgsql;
+using SimpleStack.Orm.Attributes;
 using SimpleStack.Orm.Expressions;
 
 namespace SimpleStack.Orm.PostgreSQL
@@ -195,36 +197,40 @@ namespace SimpleStack.Orm.PostgreSQL
 			return $"date_part('{name.ToLower()}', {quotedColName})";
 		}
 
-        private class PostgreSQLColumnDefinition
-        {
-            public string Column_Name { get; set; }
-            public string Is_Nullable { get; set; }
-            public string Character_Maximum_Length { get; set; }
-
-
-        }
-
         private class PostgreSqlTableDefinition
         {
             public string Table_Name { get; set; }
         }
 
-        public override IEnumerable<ColumnDefinition> GetTableColumnDefinitions(IDbConnection connection, string tableName, string schemaName = null)
+        public override IEnumerable<IColumnDefinition> GetTableColumnDefinitions(IDbConnection connection, string tableName, string schemaName = null)
         {
-            string sqlQuery =
-                "SELECT * FROM information_schema.columns WHERE table_schema = '@SchemaName' AND table_name = '@TableName';";
-            foreach (var column in connection.Query<PostgreSQLColumnDefinition>(sqlQuery,
-                new { TableName = tableName, SchemaName = schemaName }))
+            string sqlQuery = "SELECT * FROM information_schema.columns WHERE table_name = @tableName ";
+            if (!string.IsNullOrWhiteSpace(schemaName))
             {
-                yield return new ColumnDefinition
-                {
-                    FieldLength = int.Parse(column.Character_Maximum_Length),
-                    Nullable = column.Is_Nullable == "YES",
-                    Name = column.Column_Name
-                };
+                sqlQuery += " AND table_schema = @SchemaName";
             }
 
+            // ReSharper disable StringLiteralTypo
+            var pks = connection.Query($@"SELECT a.attname
+                FROM   pg_index i
+                JOIN   pg_attribute a ON a.attrelid = i.indrelid
+                                     AND a.attnum = ANY(i.indkey)
+                WHERE  i.indrelid = '{tableName}'::regclass
+                AND    i.indisprimary;").ToArray();
+            // ReSharper enable StringLiteralTypo
 
+            foreach (var c in connection.Query(sqlQuery, new { tableName, schemaName }))
+            {
+                yield return new ColumnDefinition
+                             {
+                                 Name = c.column_name,
+                                 PrimaryKey = pks.Any(x => x.attname == c.column_name),
+                                 FieldLength = c.character_maximum_length,
+                                 DefaultValue = c.column_default,
+                                 Type = c.data_type,
+                                 Nullable = c.is_nullable == "YES"
+                };
+            }
         }
 
         public override IEnumerable<TableDefinition> GetTableDefinitions(IDbConnection connection, string dbName, string schemaName)
