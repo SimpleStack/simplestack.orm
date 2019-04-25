@@ -235,10 +235,10 @@ namespace SimpleStack.Orm.PostgreSQL
 
         public override IEnumerable<ITableDefinition> GetTableDefinitions(IDbConnection connection, string schemaName = null)
         {
-            string sqlQuery = "SELECT * FROM information_schema.tables WHERE table_type = 'BASE TABLE'";
+            string sqlQuery = "SELECT * FROM information_schema.tables WHERE table_type = 'BASE TABLE' AND table_schema NOT IN ('pg_catalog','information_schema')";
             if (!string.IsNullOrWhiteSpace(schemaName))
             {
-                sqlQuery += " AND table_schema = @SchemaName ";
+                sqlQuery = "SELECT * FROM information_schema.tables WHERE table_type = 'BASE TABLE' AND table_schema = @SchemaName ";
             }
             foreach (var table in connection.Query(sqlQuery, new { SchemaName = schemaName }))
             {
