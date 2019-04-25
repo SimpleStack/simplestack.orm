@@ -80,14 +80,6 @@ namespace SimpleStack.Orm.MySQL
 			return string.Format("`{0}`", name);
 		}
 
-		/// <summary>Expression visitor.</summary>
-		/// <typeparam name="T">Generic type parameter.</typeparam>
-		/// <returns>A SqlExpressionVisitor&lt;T&gt;</returns>
-		public override SqlExpressionVisitor<T> ExpressionVisitor<T>()
-		{
-			return new MySqlExpressionVisitor<T>(this);
-		}
-
 		/// <summary>Query if 'dbCmd' does table exist.</summary>
 		/// <param name="connection">    The database command.</param>
 		/// <param name="tableName">Name of the table.</param>

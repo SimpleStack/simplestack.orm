@@ -78,14 +78,6 @@ namespace SimpleStack.Orm.Sqlite
 			return string.Format("\"{0}_{1}\"", modelDef.Schema, modelDef.ModelName);
 		}
 
-		/// <summary>Expression visitor.</summary>
-		/// <typeparam name="T">Generic type parameter.</typeparam>
-		/// <returns>A SqlExpressionVisitor&lt;T&gt;</returns>
-		public override SqlExpressionVisitor<T> ExpressionVisitor<T>()
-		{
-			return new SqliteExpressionVisitor<T>(this);
-		}
-
 		/// <summary>Query if 'dbCmd' does table exist.</summary>
 		/// <param name="connection">    The database command.</param>
 		/// <param name="tableName">Name of the table.</param>

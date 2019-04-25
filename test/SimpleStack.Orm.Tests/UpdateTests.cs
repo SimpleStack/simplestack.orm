@@ -200,7 +200,7 @@ namespace SimpleStack.Orm.Tests
 			CreateModelWithFieldsOfDifferentTypes();
 			using (var conn = OpenDbConnection())
 			{
-				var row = conn.Select<ModelWithFieldsOfDifferentTypes>(x => x.Id == 1).FirstOrDefault();
+				var row = conn.First<ModelWithFieldsOfDifferentTypes>(x => x.Id == 1);
 				row.Name = "UpdatedName";
 				row.DateTime = new DateTime(2000, 1, 1);
 				row.Guid = Guid.NewGuid();

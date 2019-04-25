@@ -77,17 +77,20 @@ namespace SimpleStack.Orm.Tests
 			{
 				db.Insert<Person>(People);
 
-				var visitor = db.DialectProvider.ExpressionVisitor<Person>();
-
-				visitor.Where(x => x.FirstName.StartsWith("Jim")).And(x => x.LastName.StartsWith("Hen"));
-				var results = db.Select(visitor).ToArray();
+				var results = db.Select<Person>(y =>
+					{
+						y.Where(x => x.FirstName.StartsWith("Jim"))
+							.And(x => x.LastName.StartsWith("Hen"));
+					}).ToArray();
 
 				Assert.AreEqual(1, results.Count());
 
-				visitor.Clear(); //clears underlying expression
-
-				visitor.Where(x => x.LastName.StartsWith("J")).And(x => x.Age > 40);
-				results = db.Select(visitor).ToArray();
+				results = db.Select<Person>(y =>
+				{
+					y.Where(x => x.LastName.StartsWith("J"))
+						.And(x => x.Age > 40);
+				}).ToArray();
+				
 				Assert.AreEqual(results[0].FirstName, "Michael");
 			}
 		}
@@ -100,17 +103,20 @@ namespace SimpleStack.Orm.Tests
 			{
 				db.Insert<Person>(People);
 
-				var visitor = db.DialectProvider.ExpressionVisitor<Person>();
-
-				visitor.Where(x => x.FirstName.StartsWith("Jim")).Or(x => x.LastName.StartsWith("Cob"));
-
-				var results = db.Select<Person>(visitor);
+				var results = db.Select<Person>(y =>
+				{
+					y.Where(x => x.FirstName.StartsWith("Jim"))
+						.Or(x => x.LastName.StartsWith("Cob"));
+				}).ToArray();
+				
 				Assert.AreEqual(3, results.Count());
 
-				visitor.Clear(); //clear the underlying expression
-
-				visitor.Where(x => x.Age < 30).Or(x => x.Age > 45);
-				results = db.Select<Person>(visitor);
+				results = db.Select<Person>(y =>
+				{
+					y.Where(x => x.Age < 30)
+						.Or(x => x.Age > 45);
+				}).ToArray();
+				
 				Assert.AreEqual(5, results.Count());
 				Assert.IsFalse(results.Any(x => x.FirstName == "Elvis"));
 			}
@@ -124,22 +130,33 @@ namespace SimpleStack.Orm.Tests
 			{
 				db.Insert<Person>(People);
 
-				var visitor = db.DialectProvider.ExpressionVisitor<Person>();
-
-				visitor.Where(x => x.FirstName.StartsWith("Jim"));
-				visitor.Where(x => x.LastName.StartsWith("Hen"));
 				//WHERE (upper("FirstName") like 'JIM%'  AND upper("LastName") like 'HEN%' )
-				var results = db.Select<Person>(visitor);
+				var results = db.Select<Person>(y =>
+				{
+					y.Where(x => x.FirstName.StartsWith("Jim"));
+					y.Where(x => x.LastName.StartsWith("Hen"));
+				}).ToArray();
+
 				Assert.AreEqual(1, results.Count());
 
-				visitor.Or(x => x.FirstName.StartsWith("M"));
 				//WHERE ((upper("FirstName") like 'JIM%'  AND upper("LastName") like 'HEN%' ) OR upper("FirstName") like 'M%' )
-				results = db.Select(visitor);
+				results = db.Select<Person>(y =>
+				{
+					y.Where(x => x.FirstName.StartsWith("Jim"));
+					y.Where(x => x.LastName.StartsWith("Hen"));
+					y.Or(x => x.FirstName.StartsWith("M"));
+				}).ToArray();
+				
 				Assert.AreEqual(2, results.Count());
-
-				visitor.Where(x => x.FirstName.StartsWith("M"));
 				//WHERE (((upper("FirstName") like 'JIM%'  AND upper("LastName") like 'HEN%' ) OR upper("FirstName") like 'M%' ) AND upper("FirstName") like 'M%' )
-				results = db.Select(visitor);
+				results = db.Select<Person>(y =>
+				{
+					y.Where(x => x.FirstName.StartsWith("Jim"));
+					y.Where(x => x.LastName.StartsWith("Hen"));
+					y.Or(x => x.FirstName.StartsWith("M"));
+					y.And(x => x.FirstName.StartsWith("M"));
+				}).ToArray();
+
 				Assert.AreEqual(1, results.Count());
 			}
 		}
@@ -151,12 +168,12 @@ namespace SimpleStack.Orm.Tests
 			using (var db = OpenDbConnection())
 			{
 				db.Insert<Person>(People);
-
-				var visitor = db.DialectProvider.ExpressionVisitor<Person>();
-				visitor.OrderBy(x => x.Age);
-				visitor.ThenBy(x => x.FirstName);
-
-				var results = db.Select(visitor).ToArray();
+				
+				var results = db.Select<Person>(x =>
+				{
+					x.OrderBy(y => y.Age);
+					x.ThenBy(y => y.FirstName);
+				}).ToArray();
 
 				Console.WriteLine("Sorting using Linq");
 				var expected = People.OrderBy(x => x.Age).ThenBy(x => x.FirstName).ToList();
@@ -179,12 +196,12 @@ namespace SimpleStack.Orm.Tests
 					}
 				}
 
-				visitor.OrderBy(); //clears orderBy Expression
-
-				visitor.OrderBy(x => x.Age);
-				visitor.ThenByDescending(x => x.FirstName);
-				results = db.Select(visitor).ToArray();
-
+				results = db.Select<Person>(x =>
+				{
+					x.OrderBy(y => y.Age);
+					x.ThenByDescending(y => y.FirstName);
+				}).ToArray();
+				
 				Console.WriteLine("Sorting using Linq");
 				expected = People.OrderBy(x => x.Age).ThenByDescending(x => x.FirstName).ToList();
 				foreach (var e in expected)

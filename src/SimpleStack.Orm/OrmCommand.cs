@@ -27,7 +27,12 @@ namespace SimpleStack.Orm
 			_command.Prepare();
 		}
 
-		public override string CommandText { get { return _command.CommandText; } set { _command.CommandText = value; } }
+		public override string CommandText
+		{
+			get => _command.CommandText;
+			set => _command.CommandText = value;
+		}
+
 		public override int CommandTimeout { get { return _command.CommandTimeout; } set { _command.CommandTimeout = value; } }
 		public override CommandType CommandType { get { return _command.CommandType; } set { _command.CommandType = value; } }
 		public override UpdateRowSource UpdatedRowSource { get { return _command.UpdatedRowSource; } set { _command.UpdatedRowSource = value; } }

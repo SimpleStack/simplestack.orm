@@ -1,35 +1,44 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Linq.Expressions;
 
 namespace SimpleStack.Orm.Expressions
 {
-    /// <summary>
-    /// http://blogs.msdn.com/b/mattwar/archive/2007/07/31/linq-building-an-iqueryable-provider-part-
-    /// ii.aspx.
-    /// </summary>
-    public abstract class ExpressionVisitor
+    internal abstract class ExpressionVisitor
     {
-        /// <summary>Visits the given exponent.</summary>
-        /// <exception cref="Exception">Thrown when an exception error condition occurs.</exception>
-        /// <param name="exp">The exponent.</param>
-        /// <returns>An Expression.</returns>
-        protected virtual Expression Visit(Expression exp)
+        protected readonly IDialectProvider DialectProvider;
+        protected readonly IDictionary<string, object> Parameters;
+
+        protected ExpressionVisitor(IDialectProvider dialectProvider,
+            IDictionary<string, object> parameters)
         {
-            if (exp == null)
-                return exp;
+            DialectProvider = dialectProvider;
+            Parameters = parameters;
+        }
+
+        public virtual string VisitExpression(Expression exp)
+        {
+            var statement = Visit(exp);
+            if (statement is ParameterPart pp) 
+                return (bool) Parameters[pp.Text] ? "1=1" : "1=0";
+            if (statement is ColumnAccessPart cp) 
+                return $"{cp.Text} = {AddParameter(true)}";
+            return statement.ToString();
+        }
+
+        protected StatementPart Visit(Expression exp)
+        {
+            if (exp == null) return null;
             switch (exp.NodeType)
             {
-                case ExpressionType.Negate:
-                case ExpressionType.NegateChecked:
-                case ExpressionType.Not:
-                case ExpressionType.Convert:
-                case ExpressionType.ConvertChecked:
-                case ExpressionType.ArrayLength:
-                case ExpressionType.Quote:
-                case ExpressionType.TypeAs:
-                    return this.VisitUnary((UnaryExpression)exp);
+                case ExpressionType.Lambda:
+                    return VisitLambda(exp as LambdaExpression);
+                case ExpressionType.MemberAccess:
+                    return VisitMemberAccess(exp as MemberExpression);
+                case ExpressionType.Constant:
+                    return VisitConstant(exp as ConstantExpression);
                 case ExpressionType.Add:
                 case ExpressionType.AddChecked:
                 case ExpressionType.Subtract:
@@ -53,392 +62,316 @@ namespace SimpleStack.Orm.Expressions
                 case ExpressionType.RightShift:
                 case ExpressionType.LeftShift:
                 case ExpressionType.ExclusiveOr:
-                    return this.VisitBinary((BinaryExpression)exp);
-                case ExpressionType.TypeIs:
-                    return this.VisitTypeIs((TypeBinaryExpression)exp);
-                case ExpressionType.Conditional:
-                    return this.VisitConditional((ConditionalExpression)exp);
-                case ExpressionType.Constant:
-                    return this.VisitConstant((ConstantExpression)exp);
+                    return VisitBinary(exp as BinaryExpression);
+                case ExpressionType.Negate:
+                case ExpressionType.NegateChecked:
+                case ExpressionType.Not:
+                case ExpressionType.Convert:
+                case ExpressionType.ConvertChecked:
+                case ExpressionType.ArrayLength:
+                case ExpressionType.Quote:
+                case ExpressionType.TypeAs:
+                    return VisitUnary(exp as UnaryExpression);
                 case ExpressionType.Parameter:
-                    return this.VisitParameter((ParameterExpression)exp);
-                case ExpressionType.MemberAccess:
-                    return this.VisitMemberAccess((MemberExpression)exp);
+                    return VisitParameter(exp as ParameterExpression);
                 case ExpressionType.Call:
-                    return this.VisitMethodCall((MethodCallExpression)exp);
-                case ExpressionType.Lambda:
-                    return this.VisitLambda((LambdaExpression)exp);
+                    return VisitMethodCall(exp as MethodCallExpression);
                 case ExpressionType.New:
-                    return this.VisitNew((NewExpression)exp);
+                    return VisitNew(exp as NewExpression);
                 case ExpressionType.NewArrayInit:
                 case ExpressionType.NewArrayBounds:
-                    return this.VisitNewArray((NewArrayExpression)exp);
-                case ExpressionType.Invoke:
-                    return this.VisitInvocation((InvocationExpression)exp);
+                    return VisitNewArray(exp as NewArrayExpression);
                 case ExpressionType.MemberInit:
-                    return this.VisitMemberInit((MemberInitExpression)exp);
-                case ExpressionType.ListInit:
-                    return this.VisitListInit((ListInitExpression)exp);
+                    return VisitMemberInit(exp as MemberInitExpression);
                 default:
-                    throw new OrmException(string.Format("Unhandled expression type: '{0}'", exp.NodeType));
+                    return new StatementPart(exp.ToString());
             }
         }
 
-        /// <summary>Visit binding.</summary>
-        /// <exception cref="Exception">Thrown when an exception error condition occurs.</exception>
-        /// <param name="binding">The binding.</param>
-        /// <returns>A MemberBinding.</returns>
-        protected virtual MemberBinding VisitBinding(MemberBinding binding)
+        protected abstract bool IsColumnAccess(MethodCallExpression methodCallExpression);
+
+        protected virtual StatementPart VisitParameter(ParameterExpression parameterExpression)
         {
-            switch (binding.BindingType)
+            return null;
+        }
+
+        protected virtual StatementPart VisitNewArray(NewArrayExpression newArrayExpression)
+        {
+            return null;
+        }
+
+        protected virtual StatementPart VisitMemberInit(MemberInitExpression memberInitExpression)
+        {
+            return null;
+        }
+
+        protected virtual StatementPart VisitNew(NewExpression newExpression)
+        {
+            return null;
+        }
+
+        protected virtual StatementPart VisitMethodCall(MethodCallExpression m)
+        {
+            if (IsArrayMethod(m))
+                return VisitArrayMethodCall(m);
+
+            if (IsColumnAccess(m))
+                return VisitColumnAccessMethod(m);
+
+            var value = Expression.Lambda(m).Compile().DynamicInvoke();
+            if (value == null)
+                return null;
+            return AddParameter(value);
+        }
+
+        protected virtual StatementPart VisitColumnAccessMethod(MethodCallExpression m)
+        {
+            var args = new List<StatementPart>();
+            if (m.Arguments.Count == 1 && m.Arguments[0].NodeType == ExpressionType.Constant)
+                args.Add(VisitConstant((ConstantExpression) m.Arguments[0]));
+            else
+                args.AddRange(VisitExpressionList(m.Arguments));
+
+            var quotedColName = Visit(m.Object).ToString();
+            var statement = DialectProvider.GetStringFunction(
+                m.Method.Name,
+                quotedColName,
+                Parameters,
+                args.Select(x => x.Text).ToArray());
+
+            return new StatementPart(statement);
+        }
+
+        protected virtual bool IsArrayMethod(MethodCallExpression m)
+        {
+            if (m.Object == null && m.Method.Name == "Contains")
+                if (m.Arguments.Count == 2)
+                    return true;
+
+            return false;
+        }
+
+        protected virtual StatementPart VisitArrayMethodCall(MethodCallExpression m)
+        {
+            return null;
+        }
+
+        protected virtual List<StatementPart> VisitExpressionList(ReadOnlyCollection<Expression> original)
+        {
+            var list = new List<StatementPart>();
+            for (int i = 0, n = original.Count; i < n; i++)
+                if (original[i].NodeType == ExpressionType.NewArrayInit ||
+                    original[i].NodeType == ExpressionType.NewArrayBounds)
+                    list.AddRange(VisitNewArrayFromExpressionList(original[i] as NewArrayExpression));
+                else
+                    list.Add(Visit(original[i]));
+            return list;
+        }
+
+        protected virtual List<StatementPart> VisitNewArrayFromExpressionList(NewArrayExpression na)
+        {
+            var exprs = VisitExpressionList(na.Expressions);
+            return exprs;
+        }
+
+        protected virtual StatementPart VisitUnary(UnaryExpression unaryExpression)
+        {
+            switch (unaryExpression.NodeType)
             {
-                case MemberBindingType.Assignment:
-                    return this.VisitMemberAssignment((MemberAssignment)binding);
-                case MemberBindingType.MemberBinding:
-                    return this.VisitMemberMemberBinding((MemberMemberBinding)binding);
-                case MemberBindingType.ListBinding:
-                    return this.VisitMemberListBinding((MemberListBinding)binding);
+                case ExpressionType.Not:
+                    var o = Visit(unaryExpression.Operand);
+
+                    if (o is ParameterPart op && op.ParameterType == typeof(bool))
+                    {
+                        Parameters[op.Text] = !(bool) Parameters[op.Text];
+                        return o;
+                    }
+
+                    if (o is ColumnAccessPart oc && oc.ColumnType == typeof(bool))
+                        o = new StatementPart($"{o.Text} = {AddParameter(true)}");
+
+                    return new StatementPart($"NOT ({o})");
+
+                case ExpressionType.Convert:
+                    if (unaryExpression.Method != null)
+                    {
+                        var value = Expression.Lambda(unaryExpression).Compile().DynamicInvoke();
+                        if (value != null) return AddParameter(value);
+                        return null;
+                    }
+
+                    break;
+            }
+
+            return Visit(unaryExpression.Operand);
+        }
+
+        protected virtual StatementPart VisitBinary(BinaryExpression binaryExpression)
+        {
+            var left = Visit(binaryExpression.Left);
+            var right = Visit(binaryExpression.Right);
+
+            var leftca = left as ColumnAccessPart;
+            var rightca = right as ColumnAccessPart;
+
+            var leftp = left as ParameterPart;
+            var rightp = right as ParameterPart;
+
+            if (leftp != null && rightp != null)
+            {
+                // if both sides are parameters, let's do the comparison here
+                Parameters.Remove(leftp.Text);
+                Parameters.Remove(rightp.Text);
+
+                var result = Expression.Lambda(binaryExpression).Compile().DynamicInvoke();
+                return AddParameter(result);
+            }
+
+            var isIntegral = leftp != null && leftp.ParameterType != typeof(bool);
+
+            if (!isIntegral && rightp != null && rightp.ParameterType != typeof(bool)) isIntegral = true;
+
+            var operand = DialectProvider.BindOperand(binaryExpression.NodeType, isIntegral);
+
+
+            if (operand == "AND" || operand == "OR")
+            {
+                if (leftca?.ColumnType == typeof(bool))
+                    left = new StatementPart($"{leftca.Text} = {AddParameter(true)}");
+
+                if (rightca?.ColumnType == typeof(bool))
+                    right = new StatementPart($"{rightca.Text} = {AddParameter(true)}");
+
+                if (leftp?.ParameterType == typeof(bool) || rightp?.ParameterType == typeof(bool))
+                {
+                    var boolValue = (bool) (leftp != null ? Parameters[leftp.Text] : Parameters[rightp.Text]);
+                    if (operand == "AND")
+                    {
+                        if (boolValue) return leftp != null ? left : right;
+
+                        return AddParameter(false);
+                    }
+
+                    if (operand == "OR")
+                    {
+                        if (boolValue) return AddParameter(true);
+
+                        return leftp != null ? left : right;
+                    }
+                }
+            }
+            else
+            {
+                if (leftca != null && leftca.ColumnType.IsEnum() && rightp != null)
+                    Parameters[rightp.Text] = Enum.ToObject(leftca.ColumnType, Parameters[rightp.Text]);
+
+                if (rightca != null && rightca.ColumnType.IsEnum() && leftp != null)
+                    Parameters[leftp.Text] = Enum.ToObject(rightca.ColumnType, Parameters[leftp.Text]);
+            }
+
+            if (right == null || left == null) operand = operand == "=" ? "IS" : "IS NOT";
+
+            switch (operand)
+            {
+                case "MOD":
+                case "COALESCE":
+                    return new StatementPart($"{operand}({left},{right})");
                 default:
-                    throw new OrmException(string.Format("Unhandled binding type '{0}'", binding.BindingType));
+                    return new StatementPart((left == null ? "NULL" : left.ToString()) + " " + operand + " " +
+                                             (right == null ? "NULL" : right.ToString()));
             }
         }
 
-        /// <summary>Visit element initializer.</summary>
-        /// <param name="initializer">The initializer.</param>
-        /// <returns>An ElementInit.</returns>
-        protected virtual ElementInit VisitElementInitializer(ElementInit initializer)
+        protected virtual StatementPart VisitConstant(ConstantExpression constantExpression)
         {
-            ReadOnlyCollection<Expression> arguments = this.VisitExpressionList(initializer.Arguments);
-            if (arguments != initializer.Arguments)
+            if (constantExpression.Value != null) return AddParameter(constantExpression.Value);
+            return null;
+        }
+
+        protected virtual StatementPart VisitMemberAccess(MemberExpression memberExpression)
+        {
+            var r = Expression.Lambda(memberExpression).Compile().DynamicInvoke();
+            if (r != null)
+                return AddParameter(r);
+
+            return null;
+        }
+
+        protected virtual StatementPart VisitLambda(LambdaExpression lambdaExpression)
+        {
+            return Visit(lambdaExpression.Body);
+        }
+
+        protected virtual StatementPart VisitDateTimeMemberAccess(MemberExpression m)
+        {
+            var quotedColName = Visit(m.Expression);
+
+            string statement;
+
+            switch (m.Member.Name)
             {
-                return Expression.ElementInit(initializer.AddMethod, arguments);
+                case "Year":
+                case "Month":
+                case "Day":
+                case "Hour":
+                case "Minute":
+                case "Second":
+                    statement = DialectProvider.GetDatePartFunction(m.Member.Name, quotedColName.ToString());
+                    break;
+                default:
+                    throw new NotSupportedException();
             }
-            return initializer;
+
+            return new StatementPart(statement);
         }
 
-        /// <summary>Visit unary.</summary>
-        /// <param name="u">The UnaryExpression to process.</param>
-        /// <returns>An Expression.</returns>
-        protected virtual Expression VisitUnary(UnaryExpression u)
+        /// <summary>
+        ///     Add a parameter to the query and return corresponding parameter name
+        /// </summary>
+        /// <param name="param"></param>
+        /// <returns></returns>
+        protected ParameterPart AddParameter(object param)
         {
-            Expression operand = this.Visit(u.Operand);
-            if (operand != u.Operand)
+            var paramName = DialectProvider.GetParameterName(Parameters.Count);
+            Parameters.Add(paramName, param);
+            return new ParameterPart(paramName, param.GetType());
+        }
+
+        protected class StatementPart
+        {
+            public StatementPart(string text)
             {
-                return Expression.MakeUnary(u.NodeType, operand, u.Type, u.Method);
+                Text = text;
             }
-            return u;
-        }
 
-        /// <summary>Visit binary.</summary>
-        /// <param name="b">The TypeBinaryExpression to process.</param>
-        /// <returns>An Expression.</returns>
-        protected virtual Expression VisitBinary(BinaryExpression b)
-        {
-            Expression left = this.Visit(b.Left);
-            Expression right = this.Visit(b.Right);
-            Expression conversion = this.Visit(b.Conversion);
-            if (left != b.Left || right != b.Right || conversion != b.Conversion)
+            public string Text { get; }
+
+            public override string ToString()
             {
-                if (b.NodeType == ExpressionType.Coalesce && b.Conversion != null)
-                    return Expression.Coalesce(left, right, conversion as LambdaExpression);
-                else
-                    return Expression.MakeBinary(b.NodeType, left, right, b.IsLiftedToNull, b.Method);
+                return Text;
             }
-            return b;
         }
 
-        /// <summary>Visit type is.</summary>
-        /// <param name="b">The TypeBinaryExpression to process.</param>
-        /// <returns>An Expression.</returns>
-        protected virtual Expression VisitTypeIs(TypeBinaryExpression b)
+        protected class ParameterPart : StatementPart
         {
-            Expression expr = this.Visit(b.Expression);
-            if (expr != b.Expression)
+            public ParameterPart(string parameterName, Type parameterType)
+                : base(parameterName)
             {
-                return Expression.TypeIs(expr, b.TypeOperand);
+                ParameterType = parameterType;
             }
-            return b;
+
+            public Type ParameterType { get; }
         }
 
-        /// <summary>Visit constant.</summary>
-        /// <param name="c">The ConditionalExpression to process.</param>
-        /// <returns>An Expression.</returns>
-        protected virtual Expression VisitConstant(ConstantExpression c)
+        protected class ColumnAccessPart : StatementPart
         {
-            return c;
-        }
-
-        /// <summary>Visit conditional.</summary>
-        /// <param name="c">The ConditionalExpression to process.</param>
-        /// <returns>An Expression.</returns>
-        protected virtual Expression VisitConditional(ConditionalExpression c)
-        {
-            Expression test = this.Visit(c.Test);
-            Expression ifTrue = this.Visit(c.IfTrue);
-            Expression ifFalse = this.Visit(c.IfFalse);
-            if (test != c.Test || ifTrue != c.IfTrue || ifFalse != c.IfFalse)
+            public ColumnAccessPart(string columnName, Type columnType)
+                : base(columnName)
             {
-                return Expression.Condition(test, ifTrue, ifFalse);
+                ColumnType = columnType;
             }
-            return c;
-        }
 
-        /// <summary>Visit parameter.</summary>
-        /// <param name="p">The ParameterExpression to process.</param>
-        /// <returns>An Expression.</returns>
-        protected virtual Expression VisitParameter(ParameterExpression p)
-        {
-            return p;
-        }
-
-        /// <summary>Visit member access.</summary>
-        /// <param name="m">The MethodCallExpression to process.</param>
-        /// <returns>An Expression.</returns>
-        protected virtual Expression VisitMemberAccess(MemberExpression m)
-        {
-            Expression exp = this.Visit(m.Expression);
-            if (exp != m.Expression)
-            {
-                return Expression.MakeMemberAccess(exp, m.Member);
-            }
-            return m;
-        }
-
-        /// <summary>Visit method call.</summary>
-        /// <param name="m">The MethodCallExpression to process.</param>
-        /// <returns>An Expression.</returns>
-        protected virtual Expression VisitMethodCall(MethodCallExpression m)
-        {
-            Expression obj = this.Visit(m.Object);
-            IEnumerable<Expression> args = this.VisitExpressionList(m.Arguments);
-            if (obj != m.Object || args != m.Arguments)
-            {
-                return Expression.Call(obj, m.Method, args);
-            }
-            return m;
-        }
-
-        /// <summary>Visit expression list.</summary>
-        /// <param name="original">The original.</param>
-        /// <returns>A list of.</returns>
-        protected virtual ReadOnlyCollection<Expression> VisitExpressionList(ReadOnlyCollection<Expression> original)
-        {
-            List<Expression> list = null;
-            for (int i = 0, n = original.Count; i < n; i++)
-            {
-                Expression p = this.Visit(original[i]);
-                if (list != null)
-                {
-                    list.Add(p);
-                }
-                else if (p != original[i])
-                {
-                    list = new List<Expression>(n);
-                    for (int j = 0; j < i; j++)
-                    {
-                        list.Add(original[j]);
-                    }
-                    list.Add(p);
-                }
-            }
-            if (list != null)
-            {
-                return list.AsReadOnly();
-            }
-            return original;
-        }
-
-        /// <summary>Visit member assignment.</summary>
-        /// <param name="assignment">The assignment.</param>
-        /// <returns>A MemberAssignment.</returns>
-        protected virtual MemberAssignment VisitMemberAssignment(MemberAssignment assignment)
-        {
-            Expression e = this.Visit(assignment.Expression);
-            if (e != assignment.Expression)
-            {
-                return Expression.Bind(assignment.Member, e);
-            }
-            return assignment;
-        }
-
-        /// <summary>Visit member binding.</summary>
-        /// <param name="binding">The binding.</param>
-        /// <returns>A MemberMemberBinding.</returns>
-        protected virtual MemberMemberBinding VisitMemberMemberBinding(MemberMemberBinding binding)
-        {
-            IEnumerable<MemberBinding> bindings = this.VisitBindingList(binding.Bindings);
-            if (bindings != binding.Bindings)
-            {
-                return Expression.MemberBind(binding.Member, bindings);
-            }
-            return binding;
-        }
-
-        /// <summary>Visit member list binding.</summary>
-        /// <param name="binding">The binding.</param>
-        /// <returns>A list of.</returns>
-        protected virtual MemberListBinding VisitMemberListBinding(MemberListBinding binding)
-        {
-            IEnumerable<ElementInit> initializers = this.VisitElementInitializerList(binding.Initializers);
-            if (initializers != binding.Initializers)
-            {
-                return Expression.ListBind(binding.Member, initializers);
-            }
-            return binding;
-        }
-
-        /// <summary>Enumerates visit binding list in this collection.</summary>
-        /// <param name="original">The original.</param>
-        /// <returns>
-        /// An enumerator that allows foreach to be used to process visit binding list in this collection.
-        /// </returns>
-        protected virtual IEnumerable<MemberBinding> VisitBindingList(ReadOnlyCollection<MemberBinding> original)
-        {
-            List<MemberBinding> list = null;
-            for (int i = 0, n = original.Count; i < n; i++)
-            {
-                MemberBinding b = this.VisitBinding(original[i]);
-                if (list != null)
-                {
-                    list.Add(b);
-                }
-                else if (b != original[i])
-                {
-                    list = new List<MemberBinding>(n);
-                    for (int j = 0; j < i; j++)
-                    {
-                        list.Add(original[j]);
-                    }
-                    list.Add(b);
-                }
-            }
-            if (list != null)
-                return list;
-            return original;
-        }
-
-        /// <summary>Enumerates visit element initializer list in this collection.</summary>
-        /// <param name="original">The original.</param>
-        /// <returns>
-        /// An enumerator that allows foreach to be used to process visit element initializer list in
-        /// this collection.
-        /// </returns>
-        protected virtual IEnumerable<ElementInit> VisitElementInitializerList(ReadOnlyCollection<ElementInit> original)
-        {
-            List<ElementInit> list = null;
-            for (int i = 0, n = original.Count; i < n; i++)
-            {
-                ElementInit init = this.VisitElementInitializer(original[i]);
-                if (list != null)
-                {
-                    list.Add(init);
-                }
-                else if (init != original[i])
-                {
-                    list = new List<ElementInit>(n);
-                    for (int j = 0; j < i; j++)
-                    {
-                        list.Add(original[j]);
-                    }
-                    list.Add(init);
-                }
-            }
-            if (list != null)
-                return list;
-            return original;
-        }
-
-        /// <summary>Visit lambda.</summary>
-        /// <param name="lambda">The lambda.</param>
-        /// <returns>An Expression.</returns>
-        protected virtual Expression VisitLambda(LambdaExpression lambda)
-        {
-            Expression body = this.Visit(lambda.Body);
-            if (body != lambda.Body)
-            {
-                return Expression.Lambda(lambda.Type, body, lambda.Parameters);
-            }
-            return lambda;
-        }
-
-        /// <summary>Visit new.</summary>
-        /// <param name="nex">The nex.</param>
-        /// <returns>An Expression.</returns>
-        protected virtual NewExpression VisitNew(NewExpression nex)
-        {
-            IEnumerable<Expression> args = this.VisitExpressionList(nex.Arguments);
-            if (args != nex.Arguments)
-            {
-                if (nex.Members != null)
-                    return Expression.New(nex.Constructor, args, nex.Members);
-                else
-                    return Expression.New(nex.Constructor, args);
-            }
-            return nex;
-        }
-
-        /// <summary>Visit member initialise.</summary>
-        /// <param name="init">The initialise.</param>
-        /// <returns>An Expression.</returns>
-        protected virtual Expression VisitMemberInit(MemberInitExpression init)
-        {
-            NewExpression n = this.VisitNew(init.NewExpression);
-            IEnumerable<MemberBinding> bindings = this.VisitBindingList(init.Bindings);
-            if (n != init.NewExpression || bindings != init.Bindings)
-            {
-                return Expression.MemberInit(n, bindings);
-            }
-            return init;
-        }
-
-        /// <summary>Visit list initialise.</summary>
-        /// <param name="init">The initialise.</param>
-        /// <returns>An Expression.</returns>
-        protected virtual Expression VisitListInit(ListInitExpression init)
-        {
-            NewExpression n = this.VisitNew(init.NewExpression);
-            IEnumerable<ElementInit> initializers = this.VisitElementInitializerList(init.Initializers);
-            if (n != init.NewExpression || initializers != init.Initializers)
-            {
-                return Expression.ListInit(n, initializers);
-            }
-            return init;
-        }
-
-        /// <summary>Visit new array.</summary>
-        /// <param name="na">The na.</param>
-        /// <returns>An Expression.</returns>
-        protected virtual Expression VisitNewArray(NewArrayExpression na)
-        {
-            IEnumerable<Expression> exprs = this.VisitExpressionList(na.Expressions);
-            if (exprs != na.Expressions)
-            {
-                if (na.NodeType == ExpressionType.NewArrayInit)
-                {
-                    return Expression.NewArrayInit(na.Type.GetElementType(), exprs);
-                }
-                else
-                {
-                    return Expression.NewArrayBounds(na.Type.GetElementType(), exprs);
-                }
-            }
-            return na;
-        }
-
-        /// <summary>Visit invocation.</summary>
-        /// <param name="iv">The iv.</param>
-        /// <returns>An Expression.</returns>
-        protected virtual Expression VisitInvocation(InvocationExpression iv)
-        {
-            IEnumerable<Expression> args = this.VisitExpressionList(iv.Arguments);
-            Expression expr = this.Visit(iv.Expression);
-            if (args != iv.Arguments || expr != iv.Expression)
-            {
-                return Expression.Invoke(expr, args);
-            }
-            return iv;
+            public Type ColumnType { get; }
         }
     }
-
-
 }

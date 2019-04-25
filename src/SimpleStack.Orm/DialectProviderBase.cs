@@ -19,6 +19,7 @@ using System.Text;
 using Dapper;
 using SimpleStack.Orm.Attributes;
 using SimpleStack.Orm.Expressions;
+using SimpleStack.Orm.Expressions.Statements;
 
 namespace SimpleStack.Orm
 {
@@ -221,211 +222,145 @@ namespace SimpleStack.Orm
             return sql.ToString();
         }
 
-        public virtual CommandDefinition ToCountStatement<T>(SqlExpressionVisitor<T> visitor)
+        /// <inheritdoc />
+        public virtual CommandDefinition ToSelectStatement(SelectStatement statement, CommandFlags flags)
         {
-            var modelDef = typeof(T).GetModelDefinition();
-            var sql = new StringBuilder();
+            var sql = new StringBuilder("SELECT ");
 
-            sql.AppendFormat("SELECT COUNT({0}) FROM {1}",
-                visitor.Fields.Count == 0 ? "*" : (visitor.IsDistinct ? "DISTINCT" : String.Empty) + visitor.Fields.Aggregate((x, y) => x + ", " + y),
-                GetQuotedTableName(modelDef));
-
-            if (!string.IsNullOrEmpty(visitor.WhereExpression))
+            if (statement.IsDistinct)
             {
-                sql.Append(visitor.WhereExpression);
+                sql.Append(" DISTINCT ");
             }
 
-            if (!string.IsNullOrEmpty(visitor.LimitExpression))
+            sql.Append(statement.Columns.Count == 0 ? "*" : statement.Columns.Aggregate((x, y) => x + ", " + y));
+
+            sql.Append("\n FROM ");
+            sql.Append(statement.TableName);
+
+            if (statement.WhereExpression.Length > 0)
             {
-                sql.Append(" ");
-                sql.Append(visitor.LimitExpression);
-            }
-            return new CommandDefinition(sql.ToString(), visitor.Parameters);
-        }
-
-        public virtual CommandDefinition ToSelectStatement<T>(SqlExpressionVisitor<T> visitor, CommandFlags flags)
-        {
-            var sql = new StringBuilder();
-
-            sql.Append(visitor.SelectExpression);
-
-            sql.Append(string.IsNullOrEmpty(visitor.WhereExpression)
-                ? String.Empty
-                : "\n" + visitor.WhereExpression);
-            sql.Append(string.IsNullOrEmpty(visitor.GroupByExpression)
-                ? String.Empty
-                : "\n" + visitor.GroupByExpression);
-            sql.Append(string.IsNullOrEmpty(visitor.HavingExpression)
-                ? String.Empty
-                : "\n" + visitor.HavingExpression);
-            sql.Append(string.IsNullOrEmpty(visitor.OrderByExpression)
-                ? String.Empty
-                : "\n" + visitor.OrderByExpression);
-            sql.Append(string.IsNullOrEmpty(visitor.LimitExpression)
-                ? String.Empty
-                : "\n" + visitor.LimitExpression);
-
-            return new CommandDefinition(sql.ToString(), visitor.Parameters, flags: flags);
-        }
-
-        public virtual CommandDefinition ToInsertRowStatement<T>(T objWithProperties, ICollection<string> insertFields = null)
-        {
-            if (insertFields == null)
-                insertFields = new List<string>();
-
-            var sbColumnNames = new StringBuilder();
-            var sbColumnValues = new StringBuilder();
-
-            ModelDefinition modelDef = objWithProperties.GetType().GetModelDefinition();
-            List<FieldDefinition> fieldDefs = modelDef.FieldDefinitions
-                .Where(fieldDef => !fieldDef.IsComputed)
-                .Where(fieldDef => !fieldDef.AutoIncrement)
-                .Where(fieldDef => insertFields.Count <= 0 || insertFields.Contains(fieldDef.Name)).ToList();
-
-            var parameters = new Dictionary<string, object>();
-
-            sbColumnValues.Append('(');
-
-            var isFirstField = true;
-            foreach (var fieldDef in fieldDefs)
-            {
-                if (!isFirstField)
-                {
-                    sbColumnNames.Append(',');
-                }
-                sbColumnNames.Append(GetQuotedColumnName(fieldDef.FieldName));
-
-
-                if (!isFirstField)
-                {
-                    sbColumnValues.Append(',');
-                }
-
-                string paramName = GetParameterName(parameters.Count);
-                sbColumnValues.Append(paramName);
-                parameters.Add(paramName, fieldDef.GetValue(objWithProperties));
-                isFirstField = false;
-            }
-            sbColumnValues.Append(')');
-
-            var sql = $"INSERT INTO {GetQuotedTableName(modelDef)} ({sbColumnNames}) VALUES {sbColumnValues}";
-
-            return new CommandDefinition(sql, parameters);
-        }
-
-        /// <summary>Converts this object to an update row statement.</summary>
-        /// <exception cref="Exception">Thrown when an exception error condition occurs.</exception>
-        /// <param name="objWithProperties">The object with properties.</param>
-        /// <param name="ev">The expression visitor.</param>
-        /// <returns>The given data converted to a string.</returns>
-        public virtual CommandDefinition ToUpdateRowStatement<T>(T objWithProperties, SqlExpressionVisitor<T> ev)
-        {
-            var modelDef = objWithProperties.GetType().GetModelDefinition();
-            var parameters = new Dictionary<string, object>();
-
-            var setSql = new StringBuilder();
-            var whereSql = new StringBuilder();
-
-            foreach (var fieldDef in modelDef.FieldDefinitions)
-            {
-                if (fieldDef.IsPrimaryKey)
-                {
-                    whereSql.Append(whereSql.Length == 0 ? "WHERE " : " AND ");
-
-                    var parameterName = GetParameterName(parameters.Count);
-                    whereSql.AppendFormat("{0} = {1}", GetQuotedColumnName(fieldDef.FieldName), parameterName);
-                    parameters.Add(parameterName, fieldDef.GetValueFn(objWithProperties));
-                }
-                else if (ev.Fields.Count == 0 || ev.Fields.Contains(fieldDef.Name))
-                {
-                    if (setSql.Length > 0)
-                    {
-                        setSql.Append(",");
-                    }
-                    var paramName = GetParameterName(parameters.Count);
-                    setSql.AppendFormat("{0} = {1}", GetQuotedColumnName(fieldDef.FieldName), paramName);
-                    parameters.Add(paramName, fieldDef.GetValue(objWithProperties));
-                }
+                sql.Append("\n WHERE ");
+                sql.Append(statement.WhereExpression);
             }
 
-            var updateSql = string.Format("UPDATE {0} SET {1} {2}", GetQuotedTableName(modelDef), setSql, whereSql);
-
-            if (setSql.Length == 0)
-                throw new OrmException("No valid update properties provided (e.g. p => p.FirstName): " + updateSql);
-
-            return new CommandDefinition(updateSql, parameters);
-        }
-
-        public virtual CommandDefinition ToUpdateAllRowStatement<T>(object updateOnly, SqlExpressionVisitor<T> ev)
-        {
-            var sql = new StringBuilder();
-            var modelDef = typeof(T).GetModelDefinition();
-            var fields = modelDef.FieldDefinitionsArray;
-
-            var parameters = new Dictionary<string, object>(ev.Parameters);
-
-            foreach (var setField in updateOnly.GetType().GetPublicProperties())
+            if (statement.GroupByExpression.Length > 0)
             {
-                var fieldDef =
-                    fields.FirstOrDefault(x => x.Name.EqualsIgnoreCase(setField.Name));
-
-                if (fieldDef == null || fieldDef.IsComputed || fieldDef.IsPrimaryKey)
-                    continue;
-
-                if (ev.Fields.Count == 0 || ev.Fields.Contains(fieldDef.Name))
-                {
-                    if (sql.Length > 0)
-                    {
-                        sql.Append(",");
-                    }
-
-                    var parameterName = GetParameterName(parameters.Count);
-
-                    sql.AppendFormat("{0} = {1}",
-                        GetQuotedColumnName(fieldDef.FieldName),
-                        parameterName);
-
-                    parameters.Add(parameterName, setField.GetPropertyGetterFn()(updateOnly));
-                }
+                sql.Append("\n GROUP BY ");
+                sql.Append(statement.GroupByExpression);
             }
 
-            var updateSql = string.Format("UPDATE {0} SET {1} {2}",
-                GetQuotedTableName(modelDef), sql, ev.WhereExpression);
-
-            return new CommandDefinition(updateSql, parameters);
-        }
-
-        public virtual CommandDefinition ToDeleteRowStatement<T>(SqlExpressionVisitor<T> visitor)
-        {
-            return new CommandDefinition($"DELETE FROM {GetQuotedTableName(visitor.ModelDefinition)} {visitor.WhereExpression}", visitor.Parameters);
-        }
-
-        public virtual CommandDefinition ToDeleteRowStatement<T>(T objWithProperties)
-        {
-            var whereSql = new StringBuilder();
-            var modelDef = typeof(T).GetModelDefinition();
-            var fields = modelDef.FieldDefinitionsArray;
-
-            var parameters = new Dictionary<string, object>();
-
-            bool hasPrimaryKey = fields.Any(x => x.IsPrimaryKey);
-
-            var queryFields = hasPrimaryKey ? fields.Where(x => x.IsPrimaryKey) : fields;
-
-            foreach (var fieldDef in queryFields)
+            if (statement.HavingExpression.Length > 0)
             {
-                if (whereSql.Length > 0)
-                {
-                    whereSql.Append(" AND ");
-                }
-                var parameterName = GetParameterName(parameters.Count);
-                whereSql.Append($"{GetQuotedColumnName(fieldDef.FieldName)} = {parameterName}");
-                parameters.Add(parameterName, fieldDef.GetValueFn(objWithProperties));
+                sql.Append("\n HAVING ");
+                sql.Append(statement.HavingExpression);
             }
 
-            return new CommandDefinition($"DELETE FROM {GetQuotedTableName(modelDef)} WHERE {whereSql}", parameters);
+            if (statement.OrderByExpression.Length > 0)
+            {
+                sql.Append("\n ORDER BY ");
+                sql.Append(statement.OrderByExpression);
+            }
+
+            string limit = GetLimitExpression(statement.Offset, statement.MaxRows);
+            if (limit.Length > 0)
+            {
+                sql.Append("\n ");
+                sql.Append(limit);
+            }
+
+
+            return new CommandDefinition(sql.ToString(), statement.Parameters, flags: flags);
         }
 
+        public virtual CommandDefinition ToCountStatement(CountStatement statement, CommandFlags flags)
+        {
+            var sql = new StringBuilder("SELECT COUNT(");
+            
+            if (statement.IsDistinct)
+            {
+                sql.Append(" DISTINCT ");
+            }
+
+            sql.Append(statement.Columns.Count == 1 ? statement.Columns[0] : "*");
+            sql.Append(")\n FROM ");
+            sql.Append(statement.TableName);
+
+            if (statement.WhereExpression.Length > 0)
+            {
+                sql.Append("\n WHERE ");
+                sql.Append(statement.WhereExpression);
+            }
+
+            if (statement.GroupByExpression.Length > 0)
+            {
+                sql.Append("\n GROUP BY ");
+                sql.Append(statement.GroupByExpression);
+            }
+
+            if (statement.HavingExpression.Length > 0)
+            {
+                sql.Append("\n HAVING ");
+                sql.Append(statement.HavingExpression);
+            }
+
+            return new CommandDefinition(sql.ToString(), statement.Parameters, flags: flags);
+        }
+
+        public virtual CommandDefinition ToDeleteStatement(DeleteStatement statement)
+        {
+            StringBuilder query = new StringBuilder("DELETE FROM ");
+            query.Append(statement.TableName);
+            if (statement.WhereExpression.Length > 0)
+            {
+                query.Append(" WHERE ");
+                query.Append(statement.WhereExpression);
+            }
+            
+            return new CommandDefinition(query.ToString(), statement.Parameters);
+        }
+        
+        public virtual CommandDefinition ToInsertStatement(InsertStatement insertStatement, CommandFlags flags)
+        {
+            StringBuilder query = new StringBuilder("INSERT INTO ");
+            query.Append(insertStatement.TableName);
+            query.Append(" (");
+            query.Append(insertStatement.InsertFields.Aggregate((x, y) => x + ", " + y));
+            query.Append(" ) VALUES (");
+            query.Append(insertStatement.Parameters.Select(x => x.Key).Aggregate((x, y) => x + ", " + y));
+            query.Append(")");
+
+            return new CommandDefinition(query.ToString(),insertStatement.Parameters,flags: flags);
+        }
+        
+        
+        public virtual CommandDefinition ToUpdateStatement(UpdateStatement statement, CommandFlags flags)
+        {
+            StringBuilder query = new StringBuilder("UPDATE ");
+            query.Append(statement.TableName);
+            query.Append(" SET ");
+
+            bool first = true;
+            foreach (var f in statement.UpdateFields)
+            {
+                if (!first)
+                {
+                    query.Append(", ");
+                }
+                query.Append(f.Key);
+                query.Append("=");
+                query.Append(f.Value);
+                first = false;
+            }
+
+            if (statement.WhereExpression.Length > 0)
+            {
+                query.Append(" WHERE ");
+                query.Append(statement.WhereExpression);
+            }
+            
+            return new CommandDefinition(query.ToString(),statement.Parameters,flags: flags);
+        }
+        
         /// <summary>Converts a tableType to a create table statement.</summary>
         /// <param name="modelDef">Model Definition.</param>
         /// <returns>tableType as a string.</returns>
@@ -613,15 +548,6 @@ namespace SimpleStack.Orm
         public virtual List<string> SequenceList(ModelDefinition modelDef)
         {
             return new List<string>();
-        }
-
-        /// <summary>Expression visitor.</summary>
-        /// <exception cref="NotImplementedException">Thrown when the requested operation is unimplemented.</exception>
-        /// <typeparam name="T">Generic type parameter.</typeparam>
-        /// <returns>A SqlExpressionVisitor&lt;T&gt;</returns>
-        public virtual SqlExpressionVisitor<T> ExpressionVisitor<T>()
-        {
-            throw new NotImplementedException();
         }
 
         /// <summary>Gets drop foreign key constraints.</summary>
@@ -887,7 +813,24 @@ namespace SimpleStack.Orm
 
         public virtual string GetLimitExpression(int? skip, int? rows)
         {
-            return !skip.HasValue ? string.Empty : $"LIMIT {skip.Value}{(rows.HasValue ? $",{rows.Value}" : string.Empty)}";
+            if (!skip.HasValue && !rows.HasValue)
+                return string.Empty;
+            
+            //LIMIT 10 OFFSET 15
+            StringBuilder limit = new StringBuilder();
+            if (rows.HasValue)
+            {                
+                limit.Append(" LIMIT ");
+                limit.Append(rows.Value);
+            }
+            
+            if (skip.HasValue)
+            {
+                limit.Append(" OFFSET ");
+                limit.Append(skip.Value);
+            }
+            
+            return limit.ToString();
         }
 
         /// <summary>Fk option to string.</summary>
@@ -927,6 +870,93 @@ namespace SimpleStack.Orm
             string schemaName = null)
         {
             return new TableDefinition[0];
+        }
+
+        public virtual string BindOperand(ExpressionType e, bool isIntegral)
+        {
+            switch (e)
+            {
+                case ExpressionType.Equal:
+                    return "=";
+                case ExpressionType.NotEqual:
+                    return "<>";
+                case ExpressionType.GreaterThan:
+                    return ">";
+                case ExpressionType.GreaterThanOrEqual:
+                    return ">=";
+                case ExpressionType.LessThan:
+                    return "<";
+                case ExpressionType.LessThanOrEqual:
+                    return "<=";
+                case ExpressionType.AndAlso:
+                    return "AND";
+                case ExpressionType.OrElse:
+                    return "OR";
+                case ExpressionType.Add:
+                    return "+";
+                case ExpressionType.Subtract:
+                    return "-";
+                case ExpressionType.Multiply:
+                    return "*";
+                case ExpressionType.Divide:
+                    return "/";
+                case ExpressionType.Modulo:
+                    return "MOD";
+                case ExpressionType.Coalesce:
+                    return "COALESCE";
+                case ExpressionType.And:
+                    return isIntegral ? "&": "AND";
+                case ExpressionType.Or:
+                    return isIntegral ? "|": "OR";
+                case ExpressionType.ExclusiveOr:
+                    return isIntegral ? "^": "XOR";
+                case ExpressionType.LeftShift:
+                    return "<<";
+                case ExpressionType.RightShift:
+                    return ">>";
+                default:
+                    return null;
+            }
+        }
+
+        public virtual string GetStringFunction(string functionName, string column, IDictionary<string, Object> parameters, params string[] availableParameters)
+        {
+            switch (functionName.ToLower())
+            {
+                case "length":
+                    return "LEN(" + column + ")";
+                case "trim":
+                    return $"ltrim(rtrim({column}))";
+                case "tlrim":
+                    return $"ltrim({column})";
+                case "rtrim":
+                    return $"rtrim({column})";
+                case "toupper":
+                    return $"upper({column})";
+                case "tolower":
+                    return $"lower({column})";
+                case "startswith":
+                    parameters[availableParameters[0]] = parameters[availableParameters[0]].ToString().ToUpper() + "%";
+                    return $"upper({column}) LIKE {availableParameters[0]} ";
+                case "endswith":
+                    parameters[availableParameters[0]] = "%" + parameters[availableParameters[0]].ToString().ToUpper();
+                    return $"upper({column}) LIKE {availableParameters[0]} ";
+                case "contains":
+                    parameters[availableParameters[0]] = "%" + parameters[availableParameters[0]].ToString().ToUpper();
+                    return $"upper({column}) LIKE {availableParameters[0]} ";
+                case "substring":
+                    //Ensure Offset is start at 1 instead of 0
+                    int offset = ((int) parameters[availableParameters[0]]) + 1;
+                    parameters[availableParameters[0]] = offset;
+
+                    if (parameters.Count == 2)
+                    {
+                        return $"substr({column},{availableParameters[0]},{availableParameters[1]})";
+                    }
+                    return $"substr({column},{availableParameters[0]})";
+                default:
+                    throw new NotSupportedException();
+            }
         }
     }
 }

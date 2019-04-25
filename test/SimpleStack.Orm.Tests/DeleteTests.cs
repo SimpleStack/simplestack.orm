@@ -45,9 +45,7 @@ namespace SimpleStack.Orm.Tests
 
 				db.DeleteAll<Member>(x => x.Val1 == "Salut");
 
-				var members = db.Select<Member>(visitor => { visitor.OrderBy(x => x.Val1);
-					                                           return visitor;
-				}).ToArray();
+				var members = db.Select<Member>(visitor => visitor.OrderBy(x => x.Val1)).ToArray();
 
 				Assert.AreEqual(2, members.Length);
 				Assert.AreEqual("Hello", members[0].Val1);

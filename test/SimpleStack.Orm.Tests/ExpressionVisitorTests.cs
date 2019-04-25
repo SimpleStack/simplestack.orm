@@ -17,7 +17,7 @@ namespace SimpleStack.Orm.Tests
 				c.CreateTable<TestType2>(true);
 				c.Insert(new TestType2 { Id = 1, BoolCol = true, DateCol = new DateTime(2012, 11, 2, 3, 4, 5), TextCol = "asdf", EnumCol = TestEnum.Val0 });
 				c.Insert(new TestType2 { Id = 2, BoolCol = true, DateCol = new DateTime(2012, 2, 1), TextCol = "asdf123", EnumCol = TestEnum.Val1 });
-				c.Insert(new TestType2 { Id = 3, BoolCol = false, DateCol = new DateTime(2012, 3, 1), TextCol = "qwer", EnumCol = TestEnum.Val2 });
+				c.Insert(new TestType2 { Id = 3, BoolCol = true, DateCol = new DateTime(2012, 3, 1), TextCol = "qwer", EnumCol = TestEnum.Val2 });
 				c.Insert(new TestType2 { Id = 4, BoolCol = false, DateCol = new DateTime(2012, 4, 1), TextCol = "qwer123", EnumCol = TestEnum.Val3 });
 			}
 		}
@@ -99,6 +99,31 @@ namespace SimpleStack.Orm.Tests
 				Assert.AreEqual(1, target.Count());
 			}
 		}
+		
+		[Test]
+		public void Can_Select_using_ToUpper_ToLower_Substring_on_string_property_of_T()
+		{
+			SetupContext();
+
+			using (var conn = OpenDbConnection())
+			{
+				var target = conn.Select<TestType2>(q => q.TextCol.ToUpper().ToLower().Substring(0,2) == "as");
+				Assert.AreEqual(2, target.Count());
+			}
+		}
+		
+		[Test]
+		public void Can_Select_dynamic_using_ToUpper_ToLower_Substring_on_string_property_of_T()
+		{
+			SetupContext();
+
+			using (var conn = OpenDbConnection())
+			{
+				var target = conn.Select("TestType2", 
+					q => q.Where("textcol", (string x) => x.ToLower().Substring(0,2) == "as"));
+				Assert.AreEqual(2, target.Count());
+			}
+		}
 
 		/// <summary>Can select using to lower on string property of field.</summary>
 		[Test]
@@ -122,8 +147,14 @@ namespace SimpleStack.Orm.Tests
 
 			using (var conn = OpenDbConnection())
 			{
-				var target = conn.Select<TestType2>(q => q.BoolCol == true);
-				Assert.AreEqual(2, target.Count());
+				var target = conn.Select<TestType2>(q => q.BoolCol);
+				Assert.AreEqual(3, target.Count());
+				target = conn.Select<TestType2>(q => q.BoolCol == true);
+				Assert.AreEqual(3, target.Count());
+				target = conn.Select<TestType2>(q => !q.BoolCol);
+				Assert.AreEqual(1, target.Count());
+				target = conn.Select<TestType2>(q => q.BoolCol == false);
+				Assert.AreEqual(1, target.Count());
 			}
 		}
 
@@ -183,13 +214,13 @@ namespace SimpleStack.Orm.Tests
 
 			using (var conn = OpenDbConnection())
 			{
-				Assert.AreEqual(2012, conn.GetScalar<TestType2, int>(x => Sql.Year(x.DateCol)));
-				Assert.AreEqual(11, conn.GetScalar<TestType2, int>(x => Sql.Month(x.DateCol)));
-				Assert.AreEqual(4, conn.GetScalar<TestType2, int>(x => Sql.Quarter(x.DateCol)));
-				Assert.AreEqual(2, conn.GetScalar<TestType2, int>(x => Sql.Day(x.DateCol)));
-				Assert.AreEqual(3, conn.GetScalar<TestType2, int>(x => Sql.Hour(x.DateCol)));
-				Assert.AreEqual(4, conn.GetScalar<TestType2, int>(x => Sql.Minute(x.DateCol)));
-				Assert.AreEqual(5, conn.GetScalar<TestType2, int>(x => Sql.Second(x.DateCol)));
+//				Assert.AreEqual(2012, conn.GetScalar<TestType2, int>(x => Sql.Year(x.DateCol)));
+//				Assert.AreEqual(11, conn.GetScalar<TestType2, int>(x => Sql.Month(x.DateCol)));
+//				Assert.AreEqual(4, conn.GetScalar<TestType2, int>(x => Sql.Quarter(x.DateCol)));
+//				Assert.AreEqual(2, conn.GetScalar<TestType2, int>(x => Sql.Day(x.DateCol)));
+//				Assert.AreEqual(3, conn.GetScalar<TestType2, int>(x => Sql.Hour(x.DateCol)));
+//				Assert.AreEqual(4, conn.GetScalar<TestType2, int>(x => Sql.Minute(x.DateCol)));
+//				Assert.AreEqual(5, conn.GetScalar<TestType2, int>(x => Sql.Second(x.DateCol)));
 
 			    Assert.AreEqual(2012, conn.GetScalar<TestType2, int>(x => x.DateCol.Year));
 			    Assert.AreEqual(11, conn.GetScalar<TestType2, int>(x => x.DateCol.Month));
@@ -197,6 +228,8 @@ namespace SimpleStack.Orm.Tests
 			    Assert.AreEqual(3, conn.GetScalar<TestType2, int>(x => x.DateCol.Hour));
 			    Assert.AreEqual(4, conn.GetScalar<TestType2, int>(x => x.DateCol.Minute));
 			    Assert.AreEqual(5, conn.GetScalar<TestType2, int>(x => x.DateCol.Second));
+			    
+			    Assert.AreEqual(3,conn.Select<TestType2>(x => x.DateCol.Hour == 3).First().DateCol.Hour);
             }
 		}
 
@@ -211,7 +244,7 @@ namespace SimpleStack.Orm.Tests
 				//FROM "testtype2"
 				//WHERE (date_part('month', "datecol") = 11)
 
-				var v = conn.FirstOrDefault<TestType2>(x => Sql.Month(x.DateCol) == 11);
+				var v = conn.FirstOrDefault<TestType2>(x => x.DateCol.Month == 11);
 
 				Assert.AreEqual(2012, v.DateCol.Year);
 				Assert.AreEqual(11, v.DateCol.Month);
@@ -225,7 +258,6 @@ namespace SimpleStack.Orm.Tests
 
 	        using (var conn = OpenDbConnection())
 	        {
-	            Assert.AreEqual(2012, conn.GetScalar<TestType2, int>(x => Sql.Year(x.DateCol)));
 	            Assert.AreEqual(2012, conn.GetScalar<TestType2, int>(x =>  x.DateCol.Year));
             }
 	    }
@@ -236,28 +268,10 @@ namespace SimpleStack.Orm.Tests
 		{
 			SetupContext();
 
-			var visitor = _dialectProvider.ExpressionVisitor<TestType2>();
-			visitor.Where(q => Sql.In(q.TextCol, "asdf", "qwer"));
-
 			using (var conn = OpenDbConnection())
 			{
-				var target = conn.Select(visitor);
+				var target = conn.Select<TestType2>(x => new []{"asdf", "qwer"}.Contains(x.TextCol));
 				Assert.AreEqual(2, target.Count());
-			}
-		}
-
-		/// <summary>Can select using in using parameters.</summary>
-		[Test]
-		public void Can_Select_using_IN_using_params()
-		{
-			SetupContext();
-
-			var visitor = _dialectProvider.ExpressionVisitor<TestType2>();
-			visitor.Where(q => Sql.In(q.Id, 1, 2, 3));
-			using (var conn = OpenDbConnection())
-			{
-				var target = conn.Select(visitor);
-				Assert.AreEqual(3, target.Count());
 			}
 		}
 
@@ -267,11 +281,9 @@ namespace SimpleStack.Orm.Tests
 		{
 			SetupContext();
 
-			var visitor = _dialectProvider.ExpressionVisitor<TestType2>();
-			visitor.Where(q => Sql.In(q.Id, new[] { 1, 2, 3 }));
 			using (var conn = OpenDbConnection())
 			{
-				var target = conn.Select(visitor);
+				var target = conn.Select<TestType2>(q => new [] { 1, 2, 3 }.Contains(q.Id));
 				Assert.AreEqual(3, target.Count());
 			}
 		}
@@ -282,11 +294,9 @@ namespace SimpleStack.Orm.Tests
 		{
 			SetupContext();
 
-			var visitor = _dialectProvider.ExpressionVisitor<TestType2>();
-			visitor.Where(q => Sql.In(q.Id, new object[] { 1, 2, 3 }));
 			using (var conn = OpenDbConnection())
 			{
-				var target = conn.Select(visitor);
+				var target = conn.Select<TestType2>(q => new object[] { 1, 2, 3 }.Contains(q.Id));
 				Assert.AreEqual(3, target.Count());
 			}
 		}
@@ -309,55 +319,67 @@ namespace SimpleStack.Orm.Tests
 		{
 			SetupContext();
 			var value = "ASDF";
-			var visitor = _dialectProvider.ExpressionVisitor<TestType2>();
-			visitor.Where(q => q.TextCol.ToUpper().StartsWith(value));
 			using (var conn = OpenDbConnection())
 			{
-				var target = conn.Select(visitor);
+				var target = conn.Select<TestType2>(q => q.TextCol.ToUpper().StartsWith(value));
 				Assert.AreEqual(2, target.Count());
 			}
 		}
 
-		/// <summary>Can select using object array contains.</summary>
 		[Test]
-		public void Can_Select_using_object_Array_Contains()
-		{
-			SetupContext();
-			var vals = new object[] { TestEnum.Val0, TestEnum.Val1 };
+        public void Can_Select_With_Skip_And_Rows()
+        {
+            SetupContext();
 
-			var visitor1 = _dialectProvider.ExpressionVisitor<TestType2>();
-			visitor1.Where(q => vals.Contains(q.EnumCol) || vals.Contains(q.EnumCol));
-			var sql1 = _dialectProvider.ToSelectStatement(visitor1,CommandFlags.None);
+            using (var conn = OpenDbConnection())
+            {
+                var target = conn.Select<TestType2>(q =>
+                                                    {
+                                                        q.OrderBy(x => x.Id);
+                                                        q.Limit(2, 2);
+                                                    }).ToArray();
+                Assert.AreEqual(2, target.Length);
+                Assert.AreEqual(3, target[0].Id);
+                Assert.AreEqual(4, target[1].Id);
+            }
+        }
+        [Test]
+        public void Can_Select_With_Rows()
+        {
+            SetupContext();
 
-			var visitor2 = _dialectProvider.ExpressionVisitor<TestType2>();
-			visitor2.Where(q => Sql.In(q.EnumCol, vals) || Sql.In(q.EnumCol, vals));
-			var sql2 = _dialectProvider.ToSelectStatement(visitor2, CommandFlags.None);
+            using (var conn = OpenDbConnection())
+            {
+                var target = conn.Select<TestType2>(q =>
+                                                    {
+                                                        q.OrderBy(x => x.Id);
+                                                        q.Limit(1);
+                                                    }).ToArray();
+                Assert.AreEqual(1, target.Length);
+                Assert.AreEqual(1, target[0].Id);
+            }
+        }
+        [Test]
+        public void Can_Select_With_and_clear_limit()
+        {
+            SetupContext();
 
-			Assert.AreEqual(sql1.CommandText, sql2.CommandText);
-		}
+            using (var conn = OpenDbConnection())
+            {
+                var target = conn.Select<TestType2>(q =>
+                                                    {
+                                                        q.OrderBy(x => x.Id);
+                                                        q.Limit(1,2);
+                                                        q.Limit();
+                                                    }).ToArray();
+                Assert.AreEqual(4, target.Length);
+            }
+        }
 
-		/// <summary>Can select using int array contains.</summary>
-		[Test]
-		public void Can_Select_using_int_Array_Contains()
-		{
-			SetupContext();
-			var vals = new int[] { (int)TestEnum.Val0, (int)TestEnum.Val1 };
-
-			var visitor1 = _dialectProvider.ExpressionVisitor<TestType2>();
-			visitor1.Where(q => vals.Contains((int)q.EnumCol) || vals.Contains((int)q.EnumCol));
-			var sql1 = _dialectProvider.ToSelectStatement(visitor1,CommandFlags.None);
-
-			var visitor2 = _dialectProvider.ExpressionVisitor<TestType2>();
-			visitor2.Where(q => Sql.In(q.EnumCol, vals) || Sql.In(q.EnumCol, vals));
-			var sql2 = _dialectProvider.ToSelectStatement(visitor2, CommandFlags.None);
-
-			Assert.AreEqual(sql1.CommandText, sql2.CommandText);
-		}
-
-		/// <summary>Method returning int.</summary>
-		/// <param name="val">The value.</param>
-		/// <returns>An int.</returns>
-		private int MethodReturningInt(int val)
+        /// <summary>Method returning int.</summary>
+        /// <param name="val">The value.</param>
+        /// <returns>An int.</returns>
+        private int MethodReturningInt(int val)
 		{
 			return val;
 		}

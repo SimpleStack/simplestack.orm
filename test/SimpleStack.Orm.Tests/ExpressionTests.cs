@@ -245,7 +245,7 @@ namespace SimpleStack.Orm.Tests
 		{
 		}
 
-		protected override string ConnectionString => @"server=.\SqlExpress;Trusted_Connection=true;database=test";
+		protected override string ConnectionString => @"server=localhost;User id=sa;Password=depfac$2000;database=test";
 	}
 	public class SQLLiteTests : ExpressionTests
 	{

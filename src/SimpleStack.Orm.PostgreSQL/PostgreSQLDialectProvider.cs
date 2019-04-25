@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using Dapper;
 using Npgsql;
@@ -131,14 +132,6 @@ namespace SimpleStack.Orm.PostgreSQL
             return sql.ToString();
         }
 
-		/// <summary>Expression visitor.</summary>
-		/// <typeparam name="T">Generic type parameter.</typeparam>
-		/// <returns>A SqlExpressionVisitor&lt;T&gt;</returns>
-		public override SqlExpressionVisitor<T> ExpressionVisitor<T>()
-		{
-			return new PostgreSQLExpressionVisitor<T>(this);
-		}
-
 		/// <summary>Query if 'dbCmd' does table exist.</summary>
 		/// <param name="connection">    The database command.</param>
 		/// <param name="tableName">Name of the table.</param>
@@ -204,7 +197,7 @@ namespace SimpleStack.Orm.PostgreSQL
 
         public override IEnumerable<IColumnDefinition> GetTableColumnDefinitions(IDbConnection connection, string tableName, string schemaName = null)
         {
-            string sqlQuery = "SELECT * FROM information_schema.columns WHERE table_name = @tableName ";
+            string sqlQuery = "SELECT * FROM information_schema.columns WHERE lower(table_name) = @tableName ";
             if (!string.IsNullOrWhiteSpace(schemaName))
             {
                 sqlQuery += " AND table_schema = @SchemaName";
@@ -219,7 +212,7 @@ namespace SimpleStack.Orm.PostgreSQL
                 AND    i.indisprimary;").ToArray();
             // ReSharper enable StringLiteralTypo
 
-            foreach (var c in connection.Query(sqlQuery, new { tableName, schemaName }))
+            foreach (var c in connection.Query(sqlQuery, new { TableName = tableName.ToLower(), schemaName }))
             {
                 yield return new ColumnDefinition
                              {
@@ -248,6 +241,11 @@ namespace SimpleStack.Orm.PostgreSQL
                     SchemaName = table.table_schema
                 };
             }
+        }
+
+        public override string BindOperand(ExpressionType e, bool isLogical)
+        {
+	        return e == ExpressionType.ExclusiveOr ? "#" : base.BindOperand(e, isLogical);
         }
     }
 }
