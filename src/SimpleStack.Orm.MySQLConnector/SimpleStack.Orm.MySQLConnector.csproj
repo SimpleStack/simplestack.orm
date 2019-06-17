@@ -15,6 +15,7 @@
     <Version>1.2.0-beta3</Version>
     <AssemblyVersion>1.2.0.0</AssemblyVersion>
     <FileVersion>1.2.0.0</FileVersion>
+    <PackageVersion>1.2.0-beta5</PackageVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -23,7 +24,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.CSharp" Version="4.5.0" />
-    <PackageReference Include="MySqlConnector" Version="0.51.1" />
+    <PackageReference Include="MySqlConnector" Version="0.56.0" />
   </ItemGroup>
 
 </Project>
