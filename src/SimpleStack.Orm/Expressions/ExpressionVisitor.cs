@@ -21,10 +21,16 @@ namespace SimpleStack.Orm.Expressions
         public virtual string VisitExpression(Expression exp)
         {
             var statement = Visit(exp);
+            
+            if (statement == null)
+                return string.Empty;
+            
             if (statement is ParameterPart pp) 
                 return (bool) Parameters[pp.Text] ? "1=1" : "1=0";
+            
             if (statement is ColumnAccessPart cp) 
                 return $"{cp.Text} = {AddParameter(true)}";
+            
             return statement.ToString();
         }
 
@@ -229,7 +235,10 @@ namespace SimpleStack.Orm.Expressions
 
             var isIntegral = leftp != null && leftp.ParameterType != typeof(bool);
 
-            if (!isIntegral && rightp != null && rightp.ParameterType != typeof(bool)) isIntegral = true;
+            if (!isIntegral && rightp != null && rightp.ParameterType != typeof(bool))
+            {
+                isIntegral = true;
+            }
 
             var operand = DialectProvider.BindOperand(binaryExpression.NodeType, isIntegral);
 
