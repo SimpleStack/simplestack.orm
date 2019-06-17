@@ -32,32 +32,7 @@ namespace SimpleStack.Orm.Sqlite
 			DbTypeMap.Set(DbType.DateTimeOffset, StringColumnDefinition);
 			DbTypeMap.Set(DbType.DateTimeOffset, StringColumnDefinition);
 		}
-
-		///// <summary>Gets or sets a value indicating whether the parse via framework.</summary>
-		///// <value>true if parse via framework, false if not.</value>
-		//public static bool ParseViaFramework { get; set; }
-
-		/// <summary>Creates full text create table statement.</summary>
-		/// <param name="objectWithProperties">The object with properties.</param>
-		/// <returns>The new full text create table statement.</returns>
-		public static string CreateFullTextCreateTableStatement(object objectWithProperties)
-		{
-			var sbColumns = new StringBuilder();
-			foreach (var propertyInfo in objectWithProperties.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
-			{
-				var columnDefinition = (sbColumns.Length == 0)
-					? string.Format("{0} TEXT PRIMARY KEY", propertyInfo.Name)
-					: string.Format(", {0} TEXT", propertyInfo.Name);
-
-				sbColumns.AppendLine(columnDefinition);
-			}
-
-			var tableName = objectWithProperties.GetType().Name;
-			var sql = string.Format("CREATE VIRTUAL TABLE \"{0}\" USING FTS3 ({1});", tableName, sbColumns);
-
-			return sql;
-		}
-
+		
 		/// <summary>Creates a connection.</summary>
 		/// <param name="connectionString">The connection string.</param>
 		/// <param name="options">         Options for controlling the operation.</param>
