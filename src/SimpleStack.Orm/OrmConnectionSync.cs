@@ -137,6 +137,11 @@ namespace SimpleStack.Orm
 			return CountAsync<T>(expression).Result;
 		}
 
+		public long Count(string tableName, Action<DynamicSelectStatement> expression)
+		{
+			return CountAsync(tableName, expression).Result;
+		}
+
 		/// <summary>
 		///    An OrmConnection method that counts the given database connection.
 		/// </summary>

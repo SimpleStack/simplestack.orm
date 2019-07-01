@@ -25,6 +25,13 @@ namespace SimpleStack.Orm.Tests
                                                 .Where("textcol", (string y) => y.Substring(0, 1) == "a")
                                                 .And("id", (int y) => y > 10)
                                                 .Limit(1, 1));
+
+                var rrr = conn.Count("TestType2",x =>
+                {
+                    x.And("textcol", (string y) => y.Substring(0,1) == "a");
+                });
+
+                Assert.AreEqual(1, rrr);
             }
         }
     }

@@ -155,6 +155,14 @@ namespace SimpleStack.Orm
 			return await this.ExecuteScalarAsync<long>(DialectProvider.ToCountStatement(select.Statement,CommandFlags.None));
 		}
 		
+		public async Task<long> CountAsync(string tableName, Action<DynamicSelectStatement> expression)
+		{
+			DynamicSelectStatement select = new DynamicSelectStatement(DialectProvider);
+			expression(select.From(tableName));
+
+			return await this.ExecuteScalarAsync<long>(DialectProvider.ToCountStatement(select.Statement,CommandFlags.None));
+		}
+		
 		/// <summary>
 		///    An OrmConnection method that counts the given database connection.
 		/// </summary>
