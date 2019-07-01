@@ -132,20 +132,23 @@ namespace SimpleStack.Orm.PostgreSQL
             return sql.ToString();
         }
 
-		/// <summary>Query if 'dbCmd' does table exist.</summary>
-		/// <param name="connection">    The database command.</param>
-		/// <param name="tableName">Name of the table.</param>
-		/// <returns>true if it succeeds, false if it fails.</returns>
-		public override bool DoesTableExist(IDbConnection connection, string tableName)
-		{
-			var result = connection.ExecuteScalar<long>(
-				"SELECT COUNT(*) FROM pg_class WHERE relname = :table", 
-				new { table = tableName});
+        /// <summary>Query if 'dbCmd' does table exist.</summary>
+        /// <param name="connection">    The database command.</param>
+        /// <param name="tableName">Name of the table.</param>
+        /// <returns>true if it succeeds, false if it fails.</returns>
+        public override bool DoesTableExist(IDbConnection connection, string tableName)
+        {
+            var result = connection.ExecuteScalar<long>(
+                @"SELECT COUNT(*) FROM pg_class
+                                                  LEFT JOIN pg_namespace n ON n.oid = pg_class.relnamespace
+                                               WHERE nspname = current_schema()
+                                               AND  relname = :table;",
+                new {table = tableName});
 
-			return result > 0;
-		}
+            return result > 0;
+        }
 
-		/// <summary>Gets quoted table name.</summary>
+        /// <summary>Gets quoted table name.</summary>
 		/// <param name="modelDef">The model definition.</param>
 		/// <returns>The quoted table name.</returns>
 		public override string GetQuotedTableName(ModelDefinition modelDef)
