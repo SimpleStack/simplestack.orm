@@ -113,7 +113,10 @@ namespace SimpleStack.Orm.Expressions
 
         protected virtual StatementPart VisitNew(NewExpression newExpression)
         {
-            return null;
+            var member = Expression.Convert(newExpression, typeof(object));
+            var lambda = Expression.Lambda<Func<object>>(member);
+            var getter = lambda.Compile();
+            return AddParameter(getter());
         }
 
         protected virtual StatementPart VisitMethodCall(MethodCallExpression m)

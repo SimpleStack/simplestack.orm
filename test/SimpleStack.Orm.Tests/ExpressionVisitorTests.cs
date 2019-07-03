@@ -15,10 +15,10 @@ namespace SimpleStack.Orm.Tests
 			using (var c = OpenDbConnection())
 			{
 				c.CreateTable<TestType2>(true);
-				c.Insert(new TestType2 { Id = 1, BoolCol = true, DateCol = new DateTime(2012, 11, 2, 3, 4, 5), TextCol = "asdf", EnumCol = TestEnum.Val0 });
-				c.Insert(new TestType2 { Id = 2, BoolCol = true, DateCol = new DateTime(2012, 2, 1), TextCol = "asdf123", EnumCol = TestEnum.Val1 });
-				c.Insert(new TestType2 { Id = 3, BoolCol = true, DateCol = new DateTime(2012, 3, 1), TextCol = "qwer", EnumCol = TestEnum.Val2 });
-				c.Insert(new TestType2 { Id = 4, BoolCol = false, DateCol = new DateTime(2012, 4, 1), TextCol = "qwer123", EnumCol = TestEnum.Val3 });
+				c.Insert(new TestType2 { Id = 1, BoolCol = true, DateCol = new DateTime(2012, 11, 2, 3, 4, 5), TextCol = "asdf", EnumCol = TestEnum.Val0, GuidCol = Guid.Empty});
+				c.Insert(new TestType2 { Id = 2, BoolCol = true, DateCol = new DateTime(2012, 2, 1), TextCol = "asdf123", EnumCol = TestEnum.Val1 , GuidCol = Guid.NewGuid()});
+				c.Insert(new TestType2 { Id = 3, BoolCol = true, DateCol = new DateTime(2012, 3, 1), TextCol = "qwer", EnumCol = TestEnum.Val2 , GuidCol = Guid.NewGuid()});
+				c.Insert(new TestType2 { Id = 4, BoolCol = false, DateCol = new DateTime(2012, 4, 1), TextCol = "qwer123", EnumCol = TestEnum.Val3 , GuidCol = Guid.NewGuid()});
 			}
 		}
 
@@ -34,6 +34,47 @@ namespace SimpleStack.Orm.Tests
 				var target = conn.Select<TestType2>(q => q.Id == 1).ToArray();
 				Assert.AreEqual(1, target.Length);
 				Assert.AreEqual("asdf",target[0].TextCol);
+			}
+		}
+		
+		/// <summary>Can select by constant int.</summary>
+		[Test]
+		public void Can_Select_by_const_guid()
+		{
+			SetupContext();
+			using (var conn = OpenDbConnection())
+			{
+				var target = conn.Select<TestType2>(q => q.GuidCol == Guid.Empty).ToArray();
+
+				Assert.AreEqual(1, target.Length);
+				Assert.AreEqual(Guid.Empty,target[0].GuidCol);
+			}
+		}
+		
+		[Test]
+		public void Can_Select_by_guid()
+		{
+			SetupContext();
+			using (var conn = OpenDbConnection())
+			{
+				var rr = conn.First<TestType2>(x => x.Id == 1);
+				var target = conn.Select<TestType2>(q => q.GuidCol == rr.GuidCol).ToArray();
+
+				Assert.AreEqual(1, target.Length);
+				Assert.AreEqual(rr.GuidCol,target[0].GuidCol);
+			}
+		}
+		[Test]
+		public void Can_Select_by_new_guid()
+		{
+			SetupContext();
+			using (var conn = OpenDbConnection())
+			{
+				var rr = conn.First<TestType2>(x => x.Id == 1).GuidCol.ToString("N");
+				var target = conn.Select<TestType2>(q => q.GuidCol == new Guid(rr)).ToArray();
+
+				Assert.AreEqual(1, target.Length);
+				Assert.AreEqual(rr,target[0].GuidCol.ToString("N"));
 			}
 		}
 
@@ -442,6 +483,8 @@ namespace SimpleStack.Orm.Tests
 		/// <summary>Gets or sets the enum col.</summary>
 		/// <value>The enum col.</value>
 		public TestEnum EnumCol { get; set; }
+		
+		public Guid GuidCol { get; set; }
 
 		/// <summary>Gets or sets the complex object col.</summary>
 		/// <value>The complex object col.</value>
