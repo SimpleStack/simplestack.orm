@@ -15,7 +15,7 @@
     <Version>1.2.0-beta3</Version>
     <AssemblyVersion>1.2.0.0</AssemblyVersion>
     <FileVersion>1.2.0.0</FileVersion>
-    <PackageVersion>1.2.0-beta5</PackageVersion>
+    <PackageVersion>1.2.0-beta6</PackageVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -24,7 +24,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.CSharp" Version="4.5.0" />
-    <PackageReference Include="Npgsql" Version="4.0.5" />
+    <PackageReference Include="Npgsql" Version="4.0.7" />
   </ItemGroup>
 
 </Project>

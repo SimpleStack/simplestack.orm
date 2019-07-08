@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using Dapper;
+using Microsoft.Data.Sqlite;
 using SimpleStack.Orm.Attributes;
 using SimpleStack.Orm.Expressions;
 
