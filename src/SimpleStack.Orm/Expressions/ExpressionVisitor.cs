@@ -1,8 +1,10 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace SimpleStack.Orm.Expressions
 {
@@ -171,9 +173,20 @@ namespace SimpleStack.Orm.Expressions
             for (int i = 0, n = original.Count; i < n; i++)
                 if (original[i].NodeType == ExpressionType.NewArrayInit ||
                     original[i].NodeType == ExpressionType.NewArrayBounds)
+                {
                     list.AddRange(VisitNewArrayFromExpressionList(original[i] as NewArrayExpression));
+                }
+                else if (original[i].NodeType == ExpressionType.Call && typeof(IEnumerable).IsAssignableFrom(original[i].Type))
+                {
+                    foreach (var p in (IEnumerable) Expression.Lambda(original[i]).Compile().DynamicInvoke())
+                    {
+                        list.Add(AddParameter(p));
+                    }
+                }
                 else
+                {
                     list.Add(Visit(original[i]));
+                }
             return list;
         }
 

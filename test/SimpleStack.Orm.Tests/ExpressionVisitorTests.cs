@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using Dapper;
@@ -313,8 +314,20 @@ namespace SimpleStack.Orm.Tests
 			{
 				var target = conn.Select<TestType2>(x => new []{"asdf", "qwer"}.Contains(x.TextCol));
 				Assert.AreEqual(2, target.Count());
+				
+				target = conn.Select<TestType2>(x => GetStrings().ToArray().Contains(x.TextCol));
+				Assert.AreEqual(2, target.Count());				
+				target = conn.Select<TestType2>(x => GetStrings().Contains(x.TextCol));
+				Assert.AreEqual(2, target.Count());				
+
 			}
 		}
+
+        private IEnumerable<string> GetStrings()
+        {
+	        yield return "asdf";
+	        yield return "qwer";
+        }
 
 		/// <summary>Can select using in using int array.</summary>
 		[Test]
