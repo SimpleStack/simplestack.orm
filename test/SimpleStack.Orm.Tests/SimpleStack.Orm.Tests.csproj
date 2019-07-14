@@ -14,6 +14,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\SimpleStack.Orm.MySQL\SimpleStack.Orm.MySQL.csproj" />
+    <ProjectReference Include="..\..\src\SimpleStack.Orm.SDSQlite\SimpleStack.Orm.SDSQlite.csproj" />
     <ProjectReference Include="..\..\src\SimpleStack.Orm\SimpleStack.Orm.csproj" />
     <ProjectReference Include="..\..\src\SimpleStack.Orm.PostgreSQL\SimpleStack.Orm.PostgreSQL.csproj" />
     <ProjectReference Include="..\..\src\SimpleStack.Orm.SQLServer\SimpleStack.Orm.SQLServer.csproj" />

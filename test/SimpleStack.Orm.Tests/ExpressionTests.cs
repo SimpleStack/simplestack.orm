@@ -256,8 +256,6 @@ namespace SimpleStack.Orm.Tests
 			builder.DataSource = Path.Combine(Path.GetTempPath(),"test.db");
 			builder.Mode = SqliteOpenMode.ReadWriteCreate;
 			builder.Cache = SqliteCacheMode.Shared;
-
-			
 		}
 
 		public override void Setup()
@@ -268,5 +266,14 @@ namespace SimpleStack.Orm.Tests
 		}
 
 		protected override string ConnectionString => builder.ToString();
+	}
+	
+	public class SDQLLiteTests : ExpressionTests
+	{
+		public SDQLLiteTests() : base(new SimpleStack.Orm.SDSQlite.SqliteDialectProvider())
+		{
+		}
+
+		protected override string ConnectionString => $"Data Source={Path.Combine(Path.GetTempPath(),"test.db")};Version=3;New=True;BinaryGUID=False";
 	}
 }

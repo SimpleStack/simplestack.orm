@@ -15,7 +15,7 @@ namespace SimpleStack.Orm.Tests
             {
                 db.CreateTable<TestType2>(true);
                 var columns = db.GetTableColumnsInformation("TestType2").ToArray();
-                Assert.AreEqual(6, columns.Length);
+                Assert.AreEqual(7, columns.Length);
                 Assert.AreEqual("id", columns[0].Name.ToLower());
                 Assert.AreEqual(true, columns[0].PrimaryKey);
                 Assert.AreEqual("textcol", columns[1].Name.ToLower());
@@ -26,8 +26,10 @@ namespace SimpleStack.Orm.Tests
                 Assert.AreEqual(false, columns[3].PrimaryKey);
                 Assert.AreEqual("enumcol", columns[4].Name.ToLower());
                 Assert.AreEqual(false, columns[4].PrimaryKey);
-                Assert.AreEqual("complexobjcol", columns[5].Name.ToLower());
+                Assert.AreEqual("guidcol", columns[5].Name.ToLower());
                 Assert.AreEqual(false, columns[5].PrimaryKey);
+                Assert.AreEqual("complexobjcol", columns[6].Name.ToLower());
+                Assert.AreEqual(false, columns[6].PrimaryKey);
             }
         }
     }

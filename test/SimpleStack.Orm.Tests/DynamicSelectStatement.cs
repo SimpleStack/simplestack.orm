@@ -31,7 +31,7 @@ namespace SimpleStack.Orm.Tests
                     x.And("textcol", (string y) => y.Substring(0,1) == "a");
                 });
 
-                Assert.AreEqual(1, rrr);
+                Assert.AreEqual(2, rrr);
             }
         }
     }
