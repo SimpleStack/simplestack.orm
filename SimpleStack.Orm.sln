@@ -26,6 +26,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleStack.Orm.SQLite", "s
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleStack.Orm.MySQLConnector", "src\SimpleStack.Orm.MySQLConnector\SimpleStack.Orm.MySQLConnector.csproj", "{75E2C0D4-FE33-484F-8EC1-58EA1EBFEBE0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleStack.Orm.SDSQlite", "src\SimpleStack.Orm.SDSQlite\SimpleStack.Orm.SDSQlite.csproj", "{49DB362E-E574-4BF2-A4D2-76CAD8EA6E85}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -60,6 +62,10 @@ Global
 		{75E2C0D4-FE33-484F-8EC1-58EA1EBFEBE0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{75E2C0D4-FE33-484F-8EC1-58EA1EBFEBE0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{75E2C0D4-FE33-484F-8EC1-58EA1EBFEBE0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{49DB362E-E574-4BF2-A4D2-76CAD8EA6E85}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{49DB362E-E574-4BF2-A4D2-76CAD8EA6E85}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{49DB362E-E574-4BF2-A4D2-76CAD8EA6E85}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{49DB362E-E574-4BF2-A4D2-76CAD8EA6E85}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -72,6 +78,7 @@ Global
 		{E278057E-1319-42F5-B772-5553A7D0CA61} = {6EAAA3BA-9C88-4F21-A822-F0A3A9613EBA}
 		{91A19B73-D18F-4108-84FE-F6A9327BD897} = {6EAAA3BA-9C88-4F21-A822-F0A3A9613EBA}
 		{75E2C0D4-FE33-484F-8EC1-58EA1EBFEBE0} = {6EAAA3BA-9C88-4F21-A822-F0A3A9613EBA}
+		{49DB362E-E574-4BF2-A4D2-76CAD8EA6E85} = {6EAAA3BA-9C88-4F21-A822-F0A3A9613EBA}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {82883C1A-728B-43E5-A494-6BA0585C069B}
