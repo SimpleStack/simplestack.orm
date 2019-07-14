@@ -201,7 +201,11 @@ namespace SimpleStack.Orm.PostgreSQL
         public override IEnumerable<IColumnDefinition> GetTableColumnDefinitions(IDbConnection connection, string tableName, string schemaName = null)
         {
             string sqlQuery = "SELECT * FROM information_schema.columns WHERE lower(table_name) = @tableName ";
-            if (!string.IsNullOrWhiteSpace(schemaName))
+            if (string.IsNullOrWhiteSpace(schemaName))
+            {
+                sqlQuery += " AND table_schema = current_schema()";
+            }
+            else
             {
                 sqlQuery += " AND table_schema = @SchemaName";
             }
@@ -232,10 +236,16 @@ namespace SimpleStack.Orm.PostgreSQL
         public override IEnumerable<ITableDefinition> GetTableDefinitions(IDbConnection connection, string schemaName = null)
         {
             string sqlQuery = "SELECT * FROM information_schema.tables WHERE table_type = 'BASE TABLE'";
-            if (!string.IsNullOrWhiteSpace(schemaName))
+            
+            if (string.IsNullOrWhiteSpace(schemaName))
+            {
+                sqlQuery += " AND table_schema = current_schema()";
+            }
+            else
             {
                 sqlQuery += " AND table_schema = @SchemaName ";
             }
+            
             foreach (var table in connection.Query(sqlQuery, new { SchemaName = schemaName }))
             {
                 yield return new TableDefinition
