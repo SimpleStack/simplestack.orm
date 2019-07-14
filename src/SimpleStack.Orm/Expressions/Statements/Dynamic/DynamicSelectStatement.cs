@@ -4,16 +4,15 @@ using System.Linq.Expressions;
 
 namespace SimpleStack.Orm.Expressions.Statements.Dynamic
 {
-    public class DynamicSelectStatement
+    public class DynamicSelectStatement : DynamicCountStatement
     {
         private readonly IDialectProvider _dialectProvider;
 
         public DynamicSelectStatement(IDialectProvider dialectProvider)
+            :base(dialectProvider)
         {
             _dialectProvider = dialectProvider;
         }
-
-        public SelectStatement Statement { get; } = new SelectStatement();
 
         public DynamicSelectStatement Select(params string[] columns)
         {
@@ -33,56 +32,51 @@ namespace SimpleStack.Orm.Expressions.Statements.Dynamic
             return this;
         }
 
-        public DynamicSelectStatement From(string tableName)
+        public new DynamicSelectStatement From(string tableName)
         {
-            Statement.TableName = _dialectProvider.GetQuotedTableName(tableName);
+            base.From(tableName);
             return this;
         }
 
-        public DynamicSelectStatement Distinct(bool distinct = true)
+        public new DynamicSelectStatement Distinct(bool distinct = true)
         {
-            Statement.IsDistinct = distinct;
+            base.Distinct(distinct);
             return this;
         }
 
-        public DynamicSelectStatement GroupBy(params string[] columns)
+        public new DynamicSelectStatement GroupBy(params string[] columns)
         {
-            Statement.GroupByExpression.Clear();
-            Statement.GroupByExpression.Append(columns.Aggregate((x, y) => x + "," + y));
+            base.GroupBy(columns);
             return this;
         }
 
-        public DynamicSelectStatement GroupBy<T>(string columnName, Expression<Func<T, T>> keySelector)
+        public new DynamicSelectStatement GroupBy<T>(string columnName, Expression<Func<T, T>> keySelector)
         {
-            if (Statement.GroupByExpression.Length > 0) Statement.GroupByExpression.Append(",");
-            Statement.GroupByExpression.Append(GetExpressionVisitor<T>(columnName).VisitExpression(keySelector));
+            base.GroupBy(columnName, keySelector);
             return this;
         }
 
-        public DynamicSelectStatement Where<T>(string columnName, Expression<Func<T, bool>> func)
+        public new DynamicSelectStatement Where<T>(string columnName, Expression<Func<T, bool>> func)
         {
-            return And(columnName, func);
+            base.And(columnName, func);
+            return this;
         }
 
-        public DynamicSelectStatement And<T>(string columnName, Expression<Func<T, bool>> func)
+        public new DynamicSelectStatement And<T>(string columnName, Expression<Func<T, bool>> func)
         {
-            return Where(GetExpressionVisitor<T>(columnName), func);
+            base.Where(GetExpressionVisitor<T>(columnName), func);
+            return this;
         }
 
-        public DynamicSelectStatement Or<T>(string columnName, Expression<Func<T, bool>> func)
+        public new DynamicSelectStatement Or<T>(string columnName, Expression<Func<T, bool>> func)
         {
-            return Where(GetExpressionVisitor<T>(columnName), func, "OR");
+            base.Where(GetExpressionVisitor<T>(columnName), func, "OR");
+            return this;
         }
 
-        public DynamicSelectStatement Having<T>(string columnName, Expression<Func<T, bool>> predicate)
+        public new DynamicSelectStatement Having<T>(string columnName, Expression<Func<T, bool>> predicate)
         {
-            if (predicate != null)
-                Statement.HavingExpression.Append(
-                    new ColumnWhereExpresionVisitor<T>(_dialectProvider, Statement.Parameters, columnName)
-                        .VisitExpression(predicate));
-            else
-                Statement.HavingExpression.Clear();
-
+            base.Having(columnName, predicate);
             return this;
         }
 
@@ -122,25 +116,6 @@ namespace SimpleStack.Orm.Expressions.Statements.Dynamic
             Statement.OrderByExpression.Append(",");
             Statement.OrderByExpression.Append(columnName);
             Statement.OrderByExpression.Append(" DESC");
-            return this;
-        }
-
-        private ColumnWhereExpresionVisitor<T> GetExpressionVisitor<T>(string columnName)
-        {
-            return new ColumnWhereExpresionVisitor<T>(_dialectProvider, Statement.Parameters, columnName);
-        }
-
-        private DynamicSelectStatement Where<T>(ExpressionVisitor visitor, Expression<Func<T, bool>> func,
-            string op = "AND")
-        {
-            if (Statement.WhereExpression.Length > 0)
-            {
-                Statement.WhereExpression.Append(" ");
-                Statement.WhereExpression.Append(op);
-                Statement.WhereExpression.Append(" ");
-            }
-
-            Statement.WhereExpression.Append(visitor.VisitExpression(func));
             return this;
         }
     }

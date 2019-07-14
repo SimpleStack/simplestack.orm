@@ -137,7 +137,7 @@ namespace SimpleStack.Orm
 			return CountAsync<T>(expression).Result;
 		}
 
-		public long Count(string tableName, Action<DynamicSelectStatement> expression)
+		public long Count(string tableName, Action<DynamicCountStatement> expression)
 		{
 			return CountAsync(tableName, expression).Result;
 		}
