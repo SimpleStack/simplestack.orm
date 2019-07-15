@@ -2,16 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Text;
 using Dapper;
-using Microsoft.Data.Sqlite;
-using SimpleStack.Orm.Attributes;
-using SimpleStack.Orm.Expressions;
 
-namespace SimpleStack.Orm.Sqlite
+namespace SimpleStack.Orm.SDSQlite
 {
 	/// <summary>A sqlite ORM lite dialect provider base.</summary>
 	public class SqliteDialectProvider : DialectProviderBase
@@ -40,7 +33,7 @@ namespace SimpleStack.Orm.Sqlite
 		/// <returns>The new connection.</returns>
 		public override DbConnection CreateIDbConnection(string connectionString)
 		{
-			return new Microsoft.Data.Sqlite.SqliteConnection(connectionString);
+			return new System.Data.SQLite.SQLiteConnection(connectionString);
 		}
 
 		/// <summary>Gets quoted table name.</summary>

@@ -17,6 +17,7 @@ using SimpleStack.Orm.MySQLConnector;
 using Microsoft.SqlServer.Server;
 using Newtonsoft.Json;
 using NUnit.Framework;
+using SimpleStack.Orm.MySQL;
 
 namespace SimpleStack.Orm.Tests
 {
@@ -228,13 +229,23 @@ namespace SimpleStack.Orm.Tests
 		{
 		}
 	}
-	public class SQLServerTests : ExpressionTests
+
+    public class MySQLTests : ExpressionTests
+    {
+        protected override string ConnectionString => "server=localhost;user=root;password=depfac$2000;database=test";
+
+        public MySQLTests() : base(new MySqlDialectProvider())
+        {
+        }
+    }
+
+    public class SQLServerTests : ExpressionTests
 	{
 		public SQLServerTests() : base(new SqlServerDialectProvider())
 		{
 		}
 
-		protected override string ConnectionString => @"server=.\SqlExpress;Trusted_Connection=true;database=test";
+		protected override string ConnectionString => @"server=localhost;User id=sa;Password=depfac$2000;database=test";
 	}
 	public class SQLLiteTests : ExpressionTests
 	{
@@ -245,8 +256,6 @@ namespace SimpleStack.Orm.Tests
 			builder.DataSource = Path.Combine(Path.GetTempPath(),"test.db");
 			builder.Mode = SqliteOpenMode.ReadWriteCreate;
 			builder.Cache = SqliteCacheMode.Shared;
-
-			
 		}
 
 		public override void Setup()
@@ -257,5 +266,14 @@ namespace SimpleStack.Orm.Tests
 		}
 
 		protected override string ConnectionString => builder.ToString();
+	}
+	
+	public class SDQLLiteTests : ExpressionTests
+	{
+		public SDQLLiteTests() : base(new SimpleStack.Orm.SDSQlite.SqliteDialectProvider())
+		{
+		}
+
+		protected override string ConnectionString => $"Data Source={Path.Combine(Path.GetTempPath(),"test.db")};Version=3;New=True;BinaryGUID=False";
 	}
 }

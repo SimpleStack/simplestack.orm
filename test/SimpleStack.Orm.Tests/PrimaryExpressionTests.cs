@@ -63,7 +63,7 @@ namespace SimpleStack.Orm.Tests
 			/// <value>The property.</value>
 			public T Property { get { return _field; } }
 
-			/// <summary>The field.</summary>
+			/// <summary>The field.</summary>e
 			public T _field;
 
 			/// <summary>Gets the mehtod.</summary>

@@ -43,11 +43,7 @@ namespace SimpleStack.Orm.Tests
 				conn.Insert(new AliasType { ColumnWithAlias = "AAA", ColumnWithoutAlias = "DDD" });
 				conn.Insert(new AliasType { ColumnWithAlias = "BBB", ColumnWithoutAlias = "EEE" });
 
-				var result = conn.Select<AliasType>(x =>
-				{
-					x.OrderBy(y => y.ColumnWithAlias);
-					return x;
-				}).ToArray();
+				var result = conn.Select<AliasType>(x => x.OrderBy(y => y.ColumnWithAlias)).ToArray();
 
 				Assert.AreEqual("AAA", result[0].ColumnWithAlias);
 				Assert.AreEqual("DDD", result[0].ColumnWithoutAlias);
@@ -73,7 +69,6 @@ namespace SimpleStack.Orm.Tests
 				{
 					x.OrderBy(y => y.ColumnWithAlias);
 					x.Select(y => y.ColumnWithAlias);
-					return x;
 				}).ToArray();
 
 				//SELECT "alias_name" FROM "aliastype"ORDER BY "alias_name" ASC

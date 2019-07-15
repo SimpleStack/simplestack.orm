@@ -5,11 +5,23 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Dapper;
 using SimpleStack.Orm.Expressions;
+using SimpleStack.Orm.Expressions.Statements.Dynamic;
+using SimpleStack.Orm.Expressions.Statements.Typed;
 
 namespace SimpleStack.Orm
 {
 	public partial class OrmConnection
 	{
+		public async Task<IEnumerable<dynamic>> SelectAsync(string tableName, Action<DynamicSelectStatement> selectStatement, CommandFlags flags = CommandFlags.Buffered)
+		{
+			DynamicSelectStatement statement = new DynamicSelectStatement(DialectProvider);
+
+			selectStatement(statement.From(tableName));
+
+			CommandDefinition cmd = DialectProvider.ToSelectStatement(statement.Statement, flags);
+			return await this.QueryAsync(cmd.CommandText, cmd.Parameters, cmd.Transaction, cmd.CommandTimeout,cmd.CommandType);
+		}
+		
 		/// <summary>An OrmConnection method that selects.</summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		/// <param name="predicate">The predicate.</param>
@@ -17,27 +29,21 @@ namespace SimpleStack.Orm
 		/// <returns>A List&lt;T&gt;</returns>
 		public async Task<IEnumerable<T>> SelectAsync<T>(Expression<Func<T, bool>> predicate, CommandFlags flags = CommandFlags.Buffered)
 		{
-			var ev = DialectProvider.ExpressionVisitor<T>();
-			return await this.QueryAsync<T>(DialectProvider.ToSelectStatement(ev.Where(predicate),flags));
+			TypedSelectStatement<T> select = new TypedSelectStatement<T>(DialectProvider);
+			select.Where(predicate);
+			return await this.QueryAsync<T>(DialectProvider.ToSelectStatement(select.Statement,flags));
 		}
 
 		/// <summary>An OrmConnection method that selects.</summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		/// <param name="expression">The expression.</param>
+		/// <param name="flags"></param>
 		/// <returns>A List&lt;T&gt;</returns>
-		public async Task<IEnumerable<T>> SelectAsync<T>(Func<SqlExpressionVisitor<T>, SqlExpressionVisitor<T>> expression, CommandFlags flags = CommandFlags.Buffered)
+		public async Task<IEnumerable<T>> SelectAsync<T>(Action<TypedSelectStatement<T>> expression, CommandFlags flags = CommandFlags.Buffered)
 		{
-			var ev = DialectProvider.ExpressionVisitor<T>();
-			return await this.QueryAsync<T>(DialectProvider.ToSelectStatement(expression(ev),flags));
-		}
-
-		/// <summary>An OrmConnection method that selects.</summary>
-		/// <typeparam name="T">Generic type parameter.</typeparam>
-		/// <param name="expression">The expression.</param>
-		/// <returns>A List&lt;T&gt;</returns>
-		public async Task<IEnumerable<T>> SelectAsync<T>(SqlExpressionVisitor<T> expression, CommandFlags flags = CommandFlags.Buffered)
-		{
-			return await this.QueryAsync<T>(DialectProvider.ToSelectStatement(expression,flags));
+			TypedSelectStatement<T> select = new TypedSelectStatement<T>(DialectProvider);
+			expression(select);
+			return await this.QueryAsync<T>(DialectProvider.ToSelectStatement(select.Statement,flags));
 		}
 
 		/// <summary>An OrmConnection method that selects.</summary>
@@ -45,17 +51,17 @@ namespace SimpleStack.Orm
 		/// <returns>A List&lt;T&gt;</returns>
 		public async Task<IEnumerable<T>> SelectAsync<T>(CommandFlags flags = CommandFlags.Buffered)
 		{
-			return await this.QueryAsync<T>(DialectProvider.ToSelectStatement(DialectProvider.ExpressionVisitor<T>(),flags));
+			return await this.QueryAsync<T>(DialectProvider.ToSelectStatement(new TypedSelectStatement<T>(DialectProvider).Statement,flags));
 		}
 
 		/// <summary>An OrmConnection method that selects based on a JoinSqlBuilder.</summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		/// <typeparam name="V"></typeparam>
-		/// <returns>A List&lt;T&gt;</returns>
-		public async Task<IEnumerable<T>> SelectAsync<T, V>(JoinSqlBuilder<T, V> sqlBuilder)
-		{
-			return await this.QueryAsync<T>(sqlBuilder.ToSql(), sqlBuilder.Parameters);
-		}
+//		/// <returns>A List&lt;T&gt;</returns>
+//		public async Task<IEnumerable<T>> SelectAsync<T, V>(JoinSqlBuilder<T, V> sqlBuilder)
+//		{
+//			return await this.QueryAsync<T>(sqlBuilder.ToSql(), sqlBuilder.Parameters);
+//		}
 
 		/// <summary>An OrmConnection method that firsts.</summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
@@ -63,18 +69,25 @@ namespace SimpleStack.Orm
 		/// <returns>A T.</returns>
 		public async Task<T> FirstAsync<T>(Expression<Func<T, bool>> predicate)
 		{
-			var ev = DialectProvider.ExpressionVisitor<T>();
-			var r = await SelectAsync(ev.Where(predicate).Limit(1));
+			var r = await SelectAsync<T>((x)  =>
+			{
+				x.Where(predicate);
+				x.Limit(1);
+			});
 			return r.First();
 		}
-
-		/// <summary>An OrmConnection method that firsts.</summary>
+		
+		/// <summary>An OrmConnection method that first or default.</summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		/// <param name="expression">The expression.</param>
 		/// <returns>A T.</returns>
-		public async Task<T> FirstAsync<T>(SqlExpressionVisitor<T> expression)
+		public async Task<T> FirstAsync<T>(Action<TypedSelectStatement<T>> expression)
 		{
-			var r = await SelectAsync(expression.Limit(1));
+			var r = await SelectAsync<T>((x) =>
+			{
+				expression(x);
+				x.Limit(1);
+			});
 			return r.First();
 		}
 
@@ -84,8 +97,11 @@ namespace SimpleStack.Orm
 		/// <returns>A T.</returns>
 		public async Task<T> FirstOrDefaultAsync<T>(Expression<Func<T, bool>> predicate)
 		{
-			var ev = DialectProvider.ExpressionVisitor<T>();
-			var r = await SelectAsync(ev.Where(predicate).Limit(1));
+			var r = await SelectAsync<T>(x =>
+			{
+				x.Where(predicate);
+				x.Limit(1);
+			});
 			return r.FirstOrDefault();
 		}
 
@@ -93,9 +109,13 @@ namespace SimpleStack.Orm
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		/// <param name="expression">The expression.</param>
 		/// <returns>A T.</returns>
-		public async Task<T> FirstOrDefaultAsync<T>(SqlExpressionVisitor<T> expression)
+		public async Task<T> FirstOrDefaultAsync<T>(Action<TypedSelectStatement<T>> expression)
 		{
-			var r = await SelectAsync(expression.Limit(1));
+			var r = await SelectAsync<T>((x) =>
+			{
+				expression(x);
+				x.Limit(1);
+			});
 			return r.FirstOrDefault();
 		}
 
@@ -107,8 +127,9 @@ namespace SimpleStack.Orm
 		public async Task<TKey> GetScalarAsync<T, TKey>(Expression<Func<T, TKey>> field)
 		{
 			//int maxAgeUnder50 = db.Scalar<Person, int>(x => Sql.Max(x.Age));
-			var ev = DialectProvider.ExpressionVisitor<T>();
-			return await this.ExecuteScalarAsync<TKey>(DialectProvider.ToSelectStatement(ev.Select(field),CommandFlags.None));
+			TypedSelectStatement<T> select = new TypedSelectStatement<T>(DialectProvider);
+			select.Select(field);
+			return await this.ExecuteScalarAsync<TKey>(DialectProvider.ToSelectStatement(select.Statement,CommandFlags.None));
 		}
 
 		/// <summary>An OrmConnection method that gets a scalar.</summary>
@@ -120,27 +141,28 @@ namespace SimpleStack.Orm
 		public async Task<TKey> GetScalarAsync<T, TKey>(Expression<Func<T, TKey>> field, Expression<Func<T, bool>> predicate)
 		{
 			//int maxAgeUnder50 = db.Scalar<Person, int>(x => Sql.Max(x.Age), x => x.Age < 50);
-			var ev = DialectProvider.ExpressionVisitor<T>();
-			return await this.ExecuteScalarAsync<TKey>(DialectProvider.ToSelectStatement(ev.Where(predicate).Select(field),CommandFlags.None));
+			TypedSelectStatement<T> select = new TypedSelectStatement<T>(DialectProvider);
+			select.Select(field);
+			select.Where(predicate);
+			return await this.ExecuteScalarAsync<TKey>(DialectProvider.ToSelectStatement(select.Statement,CommandFlags.None));
 		}
 
-		public async Task<long> CountAsync<T>(Func<SqlExpressionVisitor<T>, SqlExpressionVisitor<T>> expression)
+		public async Task<long> CountAsync<T>(Action<TypedSelectStatement<T>> expression)
 		{
-			var ev = DialectProvider.ExpressionVisitor<T>();
-			return await this.ExecuteScalarAsync<long>(DialectProvider.ToCountStatement(expression(ev)));
-		}
+			TypedSelectStatement<T> select = new TypedSelectStatement<T>(DialectProvider);
+			expression(select);
 
-		/// <summary>
-		///    An OrmConnection method that counts the given database connection.
-		/// </summary>
-		/// <typeparam name="T">Generic type parameter.</typeparam>
-		/// <param name="expression">The expression.</param>
-		/// <returns>A long.</returns>
-		public async Task<long> CountAsync<T>(SqlExpressionVisitor<T> expression)
+			return await this.ExecuteScalarAsync<long>(DialectProvider.ToCountStatement(select.Statement,CommandFlags.None));
+		}
+		
+		public async Task<long> CountAsync(string tableName, Action<DynamicSelectStatement> expression)
 		{
-			return await this.ExecuteScalarAsync<long>(DialectProvider.ToCountStatement(expression));
-		}
+			DynamicSelectStatement select = new DynamicSelectStatement(DialectProvider);
+			expression(select.From(tableName));
 
+			return await this.ExecuteScalarAsync<long>(DialectProvider.ToCountStatement(select.Statement,CommandFlags.None));
+		}
+		
 		/// <summary>
 		///    An OrmConnection method that counts the given database connection.
 		/// </summary>
@@ -149,8 +171,7 @@ namespace SimpleStack.Orm
 		/// <returns>A long.</returns>
 		public async Task<long> CountAsync<T>(Expression<Func<T, bool>> expression)
 		{
-			var ev = DialectProvider.ExpressionVisitor<T>();
-			return await CountAsync(ev.Where(expression));
+			return await CountAsync<T>( e => e.Select(expression) );
 		}
 
 		/// <summary>
@@ -160,59 +181,45 @@ namespace SimpleStack.Orm
 		/// <returns>A long.</returns>
 		public async Task<long> CountAsync<T>()
 		{
-			return await CountAsync(DialectProvider.ExpressionVisitor<T>());
+			return await CountAsync<T>(e => {});
 		}
 
 		public async Task<int> UpdateAsync<T>(T model)
 		{
-			var cmd = DialectProvider.ToUpdateRowStatement(model, DialectProvider.ExpressionVisitor<T>());
+			var s = new TypedUpdateStatement<T>(DialectProvider);
+			s.ValuesOnly(model);
+			var cmd = DialectProvider.ToUpdateStatement(s.Statement,CommandFlags.None);
 			return await this.ExecuteScalarAsync<int>(cmd);
 		}
 
 		public async Task<int> UpdateAsync<T, TKey>(T model, Expression<Func<T, TKey>> onlyFields)
 		{
-			var ev = DialectProvider.ExpressionVisitor<T>();
-			ev.Update(onlyFields);
-			return await UpdateAsync(model, ev);
-		}
-
-		internal async Task<int> UpdateAsync<T>(T model, SqlExpressionVisitor<T> ev)
-		{
-			var cmd = DialectProvider.ToUpdateRowStatement(model, ev);
+			var s = new TypedUpdateStatement<T>(DialectProvider);
+			s.ValuesOnly(model, onlyFields);
+			var cmd = DialectProvider.ToUpdateStatement(s.Statement,CommandFlags.None);
 			return await this.ExecuteScalarAsync<int>(cmd);
 		}
 
-		public async Task<int> UpdateAllAsync<T, TKey>(T obj, Expression<Func<T, TKey>> onlyField, Expression<Func<T, bool>> where = null)
+		public async Task<int> UpdateAllAsync<T, TKey>(object obj, Expression<Func<T, TKey>> onlyField, Expression<Func<T, bool>> where = null)
 		{
-			var ev = DialectProvider.ExpressionVisitor<T>();
-			ev.Where(where);
-			if (onlyField != null)
+			var s = new TypedUpdateStatement<T>(DialectProvider);
+			if (where != null)
 			{
-				ev.Update(onlyField);
+				s.Where(where);
 			}
-			return await UpdateAllAsync<T>(obj, ev);
-		}
 
-		public async Task<int> UpdateAllAsync<T>(object obj, Expression<Func<T, bool>> where = null, Expression<Func<T, object>> onlyField = null)
-		{
-			var ev = DialectProvider.ExpressionVisitor<T>();
-			ev.Where(where);
-			if (onlyField != null)
-			{
-				ev.Update(onlyField);
-			}
-			return await UpdateAllAsync<T>(obj, ev);
-		}
-
-		internal async Task<int> UpdateAllAsync<T>(object obj, SqlExpressionVisitor<T> ev)
-		{
-			var cmd = DialectProvider.ToUpdateAllRowStatement(obj, ev);
+			s.Values(obj, onlyField);
+			
+			var cmd = DialectProvider.ToUpdateStatement(s.Statement,CommandFlags.None);
 			return await this.ExecuteScalarAsync<int>(cmd);
 		}
 
 		public async Task<int> InsertAsync<T>(T obj)
 		{
-			return await this.ExecuteScalarAsync<int>(DialectProvider.ToInsertRowStatement(obj));
+			var insertStatement = new TypedInsertStatement<T>(DialectProvider);
+			insertStatement.Values(obj,new List<string>());
+			
+			return await this.ExecuteScalarAsync<int>(DialectProvider.ToInsertStatement(insertStatement.Statement, CommandFlags.None));
 		}
 
 		/// <summary>An OrmConnection method that inserts all.</summary>
@@ -223,7 +230,11 @@ namespace SimpleStack.Orm
 			var count = 0;
 			foreach (var t in objs)
 			{
-				await this.ExecuteScalarAsync<int>(DialectProvider.ToInsertRowStatement(t));
+				//TODO: Optimize this only generating query once and use different parameters
+				var insertStatement = new TypedInsertStatement<T>(DialectProvider);
+				insertStatement.Values(t, new List<string>());
+				
+				await this.ExecuteScalarAsync<int>(DialectProvider.ToInsertStatement(insertStatement.Statement, CommandFlags.None));
 				count++;
 			}
 
@@ -234,22 +245,25 @@ namespace SimpleStack.Orm
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		/// <param name="obj">       The object.</param>
 		/// <param name="onlyFields">The only fields.</param>
-		public async Task<int> InsertOnlyAsync<T>(T obj, Func<SqlExpressionVisitor<T>, SqlExpressionVisitor<T>> onlyFields)
+		public async Task<int> InsertOnlyAsync<T,TKey>(T obj, Expression<Func<T, TKey>> onlyFields)
 			where T : new()
 		{
-			var ev = DialectProvider.ExpressionVisitor<T>();
-			return await InsertOnlyAsync(obj, onlyFields(ev));
+			var insertStatement = new TypedInsertStatement<T>(DialectProvider);
+			insertStatement.Values(obj, onlyFields);
+
+			return await this.ExecuteScalarAsync<int>(DialectProvider.ToInsertStatement(insertStatement.Statement, CommandFlags.None));
 		}
 
 		/// <summary>An OrmConnection method that inserts an only.</summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		/// <param name="obj">       The object.</param>
 		/// <param name="onlyFields">The only fields.</param>
-		public async Task<int> InsertOnlyAsync<T>(T obj, SqlExpressionVisitor<T> onlyFields) where T : new()
+		public async Task<int> InsertOnlyAsync<T>(T obj, Action<TypedInsertStatement<T>> statement) where T : new()
 		{
-			var ev = DialectProvider.ExpressionVisitor<T>();
-			var sql = DialectProvider.ToInsertRowStatement(new[] {obj}, ev.InsertFields);
-			return await this.ExecuteAsync(sql);
+			var insertStatement = new TypedInsertStatement<T>(DialectProvider);
+			statement(insertStatement);
+			
+			return await this.ExecuteScalarAsync<int>(DialectProvider.ToInsertStatement(insertStatement.Statement, CommandFlags.None));
 		}
 
 		/// <summary>An OrmConnection method that deletes this object.</summary>
@@ -258,28 +272,18 @@ namespace SimpleStack.Orm
 		/// <returns>An int.</returns>
 		public async Task<int> DeleteAllAsync<T>(Expression<Func<T, bool>> where = null)
 		{
-			var ev = DialectProvider.ExpressionVisitor<T>();
-			if (where != null)
-				ev.Where(where);
-			return await DeleteAllAsync(ev.Where(where));
+			return await DeleteAllAsync<T>(x => { x.Where(where); });
 		}
 
 		/// <summary>An OrmConnection method that deletes this object.</summary>
 		/// <typeparam name="T">Generic type parameter.</typeparam>
 		/// <param name="where"> The where.</param>
 		/// <returns>An int.</returns>
-		public async Task<int> DeleteAllAsync<T>(Func<SqlExpressionVisitor<T>, SqlExpressionVisitor<T>> where)
+		public async Task<int> DeleteAllAsync<T>(Action<TypedWhereStatement<T>> where)
 		{
-			return await DeleteAllAsync(where(DialectProvider.ExpressionVisitor<T>()));
-		}
-
-		/// <summary>An OrmConnection method that deletes this object.</summary>
-		/// <typeparam name="T">Generic type parameter.</typeparam>
-		/// <param name="where"> The where.</param>
-		/// <returns>An int.</returns>
-		public async Task<int> DeleteAllAsync<T>(SqlExpressionVisitor<T> where)
-		{
-			return await this.ExecuteScalarAsync<int>(DialectProvider.ToDeleteRowStatement(where));
+			var s = new TypedDeleteStatement<T>(DialectProvider);
+			where(s);
+			return await this.ExecuteScalarAsync<int>(DialectProvider.ToDeleteStatement(s.Statement));
 		}
 
 		/// <summary>An OrmConnection method that deletes this object.</summary>
@@ -288,7 +292,10 @@ namespace SimpleStack.Orm
 		/// <returns>An int.</returns>
 		public async Task<int> DeleteAsync<T>(T obj)
 		{
-			return await this.ExecuteScalarAsync<int>(DialectProvider.ToDeleteRowStatement(obj));
+			var s = new TypedDeleteStatement<T>(DialectProvider);
+			s.AddPrimaryKeyWhereCondition(obj);
+			
+			return await this.ExecuteScalarAsync<int>(DialectProvider.ToDeleteStatement(s.Statement));
 		}
 	}
 }

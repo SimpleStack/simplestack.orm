@@ -122,12 +122,19 @@ db.Select<Dog>(q => Sql.In(q.Breed, "Beagle", "Border Collie", "Golden Retriever
 ```
 
 #### Date part methods
+Use the date function (specific for each database)
 ```csharp
 // SELECT YEAR("BirthDate") FROM DOG
 conn.GetScalar<Dog, int>(x => Sql.Year(x.BirthDate))
+// OR
+conn.GetScalar<Dog, int>(x => x.BirthDate.Year)
+
 // SELECT "Id","Name","Breed","DareBirth","Weight" FROM DOG WHERE MONTH("BirthDate") = 10
 conn.Select<Dog>(x => Sql.Month(x.BirthDate) = 10)
+// OR
+conn.Select<Dog>(x => x.BirthDate.Month = 10)
 ```
+
 #### Aggregation function
 
 ```csharp

@@ -5,14 +5,17 @@ using System.Data.Common;
 using System.Data.SqlClient;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text;
 using Dapper;
+using SimpleStack.Orm.Attributes;
 using SimpleStack.Orm.Expressions;
+using SimpleStack.Orm.Expressions.Statements;
 
 namespace SimpleStack.Orm.SqlServer
 {
 	/// <summary>A SQL server ORM lite dialect provider.</summary>
-	public class SqlServerDialectProvider : DialectProviderBase<SqlServerDialectProvider>
+	public class SqlServerDialectProvider : DialectProviderBase
 	{
 		/// <summary>The time span offset.</summary>
 		private static readonly DateTime timeSpanOffset = new DateTime(1900, 01, 01);
@@ -195,14 +198,6 @@ namespace SimpleStack.Orm.SqlServer
 			_ensureUtc = shouldEnsureUtc;
 		}
 
-		/// <summary>Expression visitor.</summary>
-		/// <typeparam name="T">Generic type parameter.</typeparam>
-		/// <returns>A SqlExpressionVisitor&lt;T&gt;</returns>
-		public override SqlExpressionVisitor<T> ExpressionVisitor<T>()
-		{
-			return new SqlServerExpressionVisitor<T>(this);
-		}
-
 		/// <summary>Query if 'dbCmd' does table exist.</summary>
 		/// <param name="connection">    The database command.</param>
 		/// <param name="tableName">Name of the table.</param>
@@ -329,70 +324,20 @@ namespace SimpleStack.Orm.SqlServer
 								 column);
 		}
 
-		/// <summary>Converts this object to a change column name statement.</summary>
-		/// <param name="modelType">    Type of the model.</param>
-		/// <param name="fieldDef">     The field definition.</param>
-		/// <param name="oldColumnName">Name of the old column.</param>
-		/// <returns>The given data converted to a string.</returns>
-		//public override string ToChangeColumnNameStatement(Type modelType, FieldDefinition fieldDef, string oldColumnName)
-		//{
-		//	var objectName = string.Format("{0}.{1}",
-		//		NamingStrategy.GetTableName(GetModel(modelType).ModelName),
-		//		oldColumnName);
-
-		//	return string.Format("EXEC sp_rename {0}, {1}, {2};",
-		//						 GetQuotedParam(objectName),
-		//						 GetQuotedParam(fieldDef.FieldName),
-		//						 GetQuotedParam("COLUMN"));
-		//}
-
-		public override CommandDefinition ToSelectStatement<T>(SqlExpressionVisitor<T> visitor, CommandFlags flags)
+		public override CommandDefinition ToSelectStatement(SelectStatement statement, CommandFlags flags)
 		{
-			if (!visitor.Rows.HasValue && !visitor.Skip.HasValue)
+			if (statement.Offset == null && (statement.MaxRows == null || statement.MaxRows == int.MaxValue))
 			{
-				return base.ToSelectStatement(visitor,flags);
+				return base.ToSelectStatement(statement, flags);
 			}
 
-			AssertValidSkipRowValues(visitor.Skip, visitor.Rows);
-			var skip = visitor.Skip ?? 0;
-			var take = visitor.Rows ?? int.MaxValue;
-
-			var sql = base.ToSelectStatement(visitor, flags);
-
-			//Temporary hack till we come up with a more robust paging sln for SqlServer
-			if (skip == 0)
+			//Ensure we have an OrderBy clause, this is required by SQLServer paging (and makes more sense anyway)
+			if (statement.OrderByExpression.Length == 0)
 			{
-				if (take == int.MaxValue)
-					return sql;
-
-				if (sql.CommandText.Length < "SELECT".Length) return sql;
-				var selectType = sql.CommandText.ToUpper().StartsWith("SELECT DISTINCT") ? "SELECT DISTINCT" : "SELECT";
-				var newQuery= selectType + " TOP " + take + " " + sql.CommandText.Substring(selectType.Length, sql.CommandText.Length - selectType.Length);
-				return new CommandDefinition(newQuery,sql.Parameters, sql.Transaction,sql.CommandTimeout,sql.CommandType,sql.Flags,sql.CancellationToken);
+				statement.OrderByExpression.Append(statement.Columns.First());
 			}
 
-			var orderBy = !string.IsNullOrEmpty(visitor.OrderByExpression)
-							  ? visitor.OrderByExpression
-							  : BuildOrderByIdExpression(visitor.ModelDefinition);
-
-			visitor.OrderByExpression = string.Empty; // Required because ordering is done by Windowing function
-
-			//todo: review needed only check against sql server 2008 R2
-
-			var selectExpression = visitor.SelectExpression.Remove(visitor.SelectExpression.IndexOf("FROM")).Trim(); //0
-			var tableName = GetQuotedTableName(visitor.ModelDefinition).Trim(); //2
-			var statement = string.Format("{0} {1} {2}", visitor.WhereExpression, visitor.GroupByExpression, visitor.HavingExpression).Trim();
-
-			var retVal = string.Format(
-				"{0} FROM (SELECT ROW_NUMBER() OVER ({1}) As RowNum, * FROM {2} {3} ) AS RowConstrainedResult WHERE RowNum > {4} AND RowNum <= {5}",
-				selectExpression,
-				orderBy,
-				tableName,
-				statement,
-				skip,
-				skip + take);
-
-			return new CommandDefinition(retVal, sql.Parameters, sql.Transaction, sql.CommandTimeout, sql.CommandType, sql.Flags, sql.CancellationToken);
+			return base.ToSelectStatement(statement, flags);
 		}
 
 		protected virtual void AssertValidSkipRowValues(int? skip, int? rows)
@@ -416,12 +361,91 @@ namespace SimpleStack.Orm.SqlServer
 
 		public override string GetLimitExpression(int? skip, int? rows)
 		{
-			return String.Empty;
+			if (!skip.HasValue && !rows.HasValue)
+				return string.Empty;
+			
+			var sql = new StringBuilder();
+			//OFFSET 10 ROWS FETCH NEXT 5 ROWS ONLY;
+			sql.Append("OFFSET ");
+			sql.Append(skip ?? 0);
+			sql.Append(" ROWS");
+
+			if (rows.HasValue)
+			{
+				sql.Append(" FETCH NEXT ");
+				sql.Append(rows.Value);
+				sql.Append(" ROWS ONLY");
+			}
+
+			return sql.ToString();
 		}
 
 		public override string GetDatePartFunction(string name, string quotedColName)
 		{
 			return $"DATEPART({name.ToLower()},{quotedColName})";
 		}
+
+		public override string GetStringFunction(string functionName, string column, IDictionary<string, object> parameters,
+			params string[] availableParameters)
+		{
+			switch (functionName.ToLower())
+			{
+				case "substring":                    
+					//Ensure Offset is start at 1 instead of 0
+					int offset = ((int) parameters[availableParameters[0]]) + 1;
+					parameters[availableParameters[0]] = offset;
+
+					if (parameters.Count == 2)
+					{
+						return $"substring({column},{availableParameters[0]},{availableParameters[1]})";
+					}
+					return $"substring({column},{availableParameters[0]})";
+			}
+			return base.GetStringFunction(functionName, column, parameters, availableParameters);
+		}
+
+		public override IEnumerable<IColumnDefinition> GetTableColumnDefinitions(IDbConnection connection, string tableName, string schemaName = null)
+        {
+            string sqlQuery = @"SELECT *, OBJECTPROPERTY(OBJECT_ID(CONSTRAINT_SCHEMA + '.' + QUOTENAME(CONSTRAINT_NAME)), 'IsPrimaryKey') as IS_PRIMARY_KEY
+                                FROM INFORMATION_SCHEMA.COLUMNS
+                                LEFT JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE ON INFORMATION_SCHEMA.KEY_COLUMN_USAGE.TABLE_NAME = INFORMATION_SCHEMA.COLUMNS.TABLE_NAME
+                                                                             AND INFORMATION_SCHEMA.KEY_COLUMN_USAGE.TABLE_CATALOG = INFORMATION_SCHEMA.COLUMNS.TABLE_CATALOG
+                                                                             AND INFORMATION_SCHEMA.KEY_COLUMN_USAGE.TABLE_SCHEMA = INFORMATION_SCHEMA.COLUMNS.TABLE_SCHEMA
+                                                                             AND INFORMATION_SCHEMA.KEY_COLUMN_USAGE.COLUMN_NAME = INFORMATION_SCHEMA.COLUMNS.COLUMN_NAME
+                                WHERE INFORMATION_SCHEMA.COLUMNS.TABLE_NAME = @TableName ";
+
+
+            if (!string.IsNullOrWhiteSpace(schemaName))
+            {
+                sqlQuery +=" AND TABLE_SCHEMA = @SchemaName";
+            }
+            foreach (var c in connection.Query(sqlQuery, new { TableName = tableName, SchemaName = schemaName }))
+            {
+                yield return new ColumnDefinition
+                             {
+                                 Name         = c.COLUMN_NAME,
+                                 Type         = c.DATA_TYPE,
+                                 DefaultValue = c.COLUMN_DEFAULT,
+                                 PrimaryKey   = c.IS_PRIMARY_KEY == 1,
+                                 FieldLength  = c.CHARACTER_MAXIMUM_LENGTH,
+                                 Nullable     = c.IS_NULLABLE == "YES"
+                             };
+            }
+        }
+
+        public override IEnumerable<ITableDefinition> GetTableDefinitions(
+            IDbConnection connection,
+            string schemaName = null)
+        {
+            string sqlQuery = "SELECT TABLE_SCHEMA, TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE'";
+            foreach (var table in connection.Query(sqlQuery, new { }))
+            {
+                yield return new TableDefinition
+                             {
+                                 Name = table.TABLE_NAME,
+                                 SchemaName = table.TABLE_SCHEMA
+                             };
+            }
+        }
 	}
 }

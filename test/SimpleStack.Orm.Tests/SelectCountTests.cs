@@ -4,6 +4,8 @@ using System.Linq;
 using Dapper;
 using SimpleStack.Orm.Attributes;
 using NUnit.Framework;
+using SimpleStack.Orm.Expressions;
+using SimpleStack.Orm.Expressions.Statements.Typed;
 
 namespace SimpleStack.Orm.Tests
 {
@@ -25,7 +27,15 @@ namespace SimpleStack.Orm.Tests
 			CreateModelWithFieldsOfDifferentTypes(10);
 			using (var conn = OpenDbConnection())
 			{
-				Assert.AreEqual(5, conn.Count<ModelWithFieldsOfDifferentTypes>(x => x.Bool));
+				var v = new TypedSelectStatement<ModelWithFieldsOfDifferentTypes>(_dialectProvider);
+				v.Where(x => x.Bool);
+
+				var select = _dialectProvider.ToSelectStatement(v.Statement,CommandFlags.None);
+				
+				Assert.AreEqual(5, conn.Count<ModelWithFieldsOfDifferentTypes>(x =>
+				{
+					x.Where(q => q.Bool);
+				}));
 			}
 		}
 
@@ -45,7 +55,6 @@ namespace SimpleStack.Orm.Tests
 				{
 					x.Distinct();
 					x.Select(y => y.Age);
-					return x;
 				})); // SELECT COUNT (DISTINCT Age) FROM Person
 			}
 		}

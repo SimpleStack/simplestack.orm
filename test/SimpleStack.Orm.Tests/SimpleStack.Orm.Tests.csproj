@@ -1,29 +1,32 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp1.0;net452</TargetFrameworks>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
     <AssemblyName>SimpleStack.Orm.Tests</AssemblyName>
     <PackageId>SimpleStack.Orm.Tests</PackageId>
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
-    <PackageTargetFallback Condition=" '$(TargetFramework)' == 'netcoreapp1.0' ">$(PackageTargetFallback);portable-net45+win8</PackageTargetFallback>
-    <RuntimeFrameworkVersion Condition=" '$(TargetFramework)' == 'netcoreapp1.0' ">1.0.4</RuntimeFrameworkVersion>
+    <!--<PackageTargetFallback Condition=" '$(TargetFramework)' == 'netcoreapp1.0' ">$(PackageTargetFallback);portable-net45+win8</PackageTargetFallback>
+    <RuntimeFrameworkVersion Condition=" '$(TargetFramework)' == 'netcoreapp1.0' ">1.0.4</RuntimeFrameworkVersion>-->
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\SimpleStack.Orm.SDSQlite\SimpleStack.Orm.SDSQlite.csproj" />
+    <ProjectReference Include="..\..\src\SimpleStack.Orm.SQLite\SimpleStack.Orm.SQLite.csproj" />
     <ProjectReference Include="..\..\src\SimpleStack.Orm\SimpleStack.Orm.csproj" />
+    <ProjectReference Include="..\..\src\SimpleStack.Orm.MySQL\SimpleStack.Orm.MySQL.csproj" />
     <ProjectReference Include="..\..\src\SimpleStack.Orm.PostgreSQL\SimpleStack.Orm.PostgreSQL.csproj" />
     <ProjectReference Include="..\..\src\SimpleStack.Orm.SQLServer\SimpleStack.Orm.SQLServer.csproj" />
-    <ProjectReference Include="..\..\src\SimpleStack.Orm.SQLite\SimpleStack.Orm.SQLite.csproj" />
     <ProjectReference Include="..\..\src\SimpleStack.Orm.MySQLConnector\SimpleStack.Orm.MySQLConnector.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.5.0" />
-    <PackageReference Include="dotnet-test-nunit" Version="3.4.0-beta-3" />
-    <PackageReference Include="NUnit" Version="3.9.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.0.1" />
+    <PackageReference Include="NUnit" Version="3.12.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="3.13.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="3.13.0" />
   </ItemGroup>
 
 </Project>
