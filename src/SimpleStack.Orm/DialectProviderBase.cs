@@ -942,7 +942,7 @@ namespace SimpleStack.Orm
                     parameters[availableParameters[0]] = "%" + parameters[availableParameters[0]].ToString().ToUpper();
                     return $"upper({column}) LIKE {availableParameters[0]} ";
                 case "contains":
-                    parameters[availableParameters[0]] = "%" + parameters[availableParameters[0]].ToString().ToUpper();
+                    parameters[availableParameters[0]] = "%" + parameters[availableParameters[0]].ToString().ToUpper() +"%";
                     return $"upper({column}) LIKE {availableParameters[0]} ";
                 case "substring":
                     //Ensure Offset is start at 1 instead of 0

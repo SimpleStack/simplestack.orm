@@ -22,7 +22,13 @@ namespace SimpleStack.Orm.Tests
 			EstablishContext(10, expected);
 			using (var conn = OpenDbConnection())
 			{
-				var actual = conn.Select<TestType>(q => q.StringColumn.Contains(stringVal));
+				var actual = conn.Select<TestType>(q => q.StringColumn.Contains("gVal"));
+
+				Assert.IsNotNull(actual);
+				Assert.AreEqual(1, actual.Count());
+				CollectionAssert.Contains(actual, expected);
+				
+				actual = conn.Select<TestType>(q => q.StringColumn.Contains("TRINGVALU"));
 
 				Assert.IsNotNull(actual);
 				Assert.AreEqual(1, actual.Count());
@@ -46,7 +52,7 @@ namespace SimpleStack.Orm.Tests
 			EstablishContext(10, expected);
 			using (var conn = OpenDbConnection())
 			{
-				var actual = conn.Select<TestType>(q => q.StringColumn.Contains(stringVal));
+				var actual = conn.Select<TestType>(q => q.StringColumn.Contains("g'Co"));
 
 				Assert.IsNotNull(actual);
 				Assert.AreEqual(1, actual.Count());
@@ -70,7 +76,7 @@ namespace SimpleStack.Orm.Tests
 			EstablishContext(10, expected);
 			using (var conn = OpenDbConnection())
 			{
-				var actual = conn.Select<TestType>(q => q.StringColumn.Contains(stringVal));
+				var actual = conn.Select<TestType>(q => q.StringColumn.Contains("ng\"Con"));
 
 				Assert.IsNotNull(actual);
 				Assert.AreEqual(1, actual.Count());
@@ -94,7 +100,7 @@ namespace SimpleStack.Orm.Tests
 			EstablishContext(10, expected);
 			using (var conn = OpenDbConnection())
 			{
-				var actual = conn.Select<TestType>(q => q.StringColumn.Contains(stringVal));
+				var actual = conn.Select<TestType>(q => q.StringColumn.Contains("ng`Co"));
 
 				Assert.IsNotNull(actual);
 				Assert.AreEqual(1, actual.Count());
