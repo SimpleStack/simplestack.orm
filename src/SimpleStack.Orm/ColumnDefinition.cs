@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Text;
 
 namespace SimpleStack.Orm
@@ -8,25 +9,35 @@ namespace SimpleStack.Orm
     {
         string Name { get; }
         bool Nullable { get; }
-        int? FieldLength { get; }
-        string Type { get; }
+        int? Length { get; }
+        int? Precision { get; }
+        int? Scale { get; }
+        string Definition { get; }
+        DbType DbType { get; }
         bool PrimaryKey { get; }
         string DefaultValue { get; }
     }
 
-    public class ColumnDefinition : IColumnDefinition
+    public class ColumnType
+    {
+        public int? Length { get; set; }
+        
+        public int? Precision { get; set; }
+        
+        public int? Scale { get; set; }
+        
+        public string Definition { get; set; }
+        
+        public DbType DbType { get; set; }
+    }
+
+    public class ColumnDefinition : ColumnType, IColumnDefinition
     {
         /// <inheritdoc />
         public string Name { get; set; }
 
         /// <inheritdoc />
         public bool Nullable { get; set; }
-
-        /// <inheritdoc />
-        public int? FieldLength { get; set; }
-
-        /// <inheritdoc />
-        public string Type { get; set; }
 
         /// <inheritdoc />
         public bool PrimaryKey { get; set; }

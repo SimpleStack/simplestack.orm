@@ -7,32 +7,20 @@ using Dapper;
 using SimpleStack.Orm.Attributes;
 using SimpleStack.Orm.Expressions;
 using MySql.Data.MySqlClient;
+using SimpleStack.Orm.MySQL;
 
 namespace SimpleStack.Orm.MySQLConnector
 {
 	/// <summary>my SQL dialect provider.</summary>
 	public class MySqlConnectorDialectProvider : DialectProviderBase
 	{
-		/// <summary>The instance.</summary>
-		public static MySqlConnectorDialectProvider Instance = new MySqlConnectorDialectProvider();
-
-		/// <summary>The text column definition.</summary>
-		private const string TextColumnDefinition = "TEXT";
-
-		/// <summary>
+				/// <summary>
 		/// Prevents a default instance of the NServiceKit.OrmLite.MySql.MySqlDialectProvider class from
 		/// being created.
 		/// </summary>
-		public MySqlConnectorDialectProvider()
+		public MySqlConnectorDialectProvider():base(new MySqlConnectorTypeMapper())
 		{
 			base.AutoIncrementDefinition = "AUTO_INCREMENT";
-			base.IntColumnDefinition = "int(11)";
-			base.BoolColumnDefinition = "tinyint(1)";
-			base.TimeColumnDefinition = "time";
-			base.DecimalColumnDefinition = "decimal(38,6)";
-			base.GuidColumnDefinition = "CHAR(36)";// "char(32)" //TODO: Fix Guid length in MySQL
-			base.DefaultStringLength = 255;
-			base.InitColumnTypeMap();
 			base.DefaultValueFormat = " DEFAULT '{0}'";
 			base.SelectIdentitySql = "SELECT LAST_INSERT_ID()";
 		}
@@ -99,29 +87,29 @@ namespace SimpleStack.Orm.MySQLConnector
 			return result > 0;
 		}
 
-		/// <summary>Gets column definition.</summary>
-		/// <param name="fieldDefinition">The field definition.</param>
-		/// <returns>The column definition.</returns>
-		public string GetColumnDefinition(FieldDefinition fieldDefinition)
-		{
-			if (fieldDefinition.PropertyInfo.FirstAttribute<TextAttribute>() != null)
-			{
-				var sql = new StringBuilder();
-				sql.AppendFormat("{0} {1}", GetQuotedColumnName(fieldDefinition.FieldName), TextColumnDefinition);
-				sql.Append(fieldDefinition.IsNullable ? " NULL" : " NOT NULL");
-				return sql.ToString();
-			}
-
-			return base.GetColumnDefinition(
-				 fieldDefinition.FieldName,
-				 fieldDefinition.FieldType,
-				 fieldDefinition.IsPrimaryKey,
-				 fieldDefinition.AutoIncrement,
-				 fieldDefinition.IsNullable,
-				 fieldDefinition.FieldLength,
-				 null,
-				 fieldDefinition.DefaultValue);
-		}
+//		/// <summary>Gets column definition.</summary>
+//		/// <param name="fieldDefinition">The field definition.</param>
+//		/// <returns>The column definition.</returns>
+//		public string GetColumnDefinition(FieldDefinition fieldDefinition)
+//		{
+//			if (fieldDefinition.PropertyInfo.FirstAttribute<TextAttribute>() != null)
+//			{
+//				var sql = new StringBuilder();
+//				sql.AppendFormat("{0} {1}", GetQuotedColumnName(fieldDefinition.FieldName), TextColumnDefinition);
+//				sql.Append(fieldDefinition.IsNullable ? " NULL" : " NOT NULL");
+//				return sql.ToString();
+//			}
+//
+//			return base.GetColumnDefinition(
+//				 fieldDefinition.FieldName,
+//				 fieldDefinition.FieldType,
+//				 fieldDefinition.IsPrimaryKey,
+//				 fieldDefinition.AutoIncrement,
+//				 fieldDefinition.IsNullable,
+//				 fieldDefinition.FieldLength,
+//				 null,
+//				 fieldDefinition.DefaultValue);
+//		}
 
 		public override string GetDatePartFunction(string name, string quotedColName)
 		{
@@ -145,8 +133,6 @@ namespace SimpleStack.Orm.MySQLConnector
 					throw new NotImplementedException();
 			}
 		}
-
-        //In this case SchemaName = dbName
         public override IEnumerable<IColumnDefinition> GetTableColumnDefinitions(IDbConnection connection, string tableName, string schemaName = null)
         {
             string sqlQuery = "select * from INFORMATION_SCHEMA.COLUMNS where TABLE_NAME = @TableName";
@@ -154,30 +140,92 @@ namespace SimpleStack.Orm.MySQLConnector
             {
                 sqlQuery += " AND TABLE_SCHEMA = @SchemaName";
             }
-            foreach (var c in connection.Query(sqlQuery, new { TableName = tableName, SchemaName = schemaName }))
+            
+            foreach (var c in connection.Query<InformationSchema>(sqlQuery, new { TableName = tableName, SchemaName = schemaName }))
             {
+	            var ci = GetDbType(c.DATA_TYPE,c.CHARACTER_MAXIMUM_LENGTH, c.COLUMN_TYPE);
+	            
                 yield return new ColumnDefinition
-                {
-                    Name = c.COLUMN_NAME,
-                    Type = c.DATA_TYPE,
-                    DefaultValue = c.COLUMN_DEFAULT,
-                    Nullable = c.IS_NULLABLE == "YES",
-                    PrimaryKey = c.COLUMN_KEY == "PRI",
-                    FieldLength = (int?)c.CHARACTER_MAXIMUM_LENGTH
-                };
+                             {
+                                 Name         = c.COLUMN_NAME,
+                                 Definition   = c.DATA_TYPE,
+                                 DefaultValue = c.COLUMN_DEFAULT,
+                                 Nullable     = c.IS_NULLABLE == "YES",
+                                 PrimaryKey   = c.COLUMN_KEY == "PRI",
+                                 Length       = c.CHARACTER_MAXIMUM_LENGTH,
+                                 DbType       = c.COLUMN_TYPE == "tinyint(1)" ? DbType.Boolean : ci,
+                                 Precision    = c.NUMERIC_PRECISION,
+	                             Scale        = c.NUMERIC_SCALE
+                             };
             }
         }
 
-        public override IEnumerable<ITableDefinition> GetTableDefinitions(IDbConnection connection,string schemaName = null)
+        public override IEnumerable<ITableDefinition> GetTableDefinitions(IDbConnection connection, string schemaName = null)
         {
             string sqlQuery = "SELECT * FROM INFORMATION_SCHEMA.TABLES where TABLE_TYPE = 'BASE TABLE'";
             if (!string.IsNullOrWhiteSpace(schemaName))
             {
                 sqlQuery += " AND TABLE_SCHEMA=@SchemaName";
             }
-            foreach (var table in connection.Query(sqlQuery, new {SchemaName = schemaName}))
+            foreach (var table in connection.Query(sqlQuery, new { SchemaName = schemaName }))
             {
-                yield return new TableDefinition { Name = table.TABLE_NAME, SchemaName = table.TABLE_SCHEMA };
+                yield return new TableDefinition { Name = table.TABLE_NAME, SchemaName = table.TABLE_SCHEMA};
+            }
+        }
+        
+        protected virtual DbType GetDbType(string dataType, int? length, string columnType)
+        {
+	        bool unsigned = columnType.ToLower().Contains("unsigned");
+	        
+            switch (dataType.ToUpper())
+            {
+                case "VARCHAR":
+                case "TINYTEXT":
+                case "MEDIUMTEXT":
+                case "TEXT":
+                case "LONGTEXT":
+                    return TypesMapper.UseUnicode ? DbType.String : DbType.AnsiString;
+                case "BOOLEAN":
+                    return DbType.Boolean;
+                case "BIT":
+                case "TINYINT":
+                    return unsigned ? DbType.Byte : DbType.SByte;
+                case "SMALLINT":
+                case "YEAR":
+                    return unsigned ? DbType.UInt16 : DbType.Int16;
+                case "INT":
+                case "INTEGER":
+                case "MEDIUMINT":
+                    return unsigned ? DbType.UInt32 : DbType.Int32;
+                case "BIGINT":
+                    return unsigned ? DbType.UInt64 : DbType.Int64;
+                case "FLOAT":
+                    return DbType.Single;
+                case "DOUBLE":
+                    return DbType.Double;
+                case "NUMERIC":
+                case "DEC" :
+                case "DECIMAL":
+                    return DbType.Decimal;
+                case "TIME":
+                    return DbType.Time;
+                case "DATE":
+                    return DbType.Date;
+                case "DATETIME":
+                case "TIMESTAMP":
+                    return DbType.DateTime;
+                case "CHAR":
+                    return length.HasValue && length == 36 ? DbType.Guid : DbType.StringFixedLength;
+                case "BINARY":
+                case "CHAR BYTE":
+                case "VARBINARY":
+                case "TINYBLOB":
+                case "MEDIUMBLOB": 
+                case "LONGBLOB":
+                case "BLOB":
+                    return DbType.Binary;
+                default:
+                    return DbType.Object;
             }
         }
     }

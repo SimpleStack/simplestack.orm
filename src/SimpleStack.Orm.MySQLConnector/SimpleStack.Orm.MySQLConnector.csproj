@@ -27,4 +27,10 @@
     <PackageReference Include="MySqlConnector" Version="0.56.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="..\SimpleStack.Orm.MySQL\ColumnsInformationSchema.cs">
+      <Link>ColumnsInformationSchema.cs</Link>
+    </Compile>
+  </ItemGroup>
+
 </Project>

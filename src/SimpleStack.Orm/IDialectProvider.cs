@@ -40,6 +40,8 @@ namespace SimpleStack.Orm
 		/// <summary>Gets or sets the naming strategy.</summary>
 		/// <value>The naming strategy.</value>
 		INamingStrategy NamingStrategy { get; set; }
+		
+		IDbTypeMapper TypesMapper { get; set; }
 
 		string GetParameterName(int parameterCount);
 

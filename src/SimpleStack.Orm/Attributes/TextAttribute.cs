@@ -2,7 +2,7 @@
 
 namespace SimpleStack.Orm.Attributes
 {
-	/// <summary>Primary key attribute. use to indicate that property is part of the pk.</summary>
+	/// <summary>Text attribute. Use to indicate that property contains a large amount of text.</summary>
 	[AttributeUsage(AttributeTargets.Property)]
 	public class TextAttribute : Attribute
 	{
