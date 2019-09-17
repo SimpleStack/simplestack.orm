@@ -171,7 +171,7 @@ namespace SimpleStack.Orm
 		/// <returns>A long.</returns>
 		public async Task<long> CountAsync<T>(Expression<Func<T, bool>> expression)
 		{
-			return await CountAsync<T>( e => e.Select(expression) );
+			return await CountAsync<T>( e => e.Where(expression) );
 		}
 
 		/// <summary>
