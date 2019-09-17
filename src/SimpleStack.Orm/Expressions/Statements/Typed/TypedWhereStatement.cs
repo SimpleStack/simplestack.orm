@@ -26,7 +26,18 @@ namespace SimpleStack.Orm.Expressions.Statements.Typed
         {
             return new TableWhereExpresionVisitor<T>(_dialectProvider, WhereStatement.Parameters, _modelDefinition);
         }
-
+        
+        /// <summary>
+        /// Used to overwrite the tablename generated from the Typed parameter
+        /// </summary>
+        /// <param name="tableName">The new table name</param>
+        /// <returns></returns>
+        public virtual TypedWhereStatement<T> From(string tableName)
+        {
+            WhereStatement.TableName = _dialectProvider.GetQuotedTableName(tableName);
+            return this;
+        }
+        
         public virtual TypedWhereStatement<T> Clear()
         {
             WhereStatement.Clear();
