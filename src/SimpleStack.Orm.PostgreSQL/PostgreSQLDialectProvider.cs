@@ -231,6 +231,7 @@ namespace SimpleStack.Orm.PostgreSQL
                     return DbType.Binary;
                 case "time without time zone":
                     return DbType.Time;
+                case "date":
                 case "timestamp without time zone":
                     return DbType.DateTime;
                 case "timestamp whith time zone":
