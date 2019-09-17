@@ -187,7 +187,8 @@ namespace SimpleStack.Orm.SqlServer
 			//Ensure we have an OrderBy clause, this is required by SQLServer paging (and makes more sense anyway)
 			if (statement.OrderByExpression.Length == 0)
 			{
-				statement.OrderByExpression.Append(statement.Columns.First());
+				// Add Order BY 1
+				statement.OrderByExpression.Append(1);
 			}
 
 			return base.ToSelectStatement(statement, flags);
