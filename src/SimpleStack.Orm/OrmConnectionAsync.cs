@@ -297,5 +297,114 @@ namespace SimpleStack.Orm
 			
 			return await this.ExecuteScalarAsync<int>(DialectProvider.ToDeleteStatement(s.Statement));
 		}
+		
+		public async Task CreateTableAsync<T>(bool dropIfExists)
+		{
+			if(!dropIfExists && await TableExistsAsync<T>())
+				throw new OrmException("Table already exists");
+
+			var tableType = typeof (T);
+			await CreateTableAsync(dropIfExists, tableType);
+		}
+
+		public async Task CreateTableIfNotExistsAsync<T>()
+		{
+			var tableType = typeof(T);
+			await CreateTableAsync(false, tableType);
+		}
+
+		public async Task<bool> TableExistsAsync<T>()
+		{
+			var tableModelDef = typeof(T).GetModelDefinition();
+			return DialectProvider.DoesTableExist(this,DialectProvider.NamingStrategy.GetTableName(tableModelDef.ModelName));
+		}
+
+		public async Task<bool> TableExistsAsync(string tableName)
+		{
+			return DialectProvider.DoesTableExist(this, tableName);
+		}
+
+		public async Task<bool> DropTableIfExistsAsync<T>()
+		{
+			if (await TableExistsAsync<T>())
+			{
+				var tableModelDef = typeof(T).GetModelDefinition();
+				await DropTableAsync(tableModelDef);
+			}
+			return false;
+		}
+
+		/// <summary>An IDbCommand method that creates a table.</summary>
+		/// <exception cref="Exception">Thrown when an exception error condition occurs.</exception>
+		/// <param name="overwrite">true to overwrite, false to preserve.</param>
+		/// <param name="modelType">Type of the model.</param>
+		private async Task CreateTableAsync(bool overwrite, Type modelType)
+		{
+			var modelDef = modelType.GetModelDefinition();
+
+			var dialectProvider = DialectProvider;
+			var tableName = dialectProvider.NamingStrategy.GetTableName(modelDef.ModelName);
+			var tableExists = dialectProvider.DoesTableExist(this, tableName);
+
+			if (overwrite && tableExists)
+			{
+				await DropTableAsync(modelDef);
+				tableExists = false;
+			}
+
+			if (!tableExists)
+			{
+				await this.ExecuteAsync(dialectProvider.ToCreateTableStatement(modelDef));
+
+				var sqlIndexes = dialectProvider.ToCreateIndexStatements(modelDef);
+				foreach (var sqlIndex in sqlIndexes)
+				{
+					await this.ExecuteAsync(sqlIndex);
+				}
+
+				var sequenceList = dialectProvider.SequenceList(modelDef);
+				if (sequenceList.Count > 0)
+				{
+					foreach (var seq in sequenceList)
+					{
+						if (dialectProvider.DoesSequenceExist(this, seq) == false)
+						{
+							var seqSql = dialectProvider.ToCreateSequenceStatement(modelDef, seq);
+							await this.ExecuteAsync(seqSql);
+						}
+					}
+				}
+				else
+				{
+					var sequences = dialectProvider.ToCreateSequenceStatements(modelDef);
+					foreach (var seq in sequences)
+					{
+						await this.ExecuteAsync(seq);
+					}
+				}
+			}
+		}
+
+		/// <summary>Drop table (Table MUST exists).</summary>
+		/// <param name="modelDef">The model definition.</param>
+		private async Task DropTableAsync(ModelDefinition modelDef)
+		{
+			var dropTableFks = DialectProvider.GetDropForeignKeyConstraints(modelDef);
+			if (!string.IsNullOrEmpty(dropTableFks))
+			{
+				await this.ExecuteAsync(dropTableFks);
+			}
+			await this.ExecuteAsync(DialectProvider.GetDropTableStatement(modelDef));
+		}
+
+        public async Task<IEnumerable<ITableDefinition>> GetTablesInformationAsync(string schemaName = null)
+        {
+            return DialectProvider.GetTableDefinitions(DbConnection, schemaName);
+        }
+        
+        public async Task<IEnumerable<IColumnDefinition>> GetTableColumnsInformationAsync(string tableName, string schemaName = null)
+        {
+            return DialectProvider.GetTableColumnDefinitions(DbConnection, tableName, schemaName);
+        }
 	}
 }
