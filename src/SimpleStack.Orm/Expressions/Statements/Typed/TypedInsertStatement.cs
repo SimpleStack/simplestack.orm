@@ -49,9 +49,13 @@ namespace SimpleStack.Orm.Expressions.Statements.Typed
 
             foreach (var fieldDef in fields)
             {
-                var pname = _dialectProvider.GetParameterName(Statement.Parameters.Count);
-                Statement.Parameters.Add(pname, fieldDef.GetValue(values));
-                Statement.InsertFields.Add(_dialectProvider.GetQuotedColumnName(fieldDef.FieldName));
+                var v = fieldDef.GetValue(values);
+                if (fieldDef.DefaultValue == null || v != null)
+                {
+                    var pname = _dialectProvider.GetParameterName(Statement.Parameters.Count);
+                    Statement.Parameters.Add(pname,v);
+                    Statement.InsertFields.Add(_dialectProvider.GetQuotedColumnName(fieldDef.FieldName));
+                }
             }
 
             return this;
