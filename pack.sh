@@ -9,6 +9,6 @@ dotnet pack -c Release -o nuget src/SimpleStack.Orm.PostgreSQL
 dotnet restore src/SimpleStack.Orm.SQLite
 dotnet pack -c Release -o nuget src/SimpleStack.Orm.SQLite
 dotnet restore src/SimpleStack.Orm.SDSQlite
-dotnet pack -c Release -o nuget src/SimpleStack.Orm.SDSQLite
+dotnet pack -c Release -o nuget src/SimpleStack.Orm.SDSQlite
 dotnet restore src/SimpleStack.Orm.SQLServer
 dotnet pack -c Release -o nuget src/SimpleStack.Orm.SQLServer
