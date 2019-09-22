@@ -30,7 +30,7 @@ namespace SimpleStack.Orm
         public string AutoIncrementDefinition = "AUTOINCREMENT";
 
         /// <summary>The default value format.</summary>
-        public string DefaultValueFormat = " DEFAULT ({0})";
+        public string DefaultValueFormat = " DEFAULT ('{0}')";
 
         /// <summary>
         ///     Initializes a new instance of the NServiceKit.OrmLite.OrmLiteDialectProviderBase&lt;
@@ -293,7 +293,7 @@ namespace SimpleStack.Orm
             var sbConstraints = new StringBuilder();
             var sbPrimaryKeys = new StringBuilder();
 
-            foreach (var fieldDef in modelDef.FieldDefinitions)
+            foreach (var fieldDef in modelDef.FieldDefinitions.Where(x => !x.IsComputed))
             {
                 if (sbColumns.Length != 0) sbColumns.Append(", \n  ");
 
@@ -414,7 +414,11 @@ namespace SimpleStack.Orm
         {
             foreach (var fd in modelDef.FieldDefinitions)
             {
-                if (fd.FieldName != fd.Name)
+                if (fd.IsComputed)
+                {
+                    yield return $"{fd.ComputeExpression} AS {fd.Name}";
+                }
+                else if (fd.FieldName != fd.Name)
                 {
                     yield return $"{GetQuotedColumnName(fd.FieldName)} AS {fd.Name}";
                 }
