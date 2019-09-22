@@ -410,24 +410,19 @@ namespace SimpleStack.Orm
         /// <summary>Gets column names.</summary>
         /// <param name="modelDef">The model definition.</param>
         /// <returns>The column names.</returns>
-        public virtual string GetColumnNames(ModelDefinition modelDef)
+        public virtual IEnumerable<string> GetColumnNames(ModelDefinition modelDef)
         {
-            var sqlColumns = new StringBuilder();
-
             foreach (var fd in modelDef.FieldDefinitions)
             {
-                if (sqlColumns.Length > 0)
-                    sqlColumns.Append(", ");
-
-                sqlColumns.Append(GetQuotedColumnName(fd.FieldName));
-
                 if (fd.FieldName != fd.Name)
                 {
-                    sqlColumns.AppendFormat(" AS {0} ", fd.Name);
+                    yield return $"{GetQuotedColumnName(fd.FieldName)} AS {fd.Name}";
+                }
+                else
+                {
+                    yield return GetQuotedColumnName(fd.FieldName);
                 }
             }
-
-            return sqlColumns.ToString();
         }
 
         /// <summary>Converts a tableType to a create sequence statements.</summary>

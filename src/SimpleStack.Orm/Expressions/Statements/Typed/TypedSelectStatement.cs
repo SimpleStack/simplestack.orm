@@ -14,10 +14,9 @@ namespace SimpleStack.Orm.Expressions.Statements.Typed
         {
             _dialectProvider = dialectProvider;
             _modelDefinition = ModelDefinition<T>.Definition;
-            Statement.TableName = _dialectProvider.GetQuotedTableName(
-                _modelDefinition.Alias ?? _modelDefinition.ModelName);
+            Statement.TableName = _dialectProvider.GetQuotedTableName(_modelDefinition.Alias ?? _modelDefinition.ModelName);
 
-            Statement.Columns.AddRange(_dialectProvider.GetColumnNames(_modelDefinition).Split(','));
+            Statement.Columns.AddRange(_dialectProvider.GetColumnNames(_modelDefinition));
         }
 
         public SelectStatement Statement { get; } = new SelectStatement();
@@ -51,7 +50,7 @@ namespace SimpleStack.Orm.Expressions.Statements.Typed
         public TypedSelectStatement<T> Select<TKey>(Expression<Func<T, TKey>> fields)
         {
             Statement.Columns.Clear();
-            Statement.Columns.AddRange(GetFieldsExpressionVisitor(true).VisitExpression(fields).Split(',').ToList());
+            Statement.Columns.AddRange(GetFieldsExpressionVisitor(true).VisitExpression(fields).Split(','));
             return this;
         }
 

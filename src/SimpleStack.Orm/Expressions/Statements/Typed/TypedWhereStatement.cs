@@ -8,7 +8,6 @@ namespace SimpleStack.Orm.Expressions.Statements.Typed
         private readonly IDialectProvider _dialectProvider;
         private readonly ModelDefinition _modelDefinition;
 
-
         internal TypedWhereStatement(IDialectProvider dialectProvider)
         {
             _dialectProvider = dialectProvider;
