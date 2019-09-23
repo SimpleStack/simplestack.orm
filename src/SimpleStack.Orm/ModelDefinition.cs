@@ -76,7 +76,7 @@ namespace SimpleStack.Orm
 		public List<FieldDefinition> FieldDefinitions { get; set; }
 
         /// <summary>Array of field definitions.</summary>
-		private FieldDefinition[] fieldDefinitionsArray;
+		private FieldDefinition[] _fieldDefinitionsArray;
 
         /// <summary>Gets an array of field definitions.</summary>
         /// <value>An Array of field definitions.</value>
@@ -84,11 +84,11 @@ namespace SimpleStack.Orm
 		{
 			get
 			{
-				if (fieldDefinitionsArray == null)
+				if (_fieldDefinitionsArray == null)
 				{
-					fieldDefinitionsArray = FieldDefinitions.ToArray();
+					_fieldDefinitionsArray = FieldDefinitions.ToArray();
 				}
-				return fieldDefinitionsArray;
+				return _fieldDefinitionsArray;
 			}
 		}
 

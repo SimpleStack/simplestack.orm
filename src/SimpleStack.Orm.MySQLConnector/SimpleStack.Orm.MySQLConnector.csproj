@@ -12,10 +12,10 @@
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
-    <Version>1.2.0-beta3</Version>
+    <Version>1.2.0-beta9</Version>
     <AssemblyVersion>1.2.0.0</AssemblyVersion>
     <FileVersion>1.2.0.0</FileVersion>
-    <PackageVersion>1.2.0-beta7</PackageVersion>
+    <PackageVersion>1.2.0-beta9</PackageVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -25,6 +25,12 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.CSharp" Version="4.5.0" />
     <PackageReference Include="MySqlConnector" Version="0.56.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\SimpleStack.Orm.MySQL\ColumnsInformationSchema.cs">
+      <Link>ColumnsInformationSchema.cs</Link>
+    </Compile>
   </ItemGroup>
 
 </Project>

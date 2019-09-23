@@ -13,18 +13,9 @@ namespace SimpleStack.Orm.SDSQlite
 		/// Initializes a new instance of the NServiceKit.OrmLite.Sqlite.SqliteOrmLiteDialectProviderBase
 		/// class.
 		/// </summary>
-		public SqliteDialectProvider()
+		public SqliteDialectProvider():base(new SqliteTypeMapper())
 		{
-			base.DateTimeColumnDefinition = base.StringColumnDefinition;
-			base.BoolColumnDefinition = base.IntColumnDefinition;
-			//base.GuidColumnDefinition = "GUID";
 			base.SelectIdentitySql = "SELECT last_insert_rowid()";
-
-			base.InitColumnTypeMap();
-
-			// add support for DateTimeOffset
-			DbTypeMap.Set(DbType.DateTimeOffset, StringColumnDefinition);
-			DbTypeMap.Set(DbType.DateTimeOffset, StringColumnDefinition);
 		}
 		
 		/// <summary>Creates a connection.</summary>
@@ -71,13 +62,28 @@ namespace SimpleStack.Orm.SDSQlite
 		/// <param name="scale">        The scale.</param>
 		/// <param name="defaultValue"> The default value.</param>
 		/// <returns>The column definition.</returns>
-		public override string GetColumnDefinition(string fieldName, Type fieldType, bool isPrimaryKey, bool autoIncrement, bool isNullable, int? fieldLength, int? scale, string defaultValue)
+		public override string GetColumnDefinition(string fieldName, Type fieldType, bool isPrimaryKey, bool autoIncrement, bool isNullable, int? fieldLength, int? scale, object defaultValue)
 		{
-			// http://www.sqlite.org/lang_createtable.html#rowid
-			var ret = base.GetColumnDefinition(fieldName, fieldType, isPrimaryKey, autoIncrement, isNullable, fieldLength, scale, defaultValue);
-			if (isPrimaryKey)
-				return ret.Replace(" BIGINT ", " INTEGER ");
-			return ret;
+			// Autoincrement are always INTEGER PRIMARY KEYS
+			if (autoIncrement)
+				return base.GetColumnDefinition(
+					fieldName, 
+					typeof(int), 
+					true, 
+					autoIncrement, 
+					isNullable, 
+					fieldLength,
+					scale, 
+					defaultValue);
+
+			return base.GetColumnDefinition(fieldName, 
+				fieldType, 
+				isPrimaryKey, 
+				autoIncrement, 
+				isNullable, 
+				fieldLength,
+				scale, 
+				defaultValue);
 		}
 
 		public override string GetDatePartFunction(string name, string quotedColName)
@@ -108,14 +114,15 @@ namespace SimpleStack.Orm.SDSQlite
             string sqlQuery = $"pragma table_info('{tableName}')";
             foreach (var c in connection.Query(sqlQuery))
             {
-                yield return new ColumnDefinition
-                             {
-                                 Name         = c.name,
-                                 Type         = c.type,
-                                 Nullable     = c.notnull == 1,
-                                 PrimaryKey   = c.pk == 1,
-                                 DefaultValue = c.dflt_value
-                             };
+	            yield return new ColumnDefinition
+	            {
+		            Name = c.name,
+		            Definition = c.type,
+		            Nullable = c.notnull == 1,
+		            PrimaryKey = c.pk == 1,
+		            DefaultValue = c.dflt_value,
+		            DbType = DbType.String
+	            };
             }
         }
 

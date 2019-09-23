@@ -251,113 +251,36 @@ namespace SimpleStack.Orm
 
 		public void CreateTable<T>(bool dropIfExists)
 		{
-			if(!dropIfExists && TableExists<T>())
-				throw new OrmException("Table already exists");
-
-			var tableType = typeof (T);
-			CreateTable(dropIfExists, tableType);
+			CreateTableAsync<T>(dropIfExists).Wait();
 		}
 
 		public void CreateTableIfNotExists<T>()
 		{
-			var tableType = typeof(T);
-			CreateTable(false, tableType);
+			CreateTableIfNotExistsAsync<T>().Wait();
 		}
 
 		public bool TableExists<T>()
 		{
-			var tableModelDef = typeof(T).GetModelDefinition();
-			return DialectProvider.DoesTableExist(this,DialectProvider.NamingStrategy.GetTableName(tableModelDef.ModelName));
+			return TableExistsAsync<T>().Result;
 		}
 
 		public bool TableExists(string tableName)
 		{
-			return DialectProvider.DoesTableExist(this, tableName);
+			return TableExistsAsync(tableName).Result;
 		}
 
 		public bool DropTableIfExists<T>()
 		{
-			if (TableExists<T>())
-			{
-				var tableModelDef = typeof(T).GetModelDefinition();
-				DropTable(tableModelDef);
-			}
-			return false;
+			return DropTableIfExistsAsync<T>().Result;
 		}
 
-		/// <summary>An IDbCommand method that creates a table.</summary>
-		/// <exception cref="Exception">Thrown when an exception error condition occurs.</exception>
-		/// <param name="overwrite">true to overwrite, false to preserve.</param>
-		/// <param name="modelType">Type of the model.</param>
-		private void CreateTable(bool overwrite, Type modelType)
+		public IEnumerable<ITableDefinition> GetTablesInformation(string schemaName = null)
 		{
-			var modelDef = modelType.GetModelDefinition();
-
-			var dialectProvider = DialectProvider;
-			var tableName = dialectProvider.NamingStrategy.GetTableName(modelDef.ModelName);
-			var tableExists = dialectProvider.DoesTableExist(this, tableName);
-
-			if (overwrite && tableExists)
-			{
-				DropTable(modelDef);
-				tableExists = false;
-			}
-
-			if (!tableExists)
-			{
-				this.Execute(dialectProvider.ToCreateTableStatement(modelDef));
-
-				var sqlIndexes = dialectProvider.ToCreateIndexStatements(modelDef);
-				foreach (var sqlIndex in sqlIndexes)
-				{
-					this.Execute(sqlIndex);
-				}
-
-				var sequenceList = dialectProvider.SequenceList(modelDef);
-				if (sequenceList.Count > 0)
-				{
-					foreach (var seq in sequenceList)
-					{
-						if (dialectProvider.DoesSequenceExist(this, seq) == false)
-						{
-							var seqSql = dialectProvider.ToCreateSequenceStatement(modelDef, seq);
-							this.Execute(seqSql);
-						}
-					}
-				}
-				else
-				{
-					var sequences = dialectProvider.ToCreateSequenceStatements(modelDef);
-					foreach (var seq in sequences)
-					{
-						this.Execute(seq);
-					}
-				}
-			}
+			return GetTablesInformationAsync(schemaName).Result;
 		}
-
-		/// <summary>Drop table (Table MUST exists).</summary>
-		/// <param name="modelDef">The model definition.</param>
-		private void DropTable(ModelDefinition modelDef)
-		{
-			var dialectProvider = DialectProvider;
-			var tableName = dialectProvider.NamingStrategy.GetTableName(modelDef.ModelName);
-
-			var dropTableFks = DialectProvider.GetDropForeignKeyConstraints(modelDef);
-			if (!string.IsNullOrEmpty(dropTableFks))
-			{
-				this.Execute(dropTableFks);
-			}
-			this.Execute(DialectProvider.GetDropTableStatement(modelDef));
-		}
-
-        public IEnumerable<ITableDefinition> GetTablesInformation(string schemaName = null)
-        {
-            return DialectProvider.GetTableDefinitions(DbConnection, schemaName);
-        }
         public IEnumerable<IColumnDefinition> GetTableColumnsInformation(string tableName, string schemaName = null)
         {
-            return DialectProvider.GetTableColumnDefinitions(DbConnection, tableName, schemaName);
+	        return GetTableColumnsInformationAsync(tableName, schemaName).Result;
         }
     }
 }

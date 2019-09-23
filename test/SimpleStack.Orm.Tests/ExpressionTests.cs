@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -82,7 +83,7 @@ namespace SimpleStack.Orm.Tests
 			public DbType ColumnType => DbType.Int32;
 		}
 
-		public class JsonTypeHandler : SqlMapper.ITypeHandler
+		public class JsonTypeHandler : SqlMapper.ITypeHandler, ITypeHandlerColumnType
 		{
 			private JsonSerializer s = new JsonSerializer();
 
@@ -105,6 +106,15 @@ namespace SimpleStack.Orm.Tests
 					return s.Deserialize(rr, destinationType);
 				}
 			}
+
+			public int? Length
+			{
+				get => null;
+			}
+			public DbType ColumnType
+			{
+				get => DbType.String;
+			}
 		}
 
 		private OrmConnection _conn;
@@ -117,7 +127,7 @@ namespace SimpleStack.Orm.Tests
 
 		[SetUp]
 		public virtual void Setup()
-		{
+		{	
 			if (_conn != null)
 			{
 				_conn.Dispose();
@@ -125,7 +135,7 @@ namespace SimpleStack.Orm.Tests
 			}
 
 			SqlMapper.ResetTypeHandlers();
-
+			
 			SqlMapper.AddTypeHandler(typeof(TestEnum), new EnumAsIntTypeHandler<TestEnum>());
 			
 			OpenDbConnection().CreateTable<TestType>(true);

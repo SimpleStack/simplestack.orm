@@ -252,22 +252,20 @@ namespace SimpleStack.Orm.Tests
 
 		/// <summary>Can select equals null espression.</summary>
 		[Test]
-		public void Can_select_equals_null_espression()
+		public void Can_select_equals_null_expression()
 		{
-			SqlMapper.AddTypeHandler(typeof(TestType2), new JsonTypeHandler());
-
+			
 			var expected = new TestType()
 			{
 				IntColumn = 12,
 				BoolColumn = false,
-				StringColumn = "test",
-				NullableCol = new TestType2 { TextCol = "sometext" }
+				StringColumn = null,
 			};
 
 			EstablishContext(10, expected);
 			using (var conn = OpenDbConnection())
 			{
-				var actual = conn.Select<TestType>(q => q.NullableCol == null);
+				var actual = conn.Select<TestType>(q => q.StringColumn != null);
 
 				Assert.IsNotNull(actual);
 				Assert.AreEqual(actual.Count(), 10);

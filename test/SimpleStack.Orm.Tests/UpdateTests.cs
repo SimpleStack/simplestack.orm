@@ -16,6 +16,7 @@ namespace SimpleStack.Orm.Tests
 			/// <summary>Gets or sets the identifier.</summary>
 			/// <value>The identifier.</value>
 			[AutoIncrement]
+			[PrimaryKey]
 			public int Id { get; set; }
 
 			/// <summary>Gets or sets the name.</summary>

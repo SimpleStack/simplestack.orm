@@ -13,14 +13,6 @@ namespace SimpleStack.Orm.Attributes
 		/// <summary>
 		/// Initializes a new instance of the NServiceKit.DataAnnotations.ComputeAttribute class.
 		/// </summary>
-		public ComputeAttribute()
-			: this(string.Empty)
-		{
-		}
-
-		/// <summary>
-		/// Initializes a new instance of the NServiceKit.DataAnnotations.ComputeAttribute class.
-		/// </summary>
 		/// <param name="expression">The expression.</param>
 		public ComputeAttribute(string expression)
 		{

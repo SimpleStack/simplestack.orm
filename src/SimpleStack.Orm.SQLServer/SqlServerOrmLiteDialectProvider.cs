@@ -17,33 +17,14 @@ namespace SimpleStack.Orm.SqlServer
 	/// <summary>A SQL server ORM lite dialect provider.</summary>
 	public class SqlServerDialectProvider : DialectProviderBase
 	{
-		/// <summary>The time span offset.</summary>
-		private static readonly DateTime timeSpanOffset = new DateTime(1900, 01, 01);
-
-		/// <summary>The date time offset column definition.</summary>
-		private const string DateTimeOffsetColumnDefinition = "DATETIMEOFFSET";
-
 		/// <summary>
 		/// Initializes a new instance of the
 		/// NServiceKit.OrmLite.SqlServer.SqlServerOrmLiteDialectProvider class.
 		/// </summary>
-		public SqlServerDialectProvider()
+		public SqlServerDialectProvider():base(new SqlServerTypeMapper())
 		{
 			base.AutoIncrementDefinition = "IDENTITY(1,1)";
-			StringColumnDefinition = UseUnicode ? "NVARCHAR(4000)" : "VARCHAR(8000)";
-			base.GuidColumnDefinition = "UniqueIdentifier";
-			base.RealColumnDefinition = "FLOAT";
-			base.BoolColumnDefinition = "BIT";
-			base.DecimalColumnDefinition = "DECIMAL(38,6)";
-			base.TimeColumnDefinition = "TIME"; //SQLSERVER 2008+
-			base.BlobColumnDefinition = "VARBINARY(MAX)";
 			base.SelectIdentitySql = "SELECT SCOPE_IDENTITY()";
-
-			base.InitColumnTypeMap();
-
-			// add support for DateTimeOffset
-			DbTypeMap.Set(DbType.DateTimeOffset, DateTimeOffsetColumnDefinition);
-			DbTypeMap.Set(DbType.DateTimeOffset, DateTimeOffsetColumnDefinition);
 		}
 
 
@@ -86,118 +67,6 @@ namespace SimpleStack.Orm.SqlServer
 			return string.Format("\"{0}\".\"{1}\"", escapedSchema, NamingStrategy.GetTableName(modelDef.ModelName));
 		}
 
-		/// <summary>Convert database value.</summary>
-		/// <exception cref="Exception">Thrown when an exception error condition occurs.</exception>
-		/// <param name="value">The value.</param>
-		/// <param name="type"> The type.</param>
-		/// <returns>The database converted value.</returns>
-		//public override object ConvertDbValue(object value, Type type)
-		//{
-		//	try
-		//	{
-		//		if (value == null || value is DBNull) return null;
-
-		//		if (type == typeof(bool) && !(value is bool))
-		//		{
-		//			var intVal = Convert.ToInt32(value.ToString());
-		//			return intVal != 0;
-		//		}
-
-		//		if (type == typeof(TimeSpan) && value is DateTime)
-		//		{
-		//			var dateTimeValue = (DateTime)value;
-		//			return dateTimeValue - timeSpanOffset;
-		//		}
-
-		//		if (_ensureUtc && type == typeof (DateTime))
-		//		{
-		//			var result = base.ConvertDbValue(value, type);
-		//			if(result is DateTime)
-		//				return DateTime.SpecifyKind((DateTime)result, DateTimeKind.Utc);
-		//			return result;
-		//		}
-
-		//		if (type == typeof(byte[]))
-		//			return value;
-
-		//		return base.ConvertDbValue(value, type);
-		//	}
-		//	catch (Exception ex)
-		//	{
-		//		throw;
-		//	}
-		//}
-
-		/// <summary>Gets quoted value.</summary>
-		/// <param name="value">    The value.</param>
-		/// <param name="fieldType">Type of the field.</param>
-		/// <returns>The quoted value.</returns>
-		//public override string GetQuotedValue(object value, Type fieldType)
-		//{
-		//	if (value == null) return "NULL";
-
-		//	if (fieldType == typeof(Guid))
-		//	{
-		//		var guidValue = (Guid)value;
-		//		return string.Format("CAST('{0}' AS UNIQUEIDENTIFIER)", guidValue);
-		//	}
-		//	if (fieldType == typeof(DateTime))
-		//	{
-		//		var dateValue = (DateTime)value;
-		//		if (_ensureUtc && dateValue.Kind == DateTimeKind.Local)
-		//			dateValue = dateValue.ToUniversalTime();
-		//		const string iso8601Format = "yyyyMMdd HH:mm:ss.fff";
-		//		return base.GetQuotedValue(dateValue.ToString(iso8601Format, CultureInfo.InvariantCulture), typeof(string));
-		//	}
-		//	if (fieldType == typeof(DateTimeOffset))
-		//	{
-		//		var dateValue = (DateTimeOffset)value;
-		//		const string iso8601Format = "yyyyMMdd HH:mm:ss.fff zzz";
-		//		return base.GetQuotedValue(dateValue.ToString(iso8601Format, CultureInfo.InvariantCulture), typeof(string));
-		//	}
-		//	if (fieldType == typeof(bool))
-		//	{
-		//		var boolValue = (bool)value;
-		//		return base.GetQuotedValue(boolValue ? 1 : 0, typeof(int));
-		//	}
-		//	if (fieldType == typeof(string))
-		//	{
-		//		return GetQuotedParam(value.ToString());
-		//	}
-
-		//	if (fieldType == typeof(byte[]))
-		//	{
-		//		return "0x" + BitConverter.ToString((byte[])value).Replace("-", "");
-		//	}
-
-		//	return base.GetQuotedValue(value, fieldType);
-
-
-		//}
-
-		/// <summary>true to use date time 2.</summary>
-		protected bool _useDateTime2;
-
-		/// <summary>Use datetime 2.</summary>
-		/// <param name="shouldUseDatetime2">true if should use datetime 2.</param>
-		public void UseDatetime2(bool shouldUseDatetime2)
-		{
-			_useDateTime2 = shouldUseDatetime2;
-			DateTimeColumnDefinition = shouldUseDatetime2 ? "datetime2" : "datetime";
-			base.DbTypeMap.Set(shouldUseDatetime2 ? DbType.DateTime2 : DbType.DateTime, DateTimeColumnDefinition);
-			base.DbTypeMap.Set(shouldUseDatetime2 ? DbType.DateTime2 : DbType.DateTime, DateTimeColumnDefinition);
-		}
-
-		/// <summary>true to ensure UTC.</summary>
-		protected bool _ensureUtc;
-
-		/// <summary>Ensures that UTC.</summary>
-		/// <param name="shouldEnsureUtc">true if should ensure UTC.</param>
-		public void EnsureUtc(bool shouldEnsureUtc)
-		{
-			_ensureUtc = shouldEnsureUtc;
-		}
-
 		/// <summary>Query if 'dbCmd' does table exist.</summary>
 		/// <param name="connection">    The database command.</param>
 		/// <param name="tableName">Name of the table.</param>
@@ -217,23 +86,7 @@ namespace SimpleStack.Orm.SqlServer
 
 		/// <summary>Gets or sets a value indicating whether this object use unicode.</summary>
 		/// <value>true if use unicode, false if not.</value>
-		public override bool UseUnicode
-		{
-			get
-			{
-				return useUnicode;
-			}
-			set
-			{
-				useUnicode = value;
-				if (useUnicode && this.DefaultStringLength > 4000)
-				{
-					this.DefaultStringLength = 4000;
-				}
 
-				// UpdateStringColumnDefinitions(); is called by changing DefaultStringLength 
-			}
-		}
 
 		/// <summary>Gets foreign key on delete clause.</summary>
 		/// <param name="foreignKey">The foreign key.</param>
@@ -334,7 +187,8 @@ namespace SimpleStack.Orm.SqlServer
 			//Ensure we have an OrderBy clause, this is required by SQLServer paging (and makes more sense anyway)
 			if (statement.OrderByExpression.Length == 0)
 			{
-				statement.OrderByExpression.Append(statement.Columns.First());
+				// Add Order BY 1
+				statement.OrderByExpression.Append(1);
 			}
 
 			return base.ToSelectStatement(statement, flags);
@@ -424,16 +278,72 @@ namespace SimpleStack.Orm.SqlServer
                 yield return new ColumnDefinition
                              {
                                  Name         = c.COLUMN_NAME,
-                                 Type         = c.DATA_TYPE,
+                                 Definition         = c.DATA_TYPE,
                                  DefaultValue = c.COLUMN_DEFAULT,
                                  PrimaryKey   = c.IS_PRIMARY_KEY == 1,
-                                 FieldLength  = c.CHARACTER_MAXIMUM_LENGTH,
-                                 Nullable     = c.IS_NULLABLE == "YES"
+                                 Length  = c.CHARACTER_MAXIMUM_LENGTH,
+                                 Nullable     = c.IS_NULLABLE == "YES",
+                                 Precision = c.NUMERIC_PRECISION,
+                                 Scale = c.NUMERIC_SCALE,
+                                 DbType = GetDbType(c.DATA_TYPE)
                              };
             }
         }
 
-        public override IEnumerable<ITableDefinition> GetTableDefinitions(
+		private DbType GetDbType(string dataType)
+		{
+			switch (dataType)
+			{
+				case "char":
+					return DbType.Byte;
+				case "varchar":
+					return DbType.AnsiStringFixedLength;
+				case "nvarchar":
+					return DbType.StringFixedLength;
+				case "text":
+					return DbType.AnsiStringFixedLength;
+				case "ntext":
+					return DbType.String;
+				case "bit":
+					return DbType.Boolean;
+				case "smallint":
+					return DbType.Int16;
+				case "int":
+					return DbType.Int32;
+				case "bigint":
+					return DbType.Int64;
+				case "real":
+					return DbType.Single;
+				case "binary":
+				case "varbinary":
+					return DbType.Binary;
+				case "numeric":
+					return DbType.VarNumeric;
+				case "date":
+					return DbType.Date;
+				case "time":
+					return DbType.Time;
+				case "timestamp":
+				case "datetime":
+				case "smalldatetime":
+					return DbType.DateTime;
+				case "datetime2":
+					return DbType.DateTime2;
+				case "datetimeoffset":
+					return DbType.DateTimeOffset;	
+				case "uniqueidentifier":
+					return DbType.Guid;
+				case "money":
+				case "smallmoney":
+					return DbType.Currency;	
+				case "xml":
+					return DbType.Xml;
+				default:
+					return DbType.Object;
+			}
+		}
+
+		public override IEnumerable<ITableDefinition> GetTableDefinitions(
             IDbConnection connection,
             string schemaName = null)
         {

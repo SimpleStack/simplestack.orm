@@ -40,6 +40,8 @@ namespace SimpleStack.Orm
 		/// <summary>Gets or sets the naming strategy.</summary>
 		/// <value>The naming strategy.</value>
 		INamingStrategy NamingStrategy { get; set; }
+		
+		IDbTypeMapper TypesMapper { get; set; }
 
 		string GetParameterName(int parameterCount);
 
@@ -116,7 +118,7 @@ namespace SimpleStack.Orm
 		/// <summary>Gets column names.</summary>
 		/// <param name="modelDef">The model definition.</param>
 		/// <returns>The column names.</returns>
-		string GetColumnNames(ModelDefinition modelDef);
+		IEnumerable<string> GetColumnNames(ModelDefinition modelDef);
 
 		/// <summary>Gets drop foreign key constraints.</summary>
 		/// <param name="modelDef">The model definition.</param>

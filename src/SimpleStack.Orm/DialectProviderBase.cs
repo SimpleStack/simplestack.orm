@@ -29,113 +29,36 @@ namespace SimpleStack.Orm
         /// <summary>The AutoIncrement column definition.</summary>
         public string AutoIncrementDefinition = "AUTOINCREMENT";
 
-        /// <summary>The BLOB column definition.</summary>
-        public string BlobColumnDefinition = "BLOB";
-
-        /// <summary>The column definition.</summary>
-        public string BoolColumnDefinition = "BOOL";
-
-        /// <summary>The date time column definition.</summary>
-        public string DateTimeColumnDefinition = "DATETIME";
-
-        /// <summary>The database type map.</summary>
-        protected DbTypes DbTypeMap = new DbTypes();
-
-        /// <summary>The decimal column definition.</summary>
-        public string DecimalColumnDefinition = "DECIMAL";
-
-        /// <summary>SqlServer express limit.</summary>
-        private int _defaultStringLength = 8000;
-
         /// <summary>The default value format.</summary>
-        public string DefaultValueFormat = " DEFAULT ({0})";
-
-        /// <summary>The unique identifier column definition.</summary>
-        public string GuidColumnDefinition = "GUID";
-
-        /// <summary>The int column definition.</summary>
-        public string IntColumnDefinition = "INTEGER";
-
-        /// <summary>The long column definition.</summary>
-        public string LongColumnDefinition = "BIGINT";
-
-        /// <summary>The real column definition.</summary>
-        public string RealColumnDefinition = "DOUBLE";
-
-        /// <summary>Set by Constructor and UpdateStringColumnDefinitions()</summary>
-        public string StringColumnDefinition;
-
-        /// <summary>The string length column definition format.</summary>
-        public string StringLengthColumnDefinitionFormat;
-
-        /// <summary>The string length non unicode column definition format.</summary>
-        public string StringLengthNonUnicodeColumnDefinitionFormat = "VARCHAR({0})";
-
-        /// <summary>The string length unicode column definition format.</summary>
-        public string StringLengthUnicodeColumnDefinitionFormat = "NVARCHAR({0})";
-
-        /// <summary>The time column definition.</summary>
-        public string TimeColumnDefinition = "DATETIME";
-
-        /// <summary>true to use unicode.</summary>
-        protected bool useUnicode;
+        public string DefaultValueFormat = " DEFAULT ('{0}')";
 
         /// <summary>
         ///     Initializes a new instance of the NServiceKit.OrmLite.OrmLiteDialectProviderBase&lt;
         ///     TDialect&gt; class.
         /// </summary>
-        protected DialectProviderBase()
+        protected DialectProviderBase(IDbTypeMapper mapper)
         {
+            TypesMapper = mapper;
             NamingStrategy = new NamingStrategyBase();
-            DefaultDecimalScale = 12;
-            DefaultDecimalPrecision = 18;
             ParamPrefix = "@";
-            UpdateStringColumnDefinitions();
         }
 
-        /// <summary>Gets or sets the default decimal precision.</summary>
-        /// <value>The default decimal precision.</value>
-        public int DefaultDecimalPrecision { get; set; }
 
-        /// <summary>Gets or sets the default decimal scale.</summary>
-        /// <value>The default decimal scale.</value>
-        public int DefaultDecimalScale { get; set; }
 
         /// <summary>Gets or sets the select identity SQL.</summary>
         /// <value>The select identity SQL.</value>
         public virtual string SelectIdentitySql { get; set; }
-
-        /// <summary>Gets or sets the default string length.</summary>
-        /// <value>The default string length.</value>
-        public int DefaultStringLength
-        {
-            get { return _defaultStringLength; }
-            set
-            {
-                _defaultStringLength = value;
-                UpdateStringColumnDefinitions();
-            }
-        }
+        
 
         /// <summary>Gets or sets the parameter string.</summary>
         /// <value>The parameter string.</value>
         public string ParamPrefix { get; set; }
 
-        /// <summary>Gets or sets a value indicating whether this object use unicode.</summary>
-        /// <value>true if use unicode, false if not.</value>
-        public virtual bool UseUnicode
-        {
-            get { return useUnicode; }
-            set
-            {
-                useUnicode = value;
-                UpdateStringColumnDefinitions();
-            }
-        }
-
         /// <summary>Gets or sets the naming strategy.</summary>
         /// <value>The naming strategy.</value>
         public INamingStrategy NamingStrategy { get; set; }
+        
+        public IDbTypeMapper TypesMapper { get; set; }
 
         /// <summary>Creates a connection.</summary>
         /// <param name="connectionString">Connection String.</param>
@@ -196,7 +119,7 @@ namespace SimpleStack.Orm
         /// <returns>The column definition.</returns>
         public virtual string GetColumnDefinition(string fieldName, Type fieldType,
             bool isPrimaryKey, bool autoIncrement, bool isNullable,
-            int? fieldLength, int? scale, string defaultValue)
+            int? fieldLength, int? scale, object defaultValue)
         {
             var sql = new StringBuilder();
             sql.AppendFormat("{0} {1}", GetQuotedColumnName(fieldName), GetColumnTypeDefinition(fieldType, fieldName, fieldLength));
@@ -214,14 +137,19 @@ namespace SimpleStack.Orm
                 sql.Append(isNullable ? " NULL" : " NOT NULL");
             }
 
-            if (!string.IsNullOrEmpty(defaultValue))
+            if (defaultValue != null)
             {
-                sql.AppendFormat(DefaultValueFormat, defaultValue);
+                sql.AppendFormat(DefaultValueFormat, GetDefaultValueDefinition(defaultValue));
             }
 
             return sql.ToString();
         }
 
+        protected virtual string GetDefaultValueDefinition(object defaultValue)
+        {
+            return defaultValue.ToString();
+        }
+        
         /// <inheritdoc />
         public virtual CommandDefinition ToSelectStatement(SelectStatement statement, CommandFlags flags)
         {
@@ -370,7 +298,7 @@ namespace SimpleStack.Orm
             var sbConstraints = new StringBuilder();
             var sbPrimaryKeys = new StringBuilder();
 
-            foreach (var fieldDef in modelDef.FieldDefinitions)
+            foreach (var fieldDef in modelDef.FieldDefinitions.Where(x => !x.IsComputed))
             {
                 if (sbColumns.Length != 0) sbColumns.Append(", \n  ");
 
@@ -455,37 +383,19 @@ namespace SimpleStack.Orm
         /// <returns>The column type definition.</returns>
         public virtual string GetColumnTypeDefinition(Type fieldType, string fieldName, int? fieldLength)
         {
-            string fieldDefinition;
-#pragma warning disable 618
             var dbType = SqlMapper.LookupDbType(fieldType, fieldName, false, out var typeHandler);
-#pragma warning restore 618
+
             if (typeHandler is ITypeHandlerColumnType typeHandlerColumnType)
             {
                 dbType = typeHandlerColumnType.ColumnType;
                 fieldLength = typeHandlerColumnType.Length;
             }
 
-            if (dbType == DbType.AnsiString ||
-                dbType == DbType.AnsiStringFixedLength ||
-                dbType == DbType.String ||
-                dbType == DbType.StringFixedLength)
-            {
-                fieldDefinition = string.Format(StringLengthColumnDefinitionFormat,
-                    fieldLength ?? DefaultStringLength);
-            }
-            else
-            {
-                if (!DbTypeMap.ColumnDbTypeMap.TryGetValue(dbType, out fieldDefinition))
-                {
-                    fieldDefinition = GetUndefinedColumnDefinition(fieldType, fieldLength);
-                }
-            }
-
-            return fieldDefinition ?? GetUndefinedColumnDefinition(fieldType, null);
+            return TypesMapper.GetFieldDefinition(dbType,fieldLength);
         }
 
         /// <summary>Query if 'dbCmd' does table exist.</summary>
-        /// <param name="connection">       The database.</param>
+        /// <param name="connection">The database.</param>
         /// <param name="tableName">Name of the table.</param>
         /// <returns>true if it succeeds, false if it fails.</returns>
         public virtual bool DoesTableExist(IDbConnection connection, string tableName)
@@ -505,24 +415,23 @@ namespace SimpleStack.Orm
         /// <summary>Gets column names.</summary>
         /// <param name="modelDef">The model definition.</param>
         /// <returns>The column names.</returns>
-        public virtual string GetColumnNames(ModelDefinition modelDef)
+        public virtual IEnumerable<string> GetColumnNames(ModelDefinition modelDef)
         {
-            var sqlColumns = new StringBuilder();
-
             foreach (var fd in modelDef.FieldDefinitions)
             {
-                if (sqlColumns.Length > 0)
-                    sqlColumns.Append(", ");
-
-                sqlColumns.Append(GetQuotedColumnName(fd.FieldName));
-
-                if (fd.FieldName != fd.Name)
+                if (fd.IsComputed)
                 {
-                    sqlColumns.AppendFormat(" AS {0} ", fd.Name);
+                    yield return $"{fd.ComputeExpression} AS {fd.Name}";
+                }
+                else if (fd.FieldName != fd.Name)
+                {
+                    yield return $"{GetQuotedColumnName(fd.FieldName)} AS {fd.Name}";
+                }
+                else
+                {
+                    yield return GetQuotedColumnName(fd.FieldName);
                 }
             }
-
-            return sqlColumns.ToString();
         }
 
         /// <summary>Converts a tableType to a create sequence statements.</summary>
@@ -556,78 +465,6 @@ namespace SimpleStack.Orm
         public virtual string GetDropForeignKeyConstraints(ModelDefinition modelDef)
         {
             return null;
-        }
-
-        /// <summary>Updates the string column definitions.</summary>
-        private void UpdateStringColumnDefinitions()
-        {
-            StringLengthColumnDefinitionFormat = useUnicode
-                ? StringLengthUnicodeColumnDefinitionFormat
-                : StringLengthNonUnicodeColumnDefinitionFormat;
-
-            StringColumnDefinition = string.Format(
-                StringLengthColumnDefinitionFormat, DefaultStringLength);
-        }
-
-        /// <summary>Initialise the column type map.</summary>
-        protected void InitColumnTypeMap()
-        {
-            DbTypeMap.Set(DbType.String, StringColumnDefinition);
-            DbTypeMap.Set(DbType.StringFixedLength, StringColumnDefinition);
-            DbTypeMap.Set(DbType.AnsiString, StringColumnDefinition);
-            DbTypeMap.Set(DbType.AnsiStringFixedLength, StringColumnDefinition);
-            DbTypeMap.Set(DbType.String, StringColumnDefinition);
-            DbTypeMap.Set(DbType.Boolean, BoolColumnDefinition);
-            DbTypeMap.Set(DbType.Boolean, BoolColumnDefinition);
-            DbTypeMap.Set(DbType.Guid, GuidColumnDefinition);
-            DbTypeMap.Set(DbType.Guid, GuidColumnDefinition);
-            DbTypeMap.Set(DbType.DateTime, DateTimeColumnDefinition);
-            DbTypeMap.Set(DbType.DateTime, DateTimeColumnDefinition);
-            DbTypeMap.Set(DbType.Time, TimeColumnDefinition);
-            DbTypeMap.Set(DbType.Time, TimeColumnDefinition);
-            DbTypeMap.Set(DbType.DateTimeOffset, DateTimeColumnDefinition);
-            DbTypeMap.Set(DbType.DateTimeOffset, DateTimeColumnDefinition);
-
-            DbTypeMap.Set(DbType.Byte, IntColumnDefinition);
-            DbTypeMap.Set(DbType.Byte, IntColumnDefinition);
-            DbTypeMap.Set(DbType.SByte, IntColumnDefinition);
-            DbTypeMap.Set(DbType.SByte, IntColumnDefinition);
-            DbTypeMap.Set(DbType.Int16, IntColumnDefinition);
-            DbTypeMap.Set(DbType.Int16, IntColumnDefinition);
-            DbTypeMap.Set(DbType.UInt16, IntColumnDefinition);
-            DbTypeMap.Set(DbType.UInt16, IntColumnDefinition);
-            DbTypeMap.Set(DbType.Int32, IntColumnDefinition);
-            DbTypeMap.Set(DbType.Int32, IntColumnDefinition);
-            DbTypeMap.Set(DbType.UInt32, IntColumnDefinition);
-            DbTypeMap.Set(DbType.UInt32, IntColumnDefinition);
-
-            DbTypeMap.Set(DbType.Int64, LongColumnDefinition);
-            DbTypeMap.Set(DbType.Int64, LongColumnDefinition);
-            DbTypeMap.Set(DbType.UInt64, LongColumnDefinition);
-            DbTypeMap.Set(DbType.UInt64, LongColumnDefinition);
-
-            DbTypeMap.Set(DbType.Single, RealColumnDefinition);
-            DbTypeMap.Set(DbType.Single, RealColumnDefinition);
-            DbTypeMap.Set(DbType.Double, RealColumnDefinition);
-            DbTypeMap.Set(DbType.Double, RealColumnDefinition);
-
-            DbTypeMap.Set(DbType.Decimal, DecimalColumnDefinition);
-            DbTypeMap.Set(DbType.Decimal, DecimalColumnDefinition);
-
-            DbTypeMap.Set(DbType.Binary, BlobColumnDefinition);
-
-            DbTypeMap.Set(DbType.Object, StringColumnDefinition);
-            DbTypeMap.Set(DbType.Int32, IntColumnDefinition);
-        }
-
-        /// <summary>Gets undefined column definition.</summary>
-        /// <exception cref="NotSupportedException">Thrown when the requested operation is not supported.</exception>
-        /// <param name="fieldType">  Type of the field.</param>
-        /// <param name="fieldLength">Length of the field.</param>
-        /// <returns>The undefined column definition.</returns>
-        protected virtual string GetUndefinedColumnDefinition(Type fieldType, int? fieldLength)
-        {
-            return string.Format(StringLengthColumnDefinitionFormat, fieldLength.GetValueOrDefault(DefaultStringLength));
         }
 
         /// <summary>Gets foreign key on delete clause.</summary>
@@ -942,7 +779,7 @@ namespace SimpleStack.Orm
                     parameters[availableParameters[0]] = "%" + parameters[availableParameters[0]].ToString().ToUpper();
                     return $"upper({column}) LIKE {availableParameters[0]} ";
                 case "contains":
-                    parameters[availableParameters[0]] = "%" + parameters[availableParameters[0]].ToString().ToUpper();
+                    parameters[availableParameters[0]] = "%" + parameters[availableParameters[0]].ToString().ToUpper() +"%";
                     return $"upper({column}) LIKE {availableParameters[0]} ";
                 case "substring":
                     //Ensure Offset is start at 1 instead of 0

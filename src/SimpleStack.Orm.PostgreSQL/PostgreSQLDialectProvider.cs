@@ -15,35 +15,15 @@ namespace SimpleStack.Orm.PostgreSQL
     /// <summary>A postgre SQL dialect provider.</summary>
     public class PostgreSQLDialectProvider : DialectProviderBase
     {
-        /// <summary>The text column definition.</summary>
-        private const string TextColumnDefinition = "text";
-
         /// <summary>
         ///     Prevents a default instance of the NServiceKit.OrmLite.PostgreSQL.PostgreSQLDialectProvider
         ///     class from being created.
         /// </summary>
-        public PostgreSQLDialectProvider()
+        public PostgreSQLDialectProvider() : base(new PostgreSQLTypeMapper())
         {
-            AutoIncrementDefinition            = "";
-            IntColumnDefinition                = "integer";
-            BoolColumnDefinition               = "boolean";
-            TimeColumnDefinition               = "time";
-            DateTimeColumnDefinition           = "timestamp";
-            DecimalColumnDefinition            = "numeric(38,6)";
-            GuidColumnDefinition               = "uuid";
-            ParamPrefix                        = ":";
-            BlobColumnDefinition               = "bytea";
-            RealColumnDefinition               = "double precision";
-            StringLengthColumnDefinitionFormat = TextColumnDefinition;
-            //there is no "n"varchar in postgres. All strings are either unicode or non-unicode, inherited from the database.
-            StringLengthUnicodeColumnDefinitionFormat    = "character varying({0})";
-            StringLengthNonUnicodeColumnDefinitionFormat = "character varying({0})";
-            InitColumnTypeMap();
+            NamingStrategy = new PostgreSqlNamingStrategy();
             base.SelectIdentitySql = "SELECT LASTVAL()";
-            NamingStrategy         = new PostgreSqlNamingStrategy();
-            DbTypeMap.Set(DbType.Time, "Interval");
-            DbTypeMap.Set(DbType.Time, "Interval");
-            DefaultStringLength = 255;
+            ParamPrefix = ":";
         }
 
         /// <summary>Creates a connection.</summary>
@@ -73,37 +53,23 @@ namespace SimpleStack.Orm.PostgreSQL
             bool isNullable,
             int? fieldLength,
             int? scale,
-            string defaultValue)
+            object defaultValue)
         {
             string fieldDefinition = null;
-            if (fieldType == typeof(string))
+            if (autoIncrement)
             {
-                if (fieldLength != null)
+                if (fieldType == typeof(long))
                 {
-                    fieldDefinition = string.Format(StringLengthColumnDefinitionFormat, fieldLength);
+                    fieldDefinition = "bigserial";
                 }
-                else
+                else if (fieldType == typeof(int))
                 {
-                    fieldDefinition = TextColumnDefinition;
+                    fieldDefinition = "serial";
                 }
             }
             else
             {
-                if (autoIncrement)
-                {
-                    if (fieldType == typeof(long))
-                    {
-                        fieldDefinition = "bigserial";
-                    }
-                    else if (fieldType == typeof(int))
-                    {
-                        fieldDefinition = "serial";
-                    }
-                }
-                else
-                {
-                    fieldDefinition = GetColumnTypeDefinition(fieldType, fieldName, fieldLength);
-                }
+                fieldDefinition = GetColumnTypeDefinition(fieldType, fieldName, fieldLength);
             }
 
             var sql = new StringBuilder();
@@ -124,9 +90,9 @@ namespace SimpleStack.Orm.PostgreSQL
                 }
             }
 
-            if (!string.IsNullOrEmpty(defaultValue))
+            if (defaultValue != null)
             {
-                sql.AppendFormat(DefaultValueFormat, defaultValue);
+                sql.AppendFormat(DefaultValueFormat, GetDefaultValueDefinition(defaultValue));
             }
 
             return sql.ToString();
@@ -219,17 +185,61 @@ namespace SimpleStack.Orm.PostgreSQL
                 AND    i.indisprimary;").ToArray();
             // ReSharper enable StringLiteralTypo
 
-            foreach (var c in connection.Query(sqlQuery, new { TableName = tableName.ToLower(), schemaName }))
+            foreach (var c in connection.Query<ColumnInformationSchema>(sqlQuery, new { TableName = tableName.ToLower(), schemaName }))
             {
                 yield return new ColumnDefinition
                              {
                                  Name = c.column_name,
                                  PrimaryKey = pks.Any(x => x.attname == c.column_name),
-                                 FieldLength = c.character_maximum_length,
+                                 Length = c.character_maximum_length,
                                  DefaultValue = c.column_default,
-                                 Type = c.data_type,
-                                 Nullable = c.is_nullable == "YES"
+                                 Definition = c.data_type,
+                                 Nullable = c.is_nullable == "YES",
+                                 Precision = c.numeric_precision,
+                                 Scale = c.numeric_scale,
+                                 DbType = GetDbType(c)
                 };
+            }
+        }
+
+        protected virtual DbType GetDbType(ColumnInformationSchema c)
+        {
+            switch (c.data_type)
+            {
+                case "character":
+                    return DbType.String;
+                case "character varying":
+                    return DbType.StringFixedLength;
+                case "text":
+                    return DbType.String;
+                case "boolean":
+                case "bit":
+                    return DbType.Boolean;
+                case "uuid" :
+                    return DbType.Guid;
+                case "smallint":
+                    return DbType.Int16;
+                case "integer":
+                    return DbType.Int32;
+                case "bigint":
+                    return DbType.Int64;
+                case "real":
+                    return DbType.Single;
+                case "double precision":
+                    return DbType.Double;
+                case "bytea":
+                    return DbType.Binary;
+                case "time without time zone":
+                    return DbType.Time;
+                case "date":
+                case "timestamp without time zone":
+                    return DbType.DateTime;
+                case "timestamp whith time zone":
+                    return DbType.DateTimeOffset;
+                case "money":
+                    return DbType.Currency;
+                default:
+                    return DbType.Object;
             }
         }
 

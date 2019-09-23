@@ -13,6 +13,7 @@ namespace SimpleStack.Orm.Tests
 		{
 			/// <summary>Gets or sets the identifier.</summary>
 			/// <value>The identifier.</value>
+			[PrimaryKey]
 			public string Id { get; set; }
 
 			/// <summary>Gets or sets the name.</summary>

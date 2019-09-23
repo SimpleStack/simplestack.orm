@@ -70,7 +70,7 @@ namespace SimpleStack.Orm
 
         /// <summary>Gets or sets the default value.</summary>
         /// <value>The default value.</value>
-        public string DefaultValue { get; set; }
+        public object DefaultValue { get; set; }
 
         /// <summary>Gets or sets the foreign key.</summary>
         /// <value>The foreign key.</value>
@@ -91,15 +91,6 @@ namespace SimpleStack.Orm
         {
             return this.GetValueFn == null ? null : this.GetValueFn(onInstance);
         }
-
-        /// <summary>Gets quoted value.</summary>
-        /// <param name="fromInstance">from instance.</param>
-        /// <returns>The quoted value.</returns>
-		//public string GetQuotedValue(object fromInstance)
-		//{
-		//	var value = GetValue(fromInstance);
-		//	return Config.DialectProvider.GetQuotedValue(value, FieldType);
-		//}
 
         /// <summary>Gets or sets the sequence.</summary>
         /// <value>The sequence.</value>

@@ -151,8 +151,7 @@ namespace SimpleStack.Orm
 					SetValueFn = propertyInfo.GetPropertySetterFn(),
 					Sequence = sequenceAttr != null ? sequenceAttr.Name : string.Empty,
 					IsComputed = computeAttr != null,
-					ComputeExpression =
-						computeAttr != null ? computeAttr.Expression : string.Empty,
+					ComputeExpression = computeAttr != null ? computeAttr.Expression : string.Empty,
 					Scale = decimalAttribute != null ? decimalAttribute.Scale : (int?)null,
 					BelongToModelName = belongToAttribute != null ? belongToAttribute.BelongToTableType.GetModelDefinition().ModelName : null,
 				};
