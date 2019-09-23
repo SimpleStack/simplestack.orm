@@ -53,7 +53,7 @@ namespace SimpleStack.Orm.PostgreSQL
             bool isNullable,
             int? fieldLength,
             int? scale,
-            string defaultValue)
+            object defaultValue)
         {
             string fieldDefinition = null;
             if (autoIncrement)
@@ -90,9 +90,9 @@ namespace SimpleStack.Orm.PostgreSQL
                 }
             }
 
-            if (!string.IsNullOrEmpty(defaultValue))
+            if (defaultValue != null)
             {
-                sql.AppendFormat(DefaultValueFormat, defaultValue);
+                sql.AppendFormat(DefaultValueFormat, GetDefaultValueDefinition(defaultValue));
             }
 
             return sql.ToString();

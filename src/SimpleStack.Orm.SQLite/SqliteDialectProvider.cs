@@ -70,7 +70,7 @@ namespace SimpleStack.Orm.Sqlite
 		/// <param name="scale">        The scale.</param>
 		/// <param name="defaultValue"> The default value.</param>
 		/// <returns>The column definition.</returns>
-		public override string GetColumnDefinition(string fieldName, Type fieldType, bool isPrimaryKey, bool autoIncrement, bool isNullable, int? fieldLength, int? scale, string defaultValue)
+		public override string GetColumnDefinition(string fieldName, Type fieldType, bool isPrimaryKey, bool autoIncrement, bool isNullable, int? fieldLength, int? scale, object defaultValue)
 		{
 			// Autoincrement are always INTEGER PRIMARY KEYS
 			if (autoIncrement)

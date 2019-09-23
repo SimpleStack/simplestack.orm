@@ -119,7 +119,7 @@ namespace SimpleStack.Orm
         /// <returns>The column definition.</returns>
         public virtual string GetColumnDefinition(string fieldName, Type fieldType,
             bool isPrimaryKey, bool autoIncrement, bool isNullable,
-            int? fieldLength, int? scale, string defaultValue)
+            int? fieldLength, int? scale, object defaultValue)
         {
             var sql = new StringBuilder();
             sql.AppendFormat("{0} {1}", GetQuotedColumnName(fieldName), GetColumnTypeDefinition(fieldType, fieldName, fieldLength));
@@ -137,14 +137,19 @@ namespace SimpleStack.Orm
                 sql.Append(isNullable ? " NULL" : " NOT NULL");
             }
 
-            if (!string.IsNullOrEmpty(defaultValue))
+            if (defaultValue != null)
             {
-                sql.AppendFormat(DefaultValueFormat, defaultValue);
+                sql.AppendFormat(DefaultValueFormat, GetDefaultValueDefinition(defaultValue));
             }
 
             return sql.ToString();
         }
 
+        protected virtual string GetDefaultValueDefinition(object defaultValue)
+        {
+            return defaultValue.ToString();
+        }
+        
         /// <inheritdoc />
         public virtual CommandDefinition ToSelectStatement(SelectStatement statement, CommandFlags flags)
         {
