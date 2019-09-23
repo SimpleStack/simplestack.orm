@@ -7,7 +7,7 @@ namespace SimpleStack.Orm.Attributes
 	public class SchemaAttribute : Attribute
 	{
 		/// <summary>
-		/// Initializes a new instance of the NServiceKit.OrmLite.SchemaAttribute class.
+		/// Initializes a new instance of the SchemaAttribute class.
 		/// </summary>
 		/// <param name="name">The name.</param>
 		public SchemaAttribute(string name)
@@ -15,7 +15,7 @@ namespace SimpleStack.Orm.Attributes
 			this.Name = name;
 		}
 
-		/// <summary>Gets or sets the name.</summary>
+		/// <summary>Gets or sets the schema name.</summary>
 		/// <value>The name.</value>
 		public string Name { get; set; }
 	}

@@ -216,10 +216,18 @@ namespace SimpleStack.Orm
 
 		public async Task<int> InsertAsync<T>(T obj)
 		{
-			var insertStatement = new TypedInsertStatement<T>(DialectProvider);
-			insertStatement.Values(obj,new List<string>());
+			try
+			{
+				var insertStatement = new TypedInsertStatement<T>(DialectProvider);
+				insertStatement.Values(obj,new List<string>());
 			
-			return await this.ExecuteScalarAsync<int>(DialectProvider.ToInsertStatement(insertStatement.Statement, CommandFlags.None));
+				await this.ExecuteScalarAsync<int>(DialectProvider.ToInsertStatement(insertStatement.Statement, CommandFlags.None));
+				return 1;
+			}
+			catch (Exception e)
+			{
+				throw new OrmException(e.Message,e);
+			}
 		}
 
 		/// <summary>An OrmConnection method that inserts all.</summary>

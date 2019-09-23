@@ -17,6 +17,8 @@ namespace SimpleStack.Orm
 			_connectionString = connectionString;
 		}
 
+		public IDialectProvider DialectProvider => _dialectProvider;
+
 		public OrmConnection OpenConnection()
 		{
 			var conn = _dialectProvider.CreateConnection(_connectionString);
@@ -29,6 +31,11 @@ namespace SimpleStack.Orm
 			var conn = _dialectProvider.CreateConnection(_connectionString);
 			await conn.OpenAsync();
 			return conn;
+		}
+
+		public override string ToString()
+		{
+			return _dialectProvider.GetType().ToString();
 		}
 	}
 }

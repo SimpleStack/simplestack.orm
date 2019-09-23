@@ -15,7 +15,8 @@ namespace SimpleStack.Orm.PostgreSQL
                 case DbType.AnsiStringFixedLength:
                 case DbType.StringFixedLength:
                 case DbType.String:
-                    return "text";// : $"character varying({l})";
+                    //TODO: for performance reason, text is better all the time, add a option to use text all the time
+                    return length != null ? $"character varying({length.Value})" : "text";
                 case DbType.Binary:
                 case DbType.Object:
                     return "bytea";
