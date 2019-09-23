@@ -324,12 +324,15 @@ namespace SimpleStack.Orm
 		public async Task<bool> TableExistsAsync<T>()
 		{
 			var tableModelDef = typeof(T).GetModelDefinition();
-			return DialectProvider.DoesTableExist(this,DialectProvider.NamingStrategy.GetTableName(tableModelDef.ModelName));
+			return await Task.Run(() => 
+				DialectProvider.DoesTableExist(this,
+					DialectProvider.NamingStrategy.GetTableName(tableModelDef.ModelName)));
 		}
 
 		public async Task<bool> TableExistsAsync(string tableName)
 		{
-			return DialectProvider.DoesTableExist(this, tableName);
+			return await Task.Run(() => 
+				DialectProvider.DoesTableExist(this, tableName));
 		}
 
 		public async Task<bool> DropTableIfExistsAsync<T>()
@@ -407,12 +410,12 @@ namespace SimpleStack.Orm
 
         public async Task<IEnumerable<ITableDefinition>> GetTablesInformationAsync(string schemaName = null)
         {
-            return DialectProvider.GetTableDefinitions(DbConnection, schemaName);
+            return await Task.Run(() =>  DialectProvider.GetTableDefinitions(DbConnection, schemaName));
         }
         
         public async Task<IEnumerable<IColumnDefinition>> GetTableColumnsInformationAsync(string tableName, string schemaName = null)
         {
-            return DialectProvider.GetTableColumnDefinitions(DbConnection, tableName, schemaName);
+            return await Task.Run(() =>  DialectProvider.GetTableColumnDefinitions(DbConnection, tableName, schemaName));
         }
 	}
 }
