@@ -271,7 +271,7 @@ namespace SimpleStack.Orm.SqlServer
 
             if (!string.IsNullOrWhiteSpace(schemaName))
             {
-                sqlQuery +=" AND TABLE_SCHEMA = @SchemaName";
+                sqlQuery +=" AND INFORMATION_SCHEMA.COLUMNS.TABLE_SCHEMA = @SchemaName";
             }
             foreach (var c in connection.Query(sqlQuery, new { TableName = tableName, SchemaName = schemaName }))
             {
