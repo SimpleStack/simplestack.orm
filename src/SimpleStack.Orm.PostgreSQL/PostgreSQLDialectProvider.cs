@@ -243,29 +243,6 @@ namespace SimpleStack.Orm.PostgreSQL
             }
         }
 
-        public override IEnumerable<ITableDefinition> GetTableDefinitions(IDbConnection connection, string schemaName = null)
-        {
-            string sqlQuery = "SELECT * FROM information_schema.tables WHERE table_type = 'BASE TABLE'";
-            
-            if (string.IsNullOrWhiteSpace(schemaName))
-            {
-                sqlQuery += " AND table_schema = current_schema()";
-            }
-            else
-            {
-                sqlQuery += " AND table_schema = @SchemaName ";
-            }
-            
-            foreach (var table in connection.Query(sqlQuery, new { SchemaName = schemaName }))
-            {
-                yield return new TableDefinition
-                {
-                    Name = table.table_name,
-                    SchemaName = table.table_schema
-                };
-            }
-        }
-
         public override string BindOperand(ExpressionType e, bool isLogical)
         {
 	        return e == ExpressionType.ExclusiveOr ? "#" : base.BindOperand(e, isLogical);

@@ -274,7 +274,7 @@ namespace SimpleStack.Orm
 			return DropTableIfExistsAsync<T>().Result;
 		}
 
-		public IEnumerable<ITableDefinition> GetTablesInformation(string schemaName = null)
+		public IEnumerable<ITableDefinition> GetTablesInformation(string schemaName = null, bool includeViews = false)
 		{
 			return GetTablesInformationAsync(schemaName).Result;
 		}
