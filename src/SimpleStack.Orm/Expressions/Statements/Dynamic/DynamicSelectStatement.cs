@@ -61,7 +61,7 @@ namespace SimpleStack.Orm.Expressions.Statements.Dynamic
             base.And(columnName, func);
             return this;
         }
-
+        
         public new DynamicSelectStatement And<T>(string columnName, Expression<Func<T, bool>> func)
         {
             base.Where(GetExpressionVisitor<T>(columnName), func);
@@ -72,6 +72,15 @@ namespace SimpleStack.Orm.Expressions.Statements.Dynamic
         {
             base.Where(GetExpressionVisitor<T>(columnName), func, "OR");
             return this;
+        }
+        
+        public new DynamicSelectStatement AndRaw(string condition)
+        {
+            return (DynamicSelectStatement)base.Where(condition, "AND");
+        }
+        public new DynamicSelectStatement OrRaw(string condition)
+        {
+            return (DynamicSelectStatement)base.Where(condition, "OR");
         }
 
         public new DynamicSelectStatement Having<T>(string columnName, Expression<Func<T, bool>> predicate)
