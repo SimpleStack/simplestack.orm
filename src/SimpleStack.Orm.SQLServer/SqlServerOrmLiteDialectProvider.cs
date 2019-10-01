@@ -271,22 +271,23 @@ namespace SimpleStack.Orm.SqlServer
 
             if (!string.IsNullOrWhiteSpace(schemaName))
             {
-                sqlQuery +=" AND TABLE_SCHEMA = @SchemaName";
+                sqlQuery +=" AND INFORMATION_SCHEMA.COLUMNS.TABLE_SCHEMA = @SchemaName";
             }
-            foreach (var c in connection.Query(sqlQuery, new { TableName = tableName, SchemaName = schemaName }))
+
+            foreach (var c in connection.Query(sqlQuery, new {TableName = tableName, SchemaName = schemaName}))
             {
-                yield return new ColumnDefinition
-                             {
-                                 Name         = c.COLUMN_NAME,
-                                 Definition         = c.DATA_TYPE,
-                                 DefaultValue = c.COLUMN_DEFAULT,
-                                 PrimaryKey   = c.IS_PRIMARY_KEY == 1,
-                                 Length  = c.CHARACTER_MAXIMUM_LENGTH,
-                                 Nullable     = c.IS_NULLABLE == "YES",
-                                 Precision = c.NUMERIC_PRECISION,
-                                 Scale = c.NUMERIC_SCALE,
-                                 DbType = GetDbType(c.DATA_TYPE)
-                             };
+	            yield return new ColumnDefinition
+	            {
+		            Name = c.COLUMN_NAME,
+		            Definition = c.DATA_TYPE,
+		            DefaultValue = c.COLUMN_DEFAULT,
+		            PrimaryKey = c.IS_PRIMARY_KEY == 1,
+		            Length = c.CHARACTER_MAXIMUM_LENGTH,
+		            Nullable = c.IS_NULLABLE == "YES",
+		            Precision = c.NUMERIC_PRECISION,
+		            Scale = c.NUMERIC_SCALE,
+		            DbType = GetDbType(c.DATA_TYPE)
+	            };
             }
         }
 
@@ -342,20 +343,5 @@ namespace SimpleStack.Orm.SqlServer
 					return DbType.Object;
 			}
 		}
-
-		public override IEnumerable<ITableDefinition> GetTableDefinitions(
-            IDbConnection connection,
-            string schemaName = null)
-        {
-            string sqlQuery = "SELECT TABLE_SCHEMA, TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE'";
-            foreach (var table in connection.Query(sqlQuery, new { }))
-            {
-                yield return new TableDefinition
-                             {
-                                 Name = table.TABLE_NAME,
-                                 SchemaName = table.TABLE_SCHEMA
-                             };
-            }
-        }
 	}
 }

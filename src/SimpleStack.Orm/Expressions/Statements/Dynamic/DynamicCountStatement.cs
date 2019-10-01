@@ -67,6 +67,15 @@ namespace SimpleStack.Orm.Expressions.Statements.Dynamic
 
             return this;
         }
+        
+        public DynamicCountStatement AndRaw(string condition)
+        {
+            return Where(condition, "AND");
+        }
+        public DynamicCountStatement OrRaw(string condition)
+        {
+            return Where(condition, "OR");
+        }
 
         internal ColumnWhereExpresionVisitor<T> GetExpressionVisitor<T>(string columnName)
         {
@@ -76,14 +85,21 @@ namespace SimpleStack.Orm.Expressions.Statements.Dynamic
         internal DynamicCountStatement Where<T>(ExpressionVisitor visitor, Expression<Func<T, bool>> func,
             string op = "AND")
         {
+            return Where(visitor.VisitExpression(func), op);
+        }
+
+        internal DynamicCountStatement Where(string condition, string op = "AND")
+        {
             if (Statement.WhereExpression.Length > 0)
             {
                 Statement.WhereExpression.Append(" ");
                 Statement.WhereExpression.Append(op);
                 Statement.WhereExpression.Append(" ");
             }
-
-            Statement.WhereExpression.Append(visitor.VisitExpression(func));
+            
+            Statement.WhereExpression.Append('(');
+            Statement.WhereExpression.Append(condition);
+            Statement.WhereExpression.Append(')');
             return this;
         }
     }

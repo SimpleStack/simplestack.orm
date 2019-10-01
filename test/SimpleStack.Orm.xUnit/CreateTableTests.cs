@@ -250,6 +250,23 @@ namespace SimpleStack.Orm.xUnit
                 }
             }
         }
+
+        [Theory]
+        [MemberData(nameof(ConnectionFactories.All), MemberType = typeof(ConnectionFactories))]
+        public void GetTableColumnInfo(OrmConnectionFactory factory)
+        {
+            using (var conn = factory.OpenConnection())
+            {
+                conn.CreateTable<WithAttributes>(true);
+
+                var t = conn.GetTableColumnsInformation("withattributes").ToList();
+                
+                Assert.NotNull(t);
+                Assert.NotEmpty(t);
+                Assert.Equal(8, t.Count);
+                Assert.True(t[0].PrimaryKey);
+            }
+        }
         
         public void Dispose()
         {

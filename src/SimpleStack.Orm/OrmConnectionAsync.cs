@@ -408,7 +408,7 @@ namespace SimpleStack.Orm
 			await this.ExecuteAsync(DialectProvider.GetDropTableStatement(modelDef));
 		}
 
-        public async Task<IEnumerable<ITableDefinition>> GetTablesInformationAsync(string schemaName = null)
+        public async Task<IEnumerable<ITableDefinition>> GetTablesInformationAsync(string schemaName = null, bool includeViews = false)
         {
             return await Task.Run(() =>  DialectProvider.GetTableDefinitions(DbConnection, schemaName));
         }

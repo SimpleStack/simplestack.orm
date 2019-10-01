@@ -383,7 +383,9 @@ namespace SimpleStack.Orm
         /// <returns>The column type definition.</returns>
         public virtual string GetColumnTypeDefinition(Type fieldType, string fieldName, int? fieldLength)
         {
+#pragma warning disable 618
             var dbType = SqlMapper.LookupDbType(fieldType, fieldName, false, out var typeHandler);
+#pragma warning restore 618
 
             if (typeHandler is ITypeHandlerColumnType typeHandlerColumnType)
             {
@@ -697,16 +699,43 @@ namespace SimpleStack.Orm
         {
             return "DROP TABLE " + GetQuotedTableName(modelDef);
         }
-        public virtual IEnumerable<IColumnDefinition> GetTableColumnDefinitions(IDbConnection connection, string tableName, string schemaName = null)
+        public virtual IEnumerable<IColumnDefinition> GetTableColumnDefinitions(
+            IDbConnection connection,
+            string tableName,
+            string schemaName = null)
         {
             return new IColumnDefinition[0];
         }
 
         public virtual IEnumerable<ITableDefinition> GetTableDefinitions(
             IDbConnection connection,
-            string schemaName = null)
+            string schemaName = null,
+            bool includeViews = false)
         {
-            return new TableDefinition[0];
+            string sqlQuery = "SELECT table_name,table_schema FROM INFORMATION_SCHEMA.TABLES where";
+
+            if (includeViews)
+            {
+                sqlQuery += " (TABLE_TYPE = 'BASE TABLE' OR TABLE_TYPE = 'VIEW')";
+            }
+            else
+            {
+                sqlQuery += " TABLE_TYPE = 'BASE TABLE'";
+            }
+            
+            if (!string.IsNullOrWhiteSpace(schemaName))
+            {
+                sqlQuery += " AND table_schema = @SchemaName ";
+            }
+            
+            foreach (var table in connection.Query(sqlQuery, new { SchemaName = schemaName }))
+            {
+                yield return new TableDefinition
+                {
+                    Name = table.table_name,
+                    SchemaName = table.table_schema
+                };
+            }
         }
 
         public virtual string BindOperand(ExpressionType e, bool isIntegral)

@@ -31,6 +31,8 @@ namespace SimpleStack.Orm.Tests
                     x.And("textcol", (string y) => y.Substring(0,1) == "a");
                 });
 
+                var r2 = conn.Select("TestType2", x => x.AndRaw("1 = 1"));
+
                 Assert.AreEqual(2, rrr);
             }
         }

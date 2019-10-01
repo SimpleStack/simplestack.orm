@@ -188,7 +188,9 @@ namespace SimpleStack.Orm
         /// <returns></returns>
 		string GetDatePartFunction(string name, string quotedColName);
         IEnumerable<IColumnDefinition> GetTableColumnDefinitions(IDbConnection connection, string tableName, string schemaName = null);
-        IEnumerable<ITableDefinition> GetTableDefinitions(IDbConnection connection, string schemaName = null);
+
+        IEnumerable<ITableDefinition> GetTableDefinitions(IDbConnection connection, string schemaName = null,
+	        bool includeViews = false);
 
         string BindOperand(ExpressionType e, bool isIntegral);
 

@@ -128,7 +128,8 @@ namespace SimpleStack.Orm.SDSQlite
 
         public override IEnumerable<ITableDefinition> GetTableDefinitions(
             IDbConnection connection,
-            string schemaName = null)
+            string schemaName = null,
+            bool includeViews = false)
         {
             string sqlQuery = "SELECT tbl_name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%';";
             foreach (var table in connection.Query(sqlQuery))
