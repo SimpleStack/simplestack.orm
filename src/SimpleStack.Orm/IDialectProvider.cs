@@ -194,7 +194,7 @@ namespace SimpleStack.Orm
 
         string BindOperand(ExpressionType e, bool isIntegral);
 
-        string GetStringFunction(string functionName, string columnName, IDictionary<string,object> parameters, params string[] availableParameters);
+        string GetStringFunction(string functionName, string quotedColumnName, IDictionary<string,object> parameters, params string[] availableParameters);
         
 	}
 }

@@ -785,31 +785,31 @@ namespace SimpleStack.Orm
             }
         }
 
-        public virtual string GetStringFunction(string functionName, string column, IDictionary<string, Object> parameters, params string[] availableParameters)
+        public virtual string GetStringFunction(string functionName, string quotedColumnName, IDictionary<string, Object> parameters, params string[] availableParameters)
         {
             switch (functionName.ToLower())
             {
                 case "length":
-                    return "LEN(" + column + ")";
+                    return "LEN(" + quotedColumnName + ")";
                 case "trim":
-                    return $"ltrim(rtrim({column}))";
+                    return $"ltrim(rtrim({quotedColumnName}))";
                 case "tlrim":
-                    return $"ltrim({column})";
+                    return $"ltrim({quotedColumnName})";
                 case "rtrim":
-                    return $"rtrim({column})";
+                    return $"rtrim({quotedColumnName})";
                 case "toupper":
-                    return $"upper({column})";
+                    return $"upper({quotedColumnName})";
                 case "tolower":
-                    return $"lower({column})";
+                    return $"lower({quotedColumnName})";
                 case "startswith":
                     parameters[availableParameters[0]] = parameters[availableParameters[0]].ToString().ToUpper() + "%";
-                    return $"upper({column}) LIKE {availableParameters[0]} ";
+                    return $"upper({quotedColumnName}) LIKE {availableParameters[0]} ";
                 case "endswith":
                     parameters[availableParameters[0]] = "%" + parameters[availableParameters[0]].ToString().ToUpper();
-                    return $"upper({column}) LIKE {availableParameters[0]} ";
+                    return $"upper({quotedColumnName}) LIKE {availableParameters[0]} ";
                 case "contains":
                     parameters[availableParameters[0]] = "%" + parameters[availableParameters[0]].ToString().ToUpper() +"%";
-                    return $"upper({column}) LIKE {availableParameters[0]} ";
+                    return $"upper({quotedColumnName}) LIKE {availableParameters[0]} ";
                 case "substring":
                     //Ensure Offset is start at 1 instead of 0
                     int offset = ((int) parameters[availableParameters[0]]) + 1;
@@ -817,9 +817,9 @@ namespace SimpleStack.Orm
 
                     if (parameters.Count == 2)
                     {
-                        return $"substr({column},{availableParameters[0]},{availableParameters[1]})";
+                        return $"substr({quotedColumnName},{availableParameters[0]},{availableParameters[1]})";
                     }
-                    return $"substr({column},{availableParameters[0]})";
+                    return $"substr({quotedColumnName},{availableParameters[0]})";
                 default:
                     throw new NotSupportedException();
             }
