@@ -6,29 +6,20 @@ namespace SimpleStack.Orm.Expressions.Statements.Dynamic
 {
     public class DynamicSelectStatement : DynamicCountStatement
     {
-        private readonly IDialectProvider _dialectProvider;
-
         public DynamicSelectStatement(IDialectProvider dialectProvider)
             :base(dialectProvider)
         {
-            _dialectProvider = dialectProvider;
         }
 
         public DynamicSelectStatement Select(params string[] columns)
-        {
-            Statement.Columns.AddRange(columns.Select(x => _dialectProvider.GetQuotedColumnName(x)));
-            return this;
-        }
-
-        public DynamicSelectStatement SelectRaw(params string[] columns)
         {
             Statement.Columns.AddRange(columns);
             return this;
         }
 
-        public DynamicSelectStatement Select<T>(string columnName, Expression<Func<T, T>> keySelector)
+        public DynamicSelectStatement Select<T>(string statement, Expression<Func<T, T>> keySelector)
         {
-            Statement.Columns.Add(GetExpressionVisitor<T>(columnName).VisitExpression(keySelector));
+            Statement.Columns.Add(GetExpressionVisitor<T>(statement).VisitExpression(keySelector));
             return this;
         }
 
@@ -44,48 +35,39 @@ namespace SimpleStack.Orm.Expressions.Statements.Dynamic
             return this;
         }
 
-        public new DynamicSelectStatement GroupBy(params string[] columns)
+        public new DynamicSelectStatement GroupBy(params string[] statement)
         {
-            base.GroupBy(columns);
+            base.GroupBy(statement);
             return this;
         }
 
-        public new DynamicSelectStatement GroupBy<T>(string columnName, Expression<Func<T, T>> keySelector)
+        public new DynamicSelectStatement GroupBy<T>(string statement, Expression<Func<T, T>> keySelector)
         {
-            base.GroupBy(columnName, keySelector);
+            base.GroupBy(statement, keySelector);
             return this;
         }
 
-        public new DynamicSelectStatement Where<T>(string columnName, Expression<Func<T, bool>> func)
+        public new DynamicSelectStatement Where<T>(string statement, Expression<Func<T, bool>> func)
         {
-            base.And(columnName, func);
+            base.And(statement, func);
             return this;
         }
         
-        public new DynamicSelectStatement And<T>(string columnName, Expression<Func<T, bool>> func)
+        public new DynamicSelectStatement And<T>(string statement, Expression<Func<T, bool>> func)
         {
-            base.Where(GetExpressionVisitor<T>(columnName), func);
+            base.Where(GetExpressionVisitor<T>(statement), func);
             return this;
         }
 
-        public new DynamicSelectStatement Or<T>(string columnName, Expression<Func<T, bool>> func)
+        public new DynamicSelectStatement Or<T>(string statement, Expression<Func<T, bool>> func)
         {
-            base.Where(GetExpressionVisitor<T>(columnName), func, "OR");
+            base.Where(GetExpressionVisitor<T>(statement), func, "OR");
             return this;
         }
-        
-        public new DynamicSelectStatement AndRaw(string condition)
+ 
+        public new DynamicSelectStatement Having<T>(string statement, Expression<Func<T, bool>> predicate)
         {
-            return (DynamicSelectStatement)base.Where(condition, "AND");
-        }
-        public new DynamicSelectStatement OrRaw(string condition)
-        {
-            return (DynamicSelectStatement)base.Where(condition, "OR");
-        }
-
-        public new DynamicSelectStatement Having<T>(string columnName, Expression<Func<T, bool>> predicate)
-        {
-            base.Having(columnName, predicate);
+            base.Having(statement, predicate);
             return this;
         }
 
@@ -96,34 +78,34 @@ namespace SimpleStack.Orm.Expressions.Statements.Dynamic
             return this;
         }
 
-        public DynamicSelectStatement OrderBy(string columnName)
+        public DynamicSelectStatement OrderBy(string statement)
         {
             Statement.OrderByExpression.Clear();
-            Statement.OrderByExpression.Append(columnName);
+            Statement.OrderByExpression.Append(statement);
             Statement.OrderByExpression.Append(" ASC");
             return this;
         }
 
-        public DynamicSelectStatement ThenBy(string columnName)
+        public DynamicSelectStatement ThenBy(string statement)
         {
             Statement.OrderByExpression.Append(",");
-            Statement.OrderByExpression.Append(columnName);
+            Statement.OrderByExpression.Append(statement);
             Statement.OrderByExpression.Append(" ASC");
             return this;
         }
 
-        public DynamicSelectStatement OrderByDescending(string columnName)
+        public DynamicSelectStatement OrderByDescending(string statement)
         {
             Statement.OrderByExpression.Clear();
-            Statement.OrderByExpression.Append(columnName);
+            Statement.OrderByExpression.Append(statement);
             Statement.OrderByExpression.Append(" DESC");
             return this;
         }
 
-        public DynamicSelectStatement ThenByDescending(string columnName)
+        public DynamicSelectStatement ThenByDescending(string statement)
         {
             Statement.OrderByExpression.Append(",");
-            Statement.OrderByExpression.Append(columnName);
+            Statement.OrderByExpression.Append(statement);
             Statement.OrderByExpression.Append(" DESC");
             return this;
         }

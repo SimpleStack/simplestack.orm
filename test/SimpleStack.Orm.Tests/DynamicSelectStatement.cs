@@ -16,22 +16,23 @@ namespace SimpleStack.Orm.Tests
             SetupContext();
             using (var conn = OpenDbConnection())
             {
+                var r2 = conn.Select("TestType2", x => x.Where<int>("CASE WHEN 1 > 2 THEN 33 ELSE 44 END", y => y == 1 ));
+
                 var r = conn.Select("TestType2",
-                                    x => x.Select<int>("id",
+                                    x => x.Select<int>(conn.DialectProvider.GetQuotedColumnName("id"),
                                                        y => Sql.As(Sql.Max(y), "maxintcol")));
 
                 var results = conn.Select("TestType2",
-                                          x => x.Select("id", "textcol")
-                                                .Where("textcol", (string y) => y.Substring(0, 1) == "a")
-                                                .And("id", (int y) => y > 10)
+                                          x => x.Select(conn.DialectProvider.GetQuotedColumnName("id"), conn.DialectProvider.GetQuotedColumnName("textcol"))
+                                                .Where(conn.DialectProvider.GetQuotedColumnName("textcol"), (string y) => y.Substring(0, 1) == "a")
+                                                .And(conn.DialectProvider.GetQuotedColumnName("id"), (int y) => y > 10)
                                                 .Limit(1, 1));
 
                 var rrr = conn.Count("TestType2",x =>
                 {
-                    x.And("textcol", (string y) => y.Substring(0,1) == "a");
+                    x.And(conn.DialectProvider.GetQuotedColumnName("textcol"), (string y) => y.Substring(0,1) == "a");
                 });
 
-                var r2 = conn.Select("TestType2", x => x.AndRaw("1 = 1"));
 
                 Assert.AreEqual(2, rrr);
             }
