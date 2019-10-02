@@ -137,13 +137,15 @@ namespace SimpleStack.Orm.Expressions
 
         private string GetQuotedColumnName(string memberName)
         {
-            var fd = _modelDefinition.FieldDefinitions.FirstOrDefault(x => x.Name == memberName);
+            var fd = _modelDefinition.FieldDefinitions.First(x => x.Name.ToLower() == memberName.ToLower());
             var fn = fd?.FieldName ?? memberName;
-            if (fn == fd.Name) return DialectProvider.GetQuotedColumnName(fn);
 
-            if (_addAliasSpecification) return DialectProvider.GetQuotedColumnName(fn) + " AS " + fd.Name;
+            var operand = fd.IsComputed ? fd.ComputeExpression : DialectProvider.GetQuotedColumnName(fn);
 
-            return DialectProvider.GetQuotedColumnName(fn);
+            if (_addAliasSpecification && fn != fd.Name) 
+                return operand + " AS " + fd.Name;
+
+            return operand;
         }
 
         protected override StatementPart VisitLambda(LambdaExpression lambdaExpression)
