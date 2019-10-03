@@ -36,7 +36,10 @@ namespace SimpleStack.Orm.Expressions.Statements.Dynamic
 
         public DynamicCountStatement GroupBy<T>(string columnName, Expression<Func<T, T>> keySelector)
         {
-            if (Statement.GroupByExpression.Length > 0) Statement.GroupByExpression.Append(",");
+            if (Statement.GroupByExpression.Length > 0)
+            {
+                Statement.GroupByExpression.Append(",");
+            }
             Statement.GroupByExpression.Append(GetExpressionVisitor<T>(columnName).VisitExpression(keySelector));
             return this;
         }
@@ -60,7 +63,7 @@ namespace SimpleStack.Orm.Expressions.Statements.Dynamic
         {
             if (predicate != null)
                 Statement.HavingExpression.Append(
-                    new ColumnWhereExpresionVisitor<T>(_dialectProvider, Statement.Parameters, columnName)
+                    new ColumnWhereExpresionVisitor<T>(_dialectProvider, Statement.Parameters, _dialectProvider.GetQuotedColumnName(columnName))
                         .VisitExpression(predicate));
             else
                 Statement.HavingExpression.Clear();
@@ -77,9 +80,9 @@ namespace SimpleStack.Orm.Expressions.Statements.Dynamic
             return Where(condition, "OR");
         }
 
-        internal ColumnWhereExpresionVisitor<T> GetExpressionVisitor<T>(string columnName)
+        internal ColumnWhereExpresionVisitor<T> GetExpressionVisitor<T>(string columnOrExpression)
         {
-            return new ColumnWhereExpresionVisitor<T>(_dialectProvider, Statement.Parameters, columnName);
+            return new ColumnWhereExpresionVisitor<T>(_dialectProvider, Statement.Parameters, columnOrExpression);
         }
 
         internal DynamicCountStatement Where<T>(ExpressionVisitor visitor, Expression<Func<T, bool>> func,

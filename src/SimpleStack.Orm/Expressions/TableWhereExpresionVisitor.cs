@@ -74,10 +74,8 @@ namespace SimpleStack.Orm.Expressions
 
         protected virtual string GetQuotedColumnName(string memberName)
         {
-            var fd = _modelDefinition.FieldDefinitions.FirstOrDefault(x => x.Name == memberName);
-            var fn = fd?.FieldName ?? memberName;
-
-            return DialectProvider.GetQuotedColumnName(fn);
+            var fd = _modelDefinition.FieldDefinitions.First(x => x.Name.ToLower() == memberName.ToLower());
+            return fd.IsComputed ? fd.ComputeExpression : DialectProvider.GetQuotedColumnName(fd.FieldName);
         }
     }
 }

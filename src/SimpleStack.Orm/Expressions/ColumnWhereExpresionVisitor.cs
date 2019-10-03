@@ -7,14 +7,14 @@ namespace SimpleStack.Orm.Expressions
 {
     internal class ColumnWhereExpresionVisitor<T> : ExpressionVisitor
     {
-        private readonly string _columnName;
+        private readonly string _statement;
 
         public ColumnWhereExpresionVisitor(IDialectProvider dialectProvider,
             IDictionary<string, object> parameters,
-            string columnName)
+            string statement)
             : base(dialectProvider, parameters)
         {
-            _columnName = columnName;
+            _statement = statement;
         }
 
         protected override StatementPart VisitMethodCall(MethodCallExpression methodCallExpression)
@@ -47,8 +47,6 @@ namespace SimpleStack.Orm.Expressions
             switch (m.Method.Name)
             {
                 case "Contains":
-                    var quotedColName = DialectProvider.GetQuotedColumnName(_columnName);
-
                     var memberExpr = m.Arguments[0];
                     if (memberExpr.NodeType == ExpressionType.MemberAccess)
                         memberExpr = m.Arguments[0] as MemberExpression;
@@ -65,7 +63,7 @@ namespace SimpleStack.Orm.Expressions
                             // Instead, just select from the null set via "ColumnName IN (NULL)"
                             sIn = "NULL";
 
-                        return new StatementPart($"{quotedColName} IN ({sIn})");
+                        return new StatementPart($"{_statement} IN ({sIn})");
                     }
 
                     break;
@@ -78,8 +76,11 @@ namespace SimpleStack.Orm.Expressions
         {
             if (memberExpression.Member.DeclaringType == typeof(string) &&
                 memberExpression.Member.Name == "Length")
-                // TODO: _dialectProvider.GetStringLength(columnName);
-                return new StatementPart($"LEN ({DialectProvider.GetQuotedColumnName(_columnName)}");
+                return new StatementPart(
+                    DialectProvider.GetStringFunction("length",
+                        _statement,
+                        null,
+                        null));
 
             if (memberExpression.Member.DeclaringType == typeof(DateTime))
                 switch (memberExpression.Member.Name)
@@ -91,7 +92,7 @@ namespace SimpleStack.Orm.Expressions
                     case "Minute":
                     case "Second":
                         return new StatementPart(
-                            DialectProvider.GetDatePartFunction(memberExpression.Member.Name, _columnName));
+                            DialectProvider.GetDatePartFunction(memberExpression.Member.Name, _statement));
                     default:
                         throw new NotSupportedException();
                 }
@@ -143,7 +144,7 @@ namespace SimpleStack.Orm.Expressions
 
         protected override StatementPart VisitParameter(ParameterExpression parameterExpression)
         {
-            return /* tableName.*/ new ColumnAccessPart(DialectProvider.GetQuotedColumnName(_columnName), typeof(T));
+            return /* tableName.*/ new ColumnAccessPart(_statement, typeof(T));
         }
 
         protected override StatementPart VisitConstant(ConstantExpression constantExpression)

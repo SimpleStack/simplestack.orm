@@ -239,7 +239,7 @@ namespace SimpleStack.Orm.SqlServer
 			return $"DATEPART({name.ToLower()},{quotedColName})";
 		}
 
-		public override string GetStringFunction(string functionName, string column, IDictionary<string, object> parameters,
+		public override string GetStringFunction(string functionName, string quotedColumnName, IDictionary<string, object> parameters,
 			params string[] availableParameters)
 		{
 			switch (functionName.ToLower())
@@ -251,11 +251,11 @@ namespace SimpleStack.Orm.SqlServer
 
 					if (parameters.Count == 2)
 					{
-						return $"substring({column},{availableParameters[0]},{availableParameters[1]})";
+						return $"substring({quotedColumnName},{availableParameters[0]},{availableParameters[1]})";
 					}
-					return $"substring({column},{availableParameters[0]})";
+					return $"substring({quotedColumnName},{availableParameters[0]})";
 			}
-			return base.GetStringFunction(functionName, column, parameters, availableParameters);
+			return base.GetStringFunction(functionName, quotedColumnName, parameters, availableParameters);
 		}
 
 		public override IEnumerable<IColumnDefinition> GetTableColumnDefinitions(IDbConnection connection, string tableName, string schemaName = null)
