@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -74,7 +75,9 @@ namespace SimpleStack.Orm.Expressions
 
         protected virtual string GetQuotedColumnName(string memberName)
         {
-            var fd = _modelDefinition.FieldDefinitions.First(x => x.Name.ToLower() == memberName.ToLower());
+            var fd = _modelDefinition.FieldDefinitions.FirstOrDefault(x => x.Name.ToLower() == memberName.ToLower());
+            if(fd == null)
+                throw new OrmException($"Column name '{memberName}' not found in type '{_modelDefinition.Name}'");
             return fd.IsComputed ? fd.ComputeExpression : DialectProvider.GetQuotedColumnName(fd.FieldName);
         }
     }
