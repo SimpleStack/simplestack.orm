@@ -15,7 +15,7 @@
         <Version>1.2.0-beta92</Version>
         <AssemblyVersion>1.2.0.0</AssemblyVersion>
         <FileVersion>1.2.0.0</FileVersion>
-        <PackageVersion>1.2.0-beta92</PackageVersion>
+        <PackageVersion>1.2.0-beta93</PackageVersion>
     </PropertyGroup>
     
     <PropertyGroup>
