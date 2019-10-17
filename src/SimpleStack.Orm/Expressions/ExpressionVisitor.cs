@@ -123,11 +123,11 @@ namespace SimpleStack.Orm.Expressions
 
         protected virtual StatementPart VisitMethodCall(MethodCallExpression m)
         {
-            if (IsArrayMethod(m))
-                return VisitArrayMethodCall(m);
-
             if (IsColumnAccess(m))
                 return VisitColumnAccessMethod(m);
+            
+            if (IsIEnumerableContainsMethod(m))
+                return VisitArrayMethodCall(m);
 
             var value = Expression.Lambda(m).Compile().DynamicInvoke();
             if (value == null)
@@ -153,12 +153,17 @@ namespace SimpleStack.Orm.Expressions
             return new StatementPart(statement);
         }
 
-        protected virtual bool IsArrayMethod(MethodCallExpression m)
+        protected virtual bool IsIEnumerableContainsMethod(MethodCallExpression m)
         {
-            if (m.Object == null && m.Method.Name == "Contains")
-                if (m.Arguments.Count == 2)
+            if (m.Method.Name == "Contains")
+            {
+                if (m.Method.DeclaringType == typeof(Enumerable) || 
+                    typeof(IEnumerable).IsAssignableFrom(m.Method.DeclaringType))
+                {
                     return true;
-
+                }
+            }
+            
             return false;
         }
 
@@ -167,16 +172,18 @@ namespace SimpleStack.Orm.Expressions
             return null;
         }
 
-        protected virtual List<StatementPart> VisitExpressionList(ReadOnlyCollection<Expression> original)
+        protected virtual List<StatementPart> VisitExpressionList(IEnumerable<Expression> parameters)
         {
             var list = new List<StatementPart>();
-            for (int i = 0, n = original.Count; i < n; i++)
+            var original = parameters.ToArray();
+            
+            for (int i = 0, n = original.Length; i < n; i++)
                 if (original[i].NodeType == ExpressionType.NewArrayInit ||
                     original[i].NodeType == ExpressionType.NewArrayBounds)
                 {
                     list.AddRange(VisitNewArrayFromExpressionList(original[i] as NewArrayExpression));
                 }
-                else if (original[i].NodeType == ExpressionType.Call && typeof(IEnumerable).IsAssignableFrom(original[i].Type))
+                else if (original[i].Type != typeof(string) && typeof(IEnumerable).IsAssignableFrom(original[i].Type))
                 {
                     foreach (var p in (IEnumerable) Expression.Lambda(original[i]).Compile().DynamicInvoke())
                     {

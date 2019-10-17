@@ -1,5 +1,8 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -31,19 +34,17 @@ namespace SimpleStack.Orm.Expressions
             }
 
             var r = Expression.Lambda(m).Compile().DynamicInvoke();
-            if (r != null)
-                return AddParameter(r);
-
-            return null;
+            return r != null ? AddParameter(r) : null;
         }
 
         protected override bool IsColumnAccess(MethodCallExpression m)
         {
-            if (m.Object is MethodCallExpression)
-                return IsColumnAccess((MethodCallExpression) m.Object);
+            if (m.Object is MethodCallExpression mce)
+                return IsColumnAccess(mce);
 
             var exp = m.Object as MemberExpression;
-            return exp?.Expression != null && exp.Expression.Type == typeof(T) &&
+            return exp?.Expression != null && 
+                   exp.Expression.Type == typeof(T) &&
                    exp.Expression.NodeType == ExpressionType.Parameter;
         }
 
@@ -54,19 +55,21 @@ namespace SimpleStack.Orm.Expressions
             switch (m.Method.Name)
             {
                 case "Contains":
-                    var args = VisitExpressionList(m.Arguments);
+                    var args = VisitExpressionList(m.Arguments.ToArray());
                     var quotedColName = args.Last(x => x is ColumnAccessPart);
 
-                    var sIn = args.TakeWhile(x => x is ParameterPart)
-                        .Select(x => x.Text)
-                        .Aggregate((x, y) => x + "," + y);
+                    IEnumerable<StatementPart> parameters;
+                    parameters = m.Object == null ? 
+                        args.TakeWhile(x => x is ParameterPart) : 
+                        VisitExpressionList(new []{m.Object});
+                    
+                    var sIn = parameters.Select(x => x.Text).Aggregate((x, y) => x + "," + y);
 
-                    statement = string.Format("{0} {1} ({2})", quotedColName, "In",
-                        string.IsNullOrEmpty(sIn) ? "NULL" : sIn);
+                    statement = $"{quotedColName} IN ({(string.IsNullOrEmpty(sIn) ? "NULL" : sIn)})";
                     break;
 
                 default:
-                    throw new NotSupportedException();
+                    throw new NotSupportedException($"Method '{m.Method.Name}' not supported");
             }
 
             return new StatementPart(statement);
@@ -74,7 +77,9 @@ namespace SimpleStack.Orm.Expressions
 
         protected virtual string GetQuotedColumnName(string memberName)
         {
-            var fd = _modelDefinition.FieldDefinitions.First(x => x.Name.ToLower() == memberName.ToLower());
+            var fd = _modelDefinition.FieldDefinitions.FirstOrDefault(x => x.Name.ToLower() == memberName.ToLower());
+            if(fd == null)
+                throw new OrmException($"Column name '{memberName}' not found in type '{_modelDefinition.Name}'");
             return fd.IsComputed ? fd.ComputeExpression : DialectProvider.GetQuotedColumnName(fd.FieldName);
         }
     }
