@@ -355,6 +355,23 @@ namespace SimpleStack.Orm.Tests
 			}
 		}
 
+		[Test]
+		public void Can_Select_using_IN_using_extenral_list()
+		{
+			SetupContext();
+
+			List<int> invalues = new List<int>();
+			invalues.Add(1);
+			invalues.Add(2);
+			invalues.Add(3);
+			
+			using (var conn = OpenDbConnection())
+			{
+				var target = conn.Select<TestType2>(q => invalues.Contains(q.Id));
+				Assert.AreEqual(3, target.Count());
+			}
+		}
+		
 		/// <summary>Can select using startswith.</summary>
 		[Test]
 		public void Can_Select_using_Startswith()

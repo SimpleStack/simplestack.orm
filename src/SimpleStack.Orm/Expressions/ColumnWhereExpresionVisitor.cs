@@ -25,7 +25,7 @@ namespace SimpleStack.Orm.Expressions
             if (IsColumnAccess(methodCallExpression))
                 return VisitColumnMethodCall(methodCallExpression);
 
-            if (IsArrayMethod(methodCallExpression))
+            if (IsIEnumerableContainsMethod(methodCallExpression))
                 return VisitArrayMethodCall(methodCallExpression);
 
             var value = Expression.Lambda(methodCallExpression).Compile().DynamicInvoke();

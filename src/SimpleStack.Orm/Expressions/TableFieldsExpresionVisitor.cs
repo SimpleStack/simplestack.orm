@@ -42,7 +42,7 @@ namespace SimpleStack.Orm.Expressions
             if (m.Method.DeclaringType == typeof(Sql))
                 return VisitSqlMethodCall(m);
 
-            if (IsArrayMethod(m))
+            if (IsIEnumerableContainsMethod(m))
                 return VisitArrayMethodCall(m);
 
             if (IsColumnAccess(m))
