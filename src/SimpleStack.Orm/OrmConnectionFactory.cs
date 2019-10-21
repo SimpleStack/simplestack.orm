@@ -16,12 +16,18 @@ namespace SimpleStack.Orm
 			_dialectProvider = dialectProvider;
 			_connectionString = connectionString;
 		}
+		
+		/// <summary>
+		/// Default command timeout (in seconds) set on OrmConnections created from the Factory
+		/// </summary>
+		public int DefaultCommandTimeout { get; set; }
 
 		public IDialectProvider DialectProvider => _dialectProvider;
 
 		public OrmConnection OpenConnection()
 		{
 			var conn = _dialectProvider.CreateConnection(_connectionString);
+			conn.CommandTimeout = DefaultCommandTimeout;
 			conn.Open();
 			return conn;
 		}
@@ -29,6 +35,7 @@ namespace SimpleStack.Orm
 		public async Task<OrmConnection> OpenConnectionAsync()
 		{
 			var conn = _dialectProvider.CreateConnection(_connectionString);
+			conn.CommandTimeout = DefaultCommandTimeout;
 			await conn.OpenAsync();
 			return conn;
 		}
