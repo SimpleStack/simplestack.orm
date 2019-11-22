@@ -45,10 +45,11 @@ namespace SimpleStack.Orm.MySQL
 
 		/// <summary>Gets quoted table name.</summary>
 		/// <param name="tableName">Name of the table.</param>
+		/// <param name="schemaName">Name of the schema (optional)</param>
 		/// <returns>The quoted table name.</returns>
-		public override string GetQuotedTableName(string tableName)
+		public override string GetQuotedTableName(string tableName, string schemaName = null)
 		{
-			return string.Format("`{0}`", NamingStrategy.GetTableName(tableName));
+			return $"`{NamingStrategy.GetTableName(tableName)}`";
 		}
 
 		/// <summary>Gets quoted column name.</summary>

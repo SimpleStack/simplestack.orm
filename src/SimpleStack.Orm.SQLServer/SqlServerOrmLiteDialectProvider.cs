@@ -64,7 +64,7 @@ namespace SimpleStack.Orm.SqlServer
 				return base.GetQuotedTableName(modelDef);
 
 			var escapedSchema = modelDef.Schema.Replace(".", "\".\"");
-			return string.Format("\"{0}\".\"{1}\"", escapedSchema, NamingStrategy.GetTableName(modelDef.ModelName));
+			return $"\"{escapedSchema}\".\"{NamingStrategy.GetTableName(modelDef.ModelName)}\"";
 		}
 
 		/// <summary>Query if 'dbCmd' does table exist.</summary>

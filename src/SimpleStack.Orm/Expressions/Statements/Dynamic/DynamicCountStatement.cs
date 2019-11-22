@@ -17,7 +17,10 @@ namespace SimpleStack.Orm.Expressions.Statements.Dynamic
 
         public DynamicCountStatement From(string tableName)
         {
-            Statement.TableName = _dialectProvider.GetQuotedTableName(tableName);
+            var tableTokens = tableName.Split(new []{'.'}, StringSplitOptions.RemoveEmptyEntries);
+            Statement.TableName = tableTokens.Length > 1 ?
+                _dialectProvider.GetQuotedTableName(tableTokens[1],tableTokens[0]) : 
+                _dialectProvider.GetQuotedTableName(tableName);
             return this;
         }
 
