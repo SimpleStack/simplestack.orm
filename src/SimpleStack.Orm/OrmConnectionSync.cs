@@ -276,7 +276,7 @@ namespace SimpleStack.Orm
 
 		public IEnumerable<ITableDefinition> GetTablesInformation(string schemaName = null, bool includeViews = false)
 		{
-			return GetTablesInformationAsync(schemaName).Result;
+			return GetTablesInformationAsync(schemaName,includeViews).Result;
 		}
         public IEnumerable<IColumnDefinition> GetTableColumnsInformation(string tableName, string schemaName = null)
         {
