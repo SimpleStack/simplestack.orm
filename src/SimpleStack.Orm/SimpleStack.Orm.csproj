@@ -11,11 +11,11 @@
     <PackageLicenseUrl>http://www.opensource.org/licenses/MIT</PackageLicenseUrl>
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
     <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
-    <Version>1.2.0-beta92</Version>
+    <Version>1.2.0-beta94</Version>
     <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
     <AssemblyVersion>1.2.0.0</AssemblyVersion>
     <FileVersion>1.2.0.0</FileVersion>
-    <PackageVersion>1.2.0-beta93</PackageVersion>
+    <PackageVersion>1.2.0-beta94</PackageVersion>
   </PropertyGroup>
 
   <ItemGroup>

@@ -58,8 +58,9 @@ namespace SimpleStack.Orm
 
 		/// <summary>Gets quoted table name.</summary>
 		/// <param name="tableName">Name of the table.</param>
+		/// <param name="schemaName">Name of the schema (optional)</param>
 		/// <returns>The quoted table name.</returns>
-		string GetQuotedTableName(string tableName);
+		string GetQuotedTableName(string tableName, string schemaName = null);
 
 		/// <summary>Gets quoted column name.</summary>
 		/// <param name="columnName">Name of the column.</param>

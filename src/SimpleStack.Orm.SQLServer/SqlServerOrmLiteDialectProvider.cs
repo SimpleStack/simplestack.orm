@@ -64,7 +64,7 @@ namespace SimpleStack.Orm.SqlServer
 				return base.GetQuotedTableName(modelDef);
 
 			var escapedSchema = modelDef.Schema.Replace(".", "\".\"");
-			return string.Format("\"{0}\".\"{1}\"", escapedSchema, NamingStrategy.GetTableName(modelDef.ModelName));
+			return $"\"{escapedSchema}\".\"{NamingStrategy.GetTableName(modelDef.ModelName)}\"";
 		}
 
 		/// <summary>Query if 'dbCmd' does table exist.</summary>
@@ -293,13 +293,14 @@ namespace SimpleStack.Orm.SqlServer
 
 		private DbType GetDbType(string dataType)
 		{
-			switch (dataType)
+			switch (dataType.ToLower())
 			{
 				case "char":
 					return DbType.Byte;
 				case "varchar":
 					return DbType.AnsiStringFixedLength;
 				case "nvarchar":
+				case "nchar":
 					return DbType.StringFixedLength;
 				case "text":
 					return DbType.AnsiStringFixedLength;
@@ -319,7 +320,7 @@ namespace SimpleStack.Orm.SqlServer
 				case "varbinary":
 					return DbType.Binary;
 				case "numeric":
-					return DbType.VarNumeric;
+					return DbType.Decimal;
 				case "date":
 					return DbType.Date;
 				case "time":

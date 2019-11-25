@@ -80,15 +80,18 @@ namespace SimpleStack.Orm
         /// <returns>The quoted table name.</returns>
         public virtual string GetQuotedTableName(ModelDefinition modelDef)
         {
-            return GetQuotedTableName(modelDef.ModelName);
+            return GetQuotedTableName(modelDef.ModelName, modelDef.Schema);
         }
 
         /// <summary>Gets quoted table name.</summary>
         /// <param name="tableName">Name of the table.</param>
+        /// <param name="schemaName">Name of the schema (optional)</param>
         /// <returns>The quoted table name.</returns>
-        public virtual string GetQuotedTableName(string tableName)
+        public virtual string GetQuotedTableName(string tableName, string schemaName = null)
         {
-            return $"\"{NamingStrategy.GetTableName(tableName)}\"";
+            return string.IsNullOrEmpty(schemaName) ?
+                $"\"{NamingStrategy.GetTableName(tableName)}\"" :
+                $"\"{schemaName}\".\"{NamingStrategy.GetTableName(tableName)}\"";
         }
 
         /// <summary>Gets quoted column name.</summary>
