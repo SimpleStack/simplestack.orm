@@ -1,5 +1,6 @@
 using System;
 using System.Data;
+using System.Data.SqlClient;
 
 namespace SimpleStack.Orm.SqlServer
 {
@@ -29,7 +30,6 @@ namespace SimpleStack.Orm.SqlServer
                     return "smallint";
                 case DbType.Int32:
                 case DbType.UInt32:
-                case DbType.VarNumeric:
                     return "integer";
                 case DbType.Int64:
                 case DbType.UInt64:
@@ -41,7 +41,9 @@ namespace SimpleStack.Orm.SqlServer
                 case DbType.Currency:
                     return "money";
                 case DbType.Decimal:
-                    return $"decimal({precision ?? 38},{scale ?? 6})";
+                    return $"decimal({precision ?? 18},{scale ?? 0})";
+                case DbType.VarNumeric:
+                    return $"numeric({precision ?? 18}, {scale ?? 0})";
                 case DbType.Date:
                     return "DATE";
                 case DbType.DateTime:
