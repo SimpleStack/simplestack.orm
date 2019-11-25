@@ -320,7 +320,7 @@ namespace SimpleStack.Orm.SqlServer
 				case "varbinary":
 					return DbType.Binary;
 				case "numeric":
-					return DbType.VarNumeric;
+					return DbType.Decimal;
 				case "date":
 					return DbType.Date;
 				case "time":
