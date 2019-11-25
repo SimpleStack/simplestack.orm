@@ -266,6 +266,7 @@ namespace SimpleStack.Orm.SqlServer
                                                                              AND INFORMATION_SCHEMA.KEY_COLUMN_USAGE.TABLE_CATALOG = INFORMATION_SCHEMA.COLUMNS.TABLE_CATALOG
                                                                              AND INFORMATION_SCHEMA.KEY_COLUMN_USAGE.TABLE_SCHEMA = INFORMATION_SCHEMA.COLUMNS.TABLE_SCHEMA
                                                                              AND INFORMATION_SCHEMA.KEY_COLUMN_USAGE.COLUMN_NAME = INFORMATION_SCHEMA.COLUMNS.COLUMN_NAME
+                                                                             AND (OBJECTPROPERTY(OBJECT_ID(CONSTRAINT_SCHEMA + '.' + QUOTENAME(CONSTRAINT_NAME)), 'IsPrimaryKey') = 1)
                                 WHERE INFORMATION_SCHEMA.COLUMNS.TABLE_NAME = @TableName ";
 
 
@@ -300,10 +301,11 @@ namespace SimpleStack.Orm.SqlServer
 				case "varchar":
 					return DbType.AnsiStringFixedLength;
 				case "nvarchar":
+					return DbType.String;
 				case "nchar":
 					return DbType.StringFixedLength;
 				case "text":
-					return DbType.AnsiStringFixedLength;
+					return DbType.AnsiString;
 				case "ntext":
 					return DbType.String;
 				case "bit":
