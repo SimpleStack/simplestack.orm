@@ -12,10 +12,10 @@
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
-    <Version>1.2.0-beta92</Version>
+    <Version>1.2.0-beta94</Version>
     <AssemblyVersion>1.2.0.0</AssemblyVersion>
     <FileVersion>1.2.0.0</FileVersion>
-    <PackageVersion>1.2.0-beta93</PackageVersion>
+    <PackageVersion>1.2.0-beta94</PackageVersion>
   </PropertyGroup>
 
   <ItemGroup>
