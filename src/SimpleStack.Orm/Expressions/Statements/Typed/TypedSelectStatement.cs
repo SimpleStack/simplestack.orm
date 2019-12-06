@@ -14,7 +14,8 @@ namespace SimpleStack.Orm.Expressions.Statements.Typed
         {
             _dialectProvider = dialectProvider;
             _modelDefinition = ModelDefinition<T>.Definition;
-            Statement.TableName = _dialectProvider.GetQuotedTableName(_modelDefinition.Alias ?? _modelDefinition.ModelName);
+            
+            Statement.TableName = _dialectProvider.GetQuotedTableName(_modelDefinition);
 
             Statement.Columns.AddRange(_dialectProvider.GetColumnNames(_modelDefinition));
         }

@@ -23,9 +23,9 @@ namespace SimpleStack.Orm.Expressions.Statements.Dynamic
             return this;
         }
 
-        public new DynamicSelectStatement From(string tableName)
+        public new DynamicSelectStatement From(string tableName, string schemaName= null)
         {
-            base.From(tableName);
+            base.From(tableName,schemaName);
             return this;
         }
 

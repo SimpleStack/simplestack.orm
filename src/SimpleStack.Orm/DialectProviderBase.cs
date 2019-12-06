@@ -27,10 +27,10 @@ namespace SimpleStack.Orm
     public abstract class DialectProviderBase : IDialectProvider
     {
         /// <summary>The AutoIncrement column definition.</summary>
-        public string AutoIncrementDefinition = "AUTOINCREMENT";
+        protected string AutoIncrementDefinition = "AUTOINCREMENT";
 
         /// <summary>The default value format.</summary>
-        public string DefaultValueFormat = " DEFAULT ('{0}')";
+        protected string DefaultValueFormat = " DEFAULT ('{0}')";
 
         /// <summary>
         ///     Initializes a new instance of the NServiceKit.OrmLite.OrmLiteDialectProviderBase&lt;
@@ -80,7 +80,7 @@ namespace SimpleStack.Orm
         /// <returns>The quoted table name.</returns>
         public virtual string GetQuotedTableName(ModelDefinition modelDef)
         {
-            return GetQuotedTableName(modelDef.ModelName, modelDef.Schema);
+            return GetQuotedTableName(modelDef.Alias ?? modelDef.ModelName, modelDef.Schema);
         }
 
         /// <summary>Gets quoted table name.</summary>

@@ -13,8 +13,7 @@ namespace SimpleStack.Orm.Expressions.Statements.Typed
             _dialectProvider = dialectProvider;
             _modelDefinition = ModelDefinition<T>.Definition;
 
-            WhereStatement.TableName = _dialectProvider.GetQuotedTableName(
-                _modelDefinition.Alias ?? _modelDefinition.ModelName);
+            WhereStatement.TableName = _dialectProvider.GetQuotedTableName(_modelDefinition);
         }
 
         private WhereStatement WhereStatement => GetWhereStatement();
