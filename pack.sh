@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 dotnet restore src/SimpleStack.Orm
 dotnet pack -c Release -o ../nuget src/SimpleStack.Orm
 dotnet restore src/SimpleStack.Orm.MySQL
