@@ -102,30 +102,36 @@ namespace SimpleStack.Orm.PostgreSQL
         /// <param name="connection">    The database command.</param>
         /// <param name="tableName">Name of the table.</param>
         /// <returns>true if it succeeds, false if it fails.</returns>
-        public override bool DoesTableExist(IDbConnection connection, string tableName)
+        public override bool DoesTableExist(IDbConnection connection, string tableName, string schemaName = null)
         {
-            var result = connection.ExecuteScalar<long>(
-                @"SELECT COUNT(*) FROM pg_class
-                                                  LEFT JOIN pg_namespace n ON n.oid = pg_class.relnamespace
-                                               WHERE nspname = current_schema()
-                                               AND  relname = :table;",
-                new {table = tableName});
+            var query = @"SELECT COUNT(*) FROM pg_class
+                       LEFT JOIN pg_namespace n ON n.oid = pg_class.relnamespace
+                       WHERE relname = :table AND nspname = ";
+
+            if (string.IsNullOrEmpty(schemaName))
+                query += "current_schema()";
+            else
+            {
+                query += $"'{NamingStrategy.GetTableName(schemaName)}'";
+            }
+            
+            var result = connection.ExecuteScalar<long>(query, new {table = NamingStrategy.GetTableName(tableName)});
 
             return result > 0;
         }
 
-        /// <summary>Gets quoted table name.</summary>
-		/// <param name="modelDef">The model definition.</param>
-		/// <returns>The quoted table name.</returns>
-		public override string GetQuotedTableName(ModelDefinition modelDef)
-		{
-			if (!modelDef.IsInSchema)
-			{
-				return base.GetQuotedTableName(modelDef);
-			}
-			string escapedSchema = modelDef.Schema.Replace(".", "\".\"");
-			return string.Format("\"{0}\".\"{1}\"", escapedSchema, base.NamingStrategy.GetTableName(modelDef.ModelName));
-		}
+//        /// <summary>Gets quoted table name.</summary>
+//		/// <param name="modelDef">The model definition.</param>
+//		/// <returns>The quoted table name.</returns>
+//		public override string GetQuotedTableName(ModelDefinition modelDef)
+//		{
+//			if (!modelDef.IsInSchema)
+//			{
+//				return base.GetQuotedTableName(modelDef);
+//			}
+//			string escapedSchema = modelDef.Schema.Replace(".", "\".\"");
+//			return string.Format("\"{0}\".\"{1}\"", escapedSchema, base.NamingStrategy.GetTableName(modelDef.ModelName));
+//		}
 
 		/// <summary>
 		/// based on Npgsql2's source: Npgsql2\src\NpgsqlTypes\NpgsqlTypeConverters.cs.
@@ -158,10 +164,10 @@ namespace SimpleStack.Orm.PostgreSQL
 		{
 			return $"date_part('{name.ToLower()}', {quotedColName})";
 		}
-
-        private class PostgreSqlTableDefinition
+        
+        public override string GetCreateSchemaStatement(string schema, bool ignoreIfExists)
         {
-            public string Table_Name { get; set; }
+            return $"CREATE SCHEMA {(ignoreIfExists ? "IF NOT EXISTS" : string.Empty)} {NamingStrategy.GetTableName(schema)}";
         }
 
         public override IEnumerable<IColumnDefinition> GetTableColumnDefinitions(IDbConnection connection, string tableName, string schemaName = null)
@@ -176,16 +182,16 @@ namespace SimpleStack.Orm.PostgreSQL
                 sqlQuery += " AND table_schema = @SchemaName";
             }
 
-            // ReSharper disable StringLiteralTypo
             var pks = connection.Query($@"SELECT a.attname
                 FROM   pg_index i
                 JOIN   pg_attribute a ON a.attrelid = i.indrelid
                                      AND a.attnum = ANY(i.indkey)
                 WHERE  i.indrelid = '{tableName}'::regclass
                 AND    i.indisprimary;").ToArray();
-            // ReSharper enable StringLiteralTypo
 
-            foreach (var c in connection.Query<ColumnInformationSchema>(sqlQuery, new { TableName = tableName.ToLower(), schemaName }))
+            foreach (var c in connection.Query<ColumnInformationSchema>(sqlQuery, new { 
+                TableName = NamingStrategy.GetTableName(tableName),
+                SchemaName = schemaName == null ? null : NamingStrategy.GetTableName(schemaName) }))
             {
                 yield return new ColumnDefinition
                              {

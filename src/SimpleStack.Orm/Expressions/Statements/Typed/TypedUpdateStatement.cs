@@ -24,9 +24,9 @@ namespace SimpleStack.Orm.Expressions.Statements.Typed
         /// </summary>
         /// <param name="tableName"></param>
         /// <returns></returns>
-        public TypedUpdateStatement<T> Table(string tableName)
+        public TypedUpdateStatement<T> Table(string tableName, string schemaName = null)
         {
-            Statement.TableName = _dialectProvider.GetQuotedTableName(tableName);
+            Statement.TableName = _dialectProvider.GetQuotedTableName(tableName,schemaName);
             return this;
         }
 

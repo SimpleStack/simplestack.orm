@@ -320,18 +320,28 @@ namespace SimpleStack.Orm
 			var tableType = typeof(T);
 			await CreateTableAsync(false, tableType);
 		}
+		
+		public async Task CreateSchemaIfNotExistsAsync(string schemaName)
+		{
+			await this.ExecuteScalarAsync(DialectProvider.GetCreateSchemaStatement(schemaName, true));
+		}
+		public async Task CreateSchemaAsync(string schemaName)
+		{
+			await this.ExecuteScalarAsync(DialectProvider.GetCreateSchemaStatement(schemaName, false));
+		}
 
 		public async Task<bool> TableExistsAsync<T>()
 		{
 			var tableModelDef = typeof(T).GetModelDefinition();
 			return await Task.Run(() => 
 				DialectProvider.DoesTableExist(this,
-					DialectProvider.NamingStrategy.GetTableName(tableModelDef.ModelName)));
+					tableModelDef.Alias ?? tableModelDef.ModelName,
+					tableModelDef.Schema));
 		}
 
 		public async Task<bool> TableExistsAsync(string tableName)
 		{
-			return await Task.Run(() => 
+			return await Task.Run(() =>
 				DialectProvider.DoesTableExist(this, tableName));
 		}
 
@@ -355,7 +365,7 @@ namespace SimpleStack.Orm
 
 			var dialectProvider = DialectProvider;
 			var tableName = dialectProvider.NamingStrategy.GetTableName(modelDef.ModelName);
-			var tableExists = dialectProvider.DoesTableExist(this, tableName);
+			var tableExists = dialectProvider.DoesTableExist(this, tableName, modelDef.Schema);
 
 			if (overwrite && tableExists)
 			{
@@ -410,7 +420,7 @@ namespace SimpleStack.Orm
 
         public async Task<IEnumerable<ITableDefinition>> GetTablesInformationAsync(string schemaName = null, bool includeViews = false)
         {
-            return await Task.Run(() =>  DialectProvider.GetTableDefinitions(DbConnection, schemaName, includeViews));
+            return await DialectProvider.GetTableDefinitions(DbConnection, schemaName, includeViews);
         }
         
         public async Task<IEnumerable<IColumnDefinition>> GetTableColumnsInformationAsync(string tableName, string schemaName = null)

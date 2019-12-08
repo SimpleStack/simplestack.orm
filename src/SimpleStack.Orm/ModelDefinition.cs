@@ -44,7 +44,7 @@ namespace SimpleStack.Orm
 
         /// <summary>Gets a value indicating whether this object is in schema.</summary>
         /// <value>true if this object is in schema, false if not.</value>
-        public bool IsInSchema { get { return this.Schema != null; } }
+        public bool IsInSchema => !string.IsNullOrEmpty(Schema);
 
         /// <summary>Gets the name of the model.</summary>
         /// <value>The name of the model.</value>
