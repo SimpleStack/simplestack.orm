@@ -13,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 using Dapper;
 using SimpleStack.Orm.Expressions;
 using SimpleStack.Orm.Expressions.Statements;
@@ -83,7 +84,7 @@ namespace SimpleStack.Orm
 		/// <returns>tableType as a string.</returns>
 		string ToCreateTableStatement(ModelDefinition modelDefinition);
 
-		/// <summary>Converts a tableType to a create index statements.</summary>
+        /// <summary>Converts a tableType to a create index statements.</summary>
 		/// <param name="modelDefinition">Model Definition.</param>
 		/// <returns>tableType as a List&lt;string&gt;</returns>
 		List<string> ToCreateIndexStatements(ModelDefinition modelDefinition);
@@ -104,12 +105,18 @@ namespace SimpleStack.Orm
 		/// <returns>A List&lt;string&gt;</returns>
 		List<string> SequenceList(ModelDefinition modelDefinition);
 
-		/// <summary>Query if 'dbCmd' does table exist.</summary>
+		/// <summary>Query if  table exist.</summary>
 		/// <param name="connection">       The database.</param>
 		/// <param name="tableName">Name of the table.</param>
-		/// <returns>true if it succeeds, false if it fails.</returns>
-		bool DoesTableExist(IDbConnection connection, string tableName);
+		/// <returns>true if it exists, false otherwise.</returns>
+		bool DoesTableExist(IDbConnection connection, string tableName, string schemaName = null);
 		
+		/// <summary>Query if schema exist.</summary>
+		/// <param name="connection">       The database.</param>
+		/// <param name="tableName">Name of the table.</param>
+		/// <returns>true if it exists, false otherwise.</returns>
+		bool DoesSchemaExist(IDbConnection connection, string schemaName);
+
 		/// <summary>Query if 'dbCmd' does sequence exist.</summary>
 		/// <param name="dbCmd">      The database command.</param>
 		/// <param name="sequencName">Name of the sequenc.</param>
@@ -127,6 +134,8 @@ namespace SimpleStack.Orm
 		string GetDropForeignKeyConstraints(ModelDefinition modelDef);
 		
 		string GetDropTableStatement(ModelDefinition modelDef);
+
+		string GetCreateSchemaStatement(string schema, bool ignoreIfExists);
 
 		/// <summary>Converts this object to an add column statement.</summary>
 		/// <param name="modelType">Type of the model.</param>
@@ -190,7 +199,7 @@ namespace SimpleStack.Orm
 		string GetDatePartFunction(string name, string quotedColName);
         IEnumerable<IColumnDefinition> GetTableColumnDefinitions(IDbConnection connection, string tableName, string schemaName = null);
 
-        IEnumerable<ITableDefinition> GetTableDefinitions(IDbConnection connection, string schemaName = null,
+        Task<IEnumerable<ITableDefinition>> GetTableDefinitions(IDbConnection connection, string schemaName = null,
 	        bool includeViews = false);
 
         string BindOperand(ExpressionType e, bool isIntegral);

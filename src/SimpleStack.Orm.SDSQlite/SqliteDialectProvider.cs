@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Threading.Tasks;
 using Dapper;
 
 namespace SimpleStack.Orm.SDSQlite
@@ -28,24 +29,26 @@ namespace SimpleStack.Orm.SDSQlite
 		}
 
 		/// <summary>Gets quoted table name.</summary>
-		/// <param name="modelDef">The model definition.</param>
+		/// <param name="tableName">Name of the table.</param>
+		/// <param name="schemaName">Name of the schema (optional)</param>
 		/// <returns>The quoted table name.</returns>
-		public override string GetQuotedTableName(ModelDefinition modelDef)
+		public override string GetQuotedTableName(string tableName, string schemaName = null)
 		{
-			if (!modelDef.IsInSchema)
-				return base.GetQuotedTableName(modelDef);
-
-			return string.Format("\"{0}_{1}\"", modelDef.Schema, modelDef.ModelName);
+			return string.IsNullOrEmpty(schemaName) ?
+				$"{EscapeChar}{NamingStrategy.GetTableName(tableName)}{EscapeChar}" :
+				$"{EscapeChar}{NamingStrategy.GetTableName(schemaName)}_{NamingStrategy.GetTableName(tableName)}{EscapeChar}";
 		}
 
 		/// <summary>Query if 'dbCmd' does table exist.</summary>
 		/// <param name="connection">    The database command.</param>
 		/// <param name="tableName">Name of the table.</param>
 		/// <returns>true if it succeeds, false if it fails.</returns>
-		public override bool DoesTableExist(IDbConnection connection, string tableName)
+		public override bool DoesTableExist(IDbConnection connection, string tableName, string schemaName = null)
 		{
+			string name = string.IsNullOrEmpty(schemaName) ? tableName : $"{schemaName}_{tableName}";
+			
 			var sql = String.Format("SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name = '{0}'"
-				, tableName);
+				, name);
 
 			var result = connection.ExecuteScalar<int>(sql);
 
@@ -126,20 +129,24 @@ namespace SimpleStack.Orm.SDSQlite
             }
         }
 
-        public override IEnumerable<ITableDefinition> GetTableDefinitions(
+        public override async Task<IEnumerable<ITableDefinition>> GetTableDefinitions(
             IDbConnection connection,
             string schemaName = null,
             bool includeViews = false)
         {
-            string sqlQuery = "SELECT tbl_name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%';";
-            foreach (var table in connection.Query(sqlQuery))
-            {
-                yield return new TableDefinition
-                             {
-                                 Name = table.tbl_name,
-                                 SchemaName = "default"
-                             };
-            }
+	        string sqlQuery = "SELECT tbl_name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%';";
+            
+	        var tables = new List<TableDefinition>();
+	        foreach (var table in await connection.QueryAsync(sqlQuery))
+	        {
+		        tables.Add(new TableDefinition
+		        {
+			        Name = table.tbl_name,
+			        SchemaName = "default"
+		        });
+	        }
+
+	        return tables;
         }
     }
 }

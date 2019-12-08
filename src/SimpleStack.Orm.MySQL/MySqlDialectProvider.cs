@@ -22,6 +22,7 @@ namespace SimpleStack.Orm.MySQL
 			base.AutoIncrementDefinition = "AUTO_INCREMENT";
 			base.DefaultValueFormat = " DEFAULT '{0}'";
 			base.SelectIdentitySql = "SELECT LAST_INSERT_ID()";
+			base.EscapeChar = '`';
 		}
 
 		/// <summary>Creates a connection.</summary>
@@ -33,23 +34,6 @@ namespace SimpleStack.Orm.MySQL
 			var c = new MySqlConnection(connectionString);
 			return c;
 
-		}
-
-		/// <summary>Gets quoted table name.</summary>
-		/// <param name="modelDef">The model definition.</param>
-		/// <returns>The quoted table name.</returns>
-		public override string GetQuotedTableName(ModelDefinition modelDef)
-		{
-			return string.Format("`{0}`", NamingStrategy.GetTableName(modelDef.ModelName));
-		}
-
-		/// <summary>Gets quoted table name.</summary>
-		/// <param name="tableName">Name of the table.</param>
-		/// <param name="schemaName">Name of the schema (optional)</param>
-		/// <returns>The quoted table name.</returns>
-		public override string GetQuotedTableName(string tableName, string schemaName = null)
-		{
-			return $"`{NamingStrategy.GetTableName(tableName)}`";
 		}
 
 		/// <summary>Gets quoted column name.</summary>
@@ -72,44 +56,22 @@ namespace SimpleStack.Orm.MySQL
 		/// <param name="connection">    The database command.</param>
 		/// <param name="tableName">Name of the table.</param>
 		/// <returns>true if it succeeds, false if it fails.</returns>
-		public override bool DoesTableExist(IDbConnection connection, string tableName)
+		public override bool DoesTableExist(IDbConnection connection, string tableName, string schemaName = null)
 		{
 			//Same as SQL Server apparently?
-			var sql = String.Format("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES " +
-				"WHERE TABLE_NAME = '{0}' AND " +
-				"TABLE_SCHEMA = '{1}'", tableName, connection.Database);
-
-			//if (!string.IsNullOrEmpty(schemaName))
-			//    sql += " AND TABLE_SCHEMA = {0}".SqlFormat(schemaName);
+			var sql = $@"SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES 
+                         WHERE TABLE_NAME = '{tableName}' 
+                         AND TABLE_SCHEMA = '{schemaName ?? connection.Database}'";
 
 			var result = connection.ExecuteScalar<long>(sql);
 
 			return result > 0;
 		}
 
-//		/// <summary>Gets column definition.</summary>
-//		/// <param name="fieldDefinition">The field definition.</param>
-//		/// <returns>The column definition.</returns>
-//		public string GetColumnDefinition(FieldDefinition fieldDefinition)
-//		{
-//			if (fieldDefinition.PropertyInfo.FirstAttribute<TextAttribute>() != null)
-//			{
-//				var sql = new StringBuilder();
-//				sql.AppendFormat("{0} {1}", GetQuotedColumnName(fieldDefinition.FieldName), TextColumnDefinition);
-//				sql.Append(fieldDefinition.IsNullable ? " NULL" : " NOT NULL");
-//				return sql.ToString();
-//			}
-//
-//			return base.GetColumnDefinition(
-//				 fieldDefinition.FieldName,
-//				 fieldDefinition.FieldType,
-//				 fieldDefinition.IsPrimaryKey,
-//				 fieldDefinition.AutoIncrement,
-//				 fieldDefinition.IsNullable,
-//				 fieldDefinition.FieldLength,
-//				 null,
-//				 fieldDefinition.DefaultValue);
-//		}
+		public override string GetCreateSchemaStatement(string schema, bool ignoreIfExists)
+		{
+			return $"CREATE SCHEMA {(ignoreIfExists ? "IF NOT EXISTS" : string.Empty)} {schema}";
+		}
 
 		public override string GetDatePartFunction(string name, string quotedColName)
 		{

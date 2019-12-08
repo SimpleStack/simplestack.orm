@@ -268,6 +268,14 @@ namespace SimpleStack.Orm
 		{
 			return TableExistsAsync(tableName).Result;
 		}
+		public void CreateSchemaIfNotExists(string schemaName)
+		{
+			this.ExecuteScalarAsync(DialectProvider.GetCreateSchemaStatement(schemaName, true)).Wait();
+		}
+		public void CreateSchema(string schemaName)
+		{
+			this.ExecuteScalarAsync(DialectProvider.GetCreateSchemaStatement(schemaName, false)).Wait();
+		}
 
 		public bool DropTableIfExists<T>()
 		{

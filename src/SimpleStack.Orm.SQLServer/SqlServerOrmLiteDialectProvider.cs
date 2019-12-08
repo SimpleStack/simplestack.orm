@@ -54,34 +54,30 @@ namespace SimpleStack.Orm.SqlServer
 
 			return new SqlConnection(connectionString);
 		}
-
-		/// <summary>Gets quoted table name.</summary>
-		/// <param name="modelDef">The model definition.</param>
-		/// <returns>The quoted table name.</returns>
-		public override string GetQuotedTableName(ModelDefinition modelDef)
-		{
-			if (!modelDef.IsInSchema)
-				return base.GetQuotedTableName(modelDef);
-
-			var escapedSchema = modelDef.Schema.Replace(".", "\".\"");
-			return $"\"{escapedSchema}\".\"{NamingStrategy.GetTableName(modelDef.ModelName)}\"";
-		}
-
+		
 		/// <summary>Query if 'dbCmd' does table exist.</summary>
 		/// <param name="connection">    The database command.</param>
 		/// <param name="tableName">Name of the table.</param>
 		/// <returns>true if it succeeds, false if it fails.</returns>
-		public override bool DoesTableExist(IDbConnection connection, string tableName)
+		public override bool DoesTableExist(IDbConnection connection, string tableName, string schemaName = null)
 		{
 			var sql = String.Format("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = '{0}'"
 				,tableName);
 
-			//if (!string.IsNullOrEmpty(schemaName))
-			//    sql += " AND TABLE_SCHEMA = {0}".SqlFormat(schemaName);
+			if (!string.IsNullOrEmpty(schemaName))
+			    sql += $" AND TABLE_SCHEMA = '{schemaName}'";
 
 			var result = connection.ExecuteScalar<int>(sql);
 
 			return result > 0;
+		}
+		
+		public override string GetCreateSchemaStatement(string schema, bool ignoreIfExists)
+		{
+			return ignoreIfExists ? 
+				$@"IF NOT EXISTS ( SELECT * FROM sys.schemas WHERE name = N'{schema}' )
+						EXEC('CREATE SCHEMA [app]')" : 
+				$"CREATE SCHEMA {schema}";
 		}
 
 		/// <summary>Gets or sets a value indicating whether this object use unicode.</summary>
@@ -192,25 +188,6 @@ namespace SimpleStack.Orm.SqlServer
 			}
 
 			return base.ToSelectStatement(statement, flags);
-		}
-
-		protected virtual void AssertValidSkipRowValues(int? skip, int? rows)
-		{
-			if (skip.HasValue && skip.Value < 0)
-				throw new ArgumentException(String.Format("Skip value:'{0}' must be>=0", skip.Value));
-
-			if (rows.HasValue && rows.Value < 0)
-				throw new ArgumentException(string.Format("Rows value:'{0}' must be>=0", rows.Value));
-		}
-		/// <summary>Builds order by identifier expression.</summary>
-		/// <exception cref="ApplicationException">Thrown when an Application error condition occurs.</exception>
-		/// <returns>A string.</returns>
-		protected virtual string BuildOrderByIdExpression(ModelDefinition modelDefinition)
-		{
-			if (modelDefinition.PrimaryKey == null)
-				throw new Exception("Malformed model, no PrimaryKey defined");
-
-			return String.Format("ORDER BY {0}", GetQuotedColumnName(modelDefinition.PrimaryKey.FieldName));
 		}
 
 		public override string GetLimitExpression(int? skip, int? rows)

@@ -54,6 +54,7 @@ namespace SimpleStack.Orm
 
 		protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior)
 		{
+			Console.WriteLine("QUERY : " + CommandText);
 			//Logger.DebugFormat("Before ExecuteDbDataReader : {0}",CommandText);
 			var res = _command.ExecuteReader(behavior);
 			//Logger.Debug("After ExecuteDbDataReader");
@@ -62,7 +63,7 @@ namespace SimpleStack.Orm
 
 		public override int ExecuteNonQuery()
 		{
-			//Logger.DebugFormat("Before ExecuteNonQuery: {0}", CommandText);
+			Console.WriteLine("Before ExecuteNonQuery: {0}", CommandText);
 			var res = _command.ExecuteNonQuery();
 			//Logger.Debug("After ExecuteNonQuery");
 			return res;

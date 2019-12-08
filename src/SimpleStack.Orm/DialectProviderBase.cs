@@ -16,6 +16,7 @@ using System.Data.Common;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
+using System.Threading.Tasks;
 using Dapper;
 using SimpleStack.Orm.Attributes;
 using SimpleStack.Orm.Expressions;
@@ -26,6 +27,7 @@ namespace SimpleStack.Orm
     /// <summary>An ORM lite dialect provider base.</summary>
     public abstract class DialectProviderBase : IDialectProvider
     {
+        protected char EscapeChar = '\"';
         /// <summary>The AutoIncrement column definition.</summary>
         protected string AutoIncrementDefinition = "AUTOINCREMENT";
 
@@ -78,7 +80,7 @@ namespace SimpleStack.Orm
         /// <summary>Gets quoted table name.</summary>
         /// <param name="modelDef">The model definition.</param>
         /// <returns>The quoted table name.</returns>
-        public virtual string GetQuotedTableName(ModelDefinition modelDef)
+        public string GetQuotedTableName(ModelDefinition modelDef)
         {
             return GetQuotedTableName(modelDef.Alias ?? modelDef.ModelName, modelDef.Schema);
         }
@@ -90,8 +92,8 @@ namespace SimpleStack.Orm
         public virtual string GetQuotedTableName(string tableName, string schemaName = null)
         {
             return string.IsNullOrEmpty(schemaName) ?
-                $"\"{NamingStrategy.GetTableName(tableName)}\"" :
-                $"\"{schemaName}\".\"{NamingStrategy.GetTableName(tableName)}\"";
+                $"{EscapeChar}{NamingStrategy.GetTableName(tableName)}{EscapeChar}" :
+                $"{EscapeChar}{NamingStrategy.GetTableName(schemaName)}{EscapeChar}.{EscapeChar}{NamingStrategy.GetTableName(tableName)}{EscapeChar}";
         }
 
         /// <summary>Gets quoted column name.</summary>
@@ -99,7 +101,7 @@ namespace SimpleStack.Orm
         /// <returns>The quoted column name.</returns>
         public virtual string GetQuotedColumnName(string columnName)
         {
-            return $"\"{NamingStrategy.GetColumnName(columnName)}\"";
+            return $"{EscapeChar}{NamingStrategy.GetColumnName(columnName)}{EscapeChar}";
         }
 
         /// <summary>Gets quoted name.</summary>
@@ -107,7 +109,7 @@ namespace SimpleStack.Orm
         /// <returns>The quoted name.</returns>
         public virtual string GetQuotedName(string name)
         {
-            return $"\"{name}\"";
+            return $"{EscapeChar}{name}{EscapeChar}";
         }
 
         /// <summary>Gets column definition.</summary>
@@ -403,7 +405,16 @@ namespace SimpleStack.Orm
         /// <param name="connection">The database.</param>
         /// <param name="tableName">Name of the table.</param>
         /// <returns>true if it succeeds, false if it fails.</returns>
-        public virtual bool DoesTableExist(IDbConnection connection, string tableName)
+        public virtual bool DoesTableExist(IDbConnection connection, string tableName, string schemaName = null)
+        {
+            return false;
+        }
+        
+        /// <summary>Query if 'dbCmd' does table exist.</summary>
+        /// <param name="connection">The database.</param>
+        /// <param name="tableName">Name of the table.</param>
+        /// <returns>true if it succeeds, false if it fails.</returns>
+        public virtual bool DoesSchemaExist(IDbConnection connection, string schemaName)
         {
             return false;
         }
@@ -454,6 +465,12 @@ namespace SimpleStack.Orm
         public virtual string ToCreateSequenceStatement(ModelDefinition modelDef, string sequenceName)
         {
             return string.Empty;
+        }
+        
+        
+        public virtual string GetCreateSchemaStatement(string schema, bool ignoreIfExists)
+        {
+            return "SELECT 1";
         }
 
         /// <summary>Sequence list.</summary>
@@ -710,7 +727,7 @@ namespace SimpleStack.Orm
             return new IColumnDefinition[0];
         }
 
-        public virtual IEnumerable<ITableDefinition> GetTableDefinitions(
+        public virtual async Task<IEnumerable<ITableDefinition>> GetTableDefinitions(
             IDbConnection connection,
             string schemaName = null,
             bool includeViews = false)
@@ -728,17 +745,20 @@ namespace SimpleStack.Orm
             
             if (!string.IsNullOrWhiteSpace(schemaName))
             {
-                sqlQuery += " AND table_schema = @SchemaName ";
+                sqlQuery += $" AND {GetStringFunction("ToLower","table_schema",null)} = {GetStringFunction("ToLower","@SchemaName",null)} ";
             }
             
-            foreach (var table in connection.Query(sqlQuery, new { SchemaName = schemaName }))
+            List<TableDefinition> tables = new List<TableDefinition>();
+            foreach (var table in await connection.QueryAsync(sqlQuery, new { SchemaName = schemaName }))
             {
-                yield return new TableDefinition
+                tables.Add(new TableDefinition
                 {
                     Name = table.table_name,
                     SchemaName = table.table_schema
-                };
+                });
             }
+
+            return tables;
         }
 
         public virtual string BindOperand(ExpressionType e, bool isIntegral)

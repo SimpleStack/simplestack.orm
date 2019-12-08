@@ -3,6 +3,7 @@ using System.Data;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using Dapper;
 using Newtonsoft.Json;
 using SimpleStack.Orm.Attributes;
 using SimpleStack.Orm.xUnit.Tools;
@@ -36,6 +37,15 @@ namespace SimpleStack.Orm.xUnit
 
         [Alias("withaliasrenamed")]
         class WithAlias
+        {
+            [Alias("columnAlias")]
+            public string Column1 { get; set; }
+        }
+        
+        
+        [Alias("withaliasansschema")]
+        [Schema("TS")]
+        class WithSchemaAndAlias
         {
             [Alias("columnAlias")]
             public string Column1 { get; set; }
@@ -154,6 +164,28 @@ namespace SimpleStack.Orm.xUnit
                 });
             }
         }
+        
+        [Theory]
+        [MemberData(nameof(ConnectionFactories.All), MemberType = typeof(ConnectionFactories))]
+        public async Task CreateTableWithAliasAndSchema(OrmConnectionFactory factory)
+        {
+            using (var c = factory.OpenConnection())
+            {
+                await c.CreateSchemaIfNotExistsAsync("TS");
+                await c.CreateTableAsync<WithSchemaAndAlias>(true);
+
+                Assert.True(await c.TableExistsAsync<WithSchemaAndAlias>());
+
+                Assert.NotEmpty(c.GetTablesInformation("TS", false)
+                    .Select(x => x.SchemaName == "TS" && x.Name == "withaliasansschema"));
+                
+                c.Select<WithSchemaAndAlias>(x =>
+                {
+                    Assert.Equal(c.DialectProvider.GetQuotedTableName("withaliasansschema","TS"), x.Statement.TableName);
+                    Assert.Equal(c.DialectProvider.GetQuotedColumnName("columnAlias") + " AS Column1",x.Statement.Columns[0]);
+                });
+            }
+        }
 
         [Theory]
         [MemberData(nameof(ConnectionFactories.All), MemberType = typeof(ConnectionFactories))]
@@ -259,7 +291,7 @@ namespace SimpleStack.Orm.xUnit
             {
                 conn.CreateTable<WithAttributes>(true);
 
-                var t = conn.GetTableColumnsInformation("withattributes").ToList();
+                var t = conn.GetTableColumnsInformation("WithAttributes").ToList();
                 
                 Assert.NotNull(t);
                 Assert.NotEmpty(t);
