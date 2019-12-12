@@ -276,7 +276,7 @@ namespace SimpleStack.Orm.SqlServer
 				case "char":
 					return DbType.Byte;
 				case "varchar":
-					return DbType.AnsiStringFixedLength;
+					return DbType.AnsiString;
 				case "nvarchar":
 					return DbType.String;
 				case "nchar":

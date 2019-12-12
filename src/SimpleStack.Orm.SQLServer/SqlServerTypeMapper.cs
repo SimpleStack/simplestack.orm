@@ -13,9 +13,10 @@ namespace SimpleStack.Orm.SqlServer
             var l = length ?? 4000;
             switch (type)
             {
-                case DbType.AnsiString:
                 case DbType.AnsiStringFixedLength:
                 case DbType.StringFixedLength:
+                    return UseUnicode ? "NCHAR({l})" : "CHAR({l})";
+                case DbType.AnsiString:
                 case DbType.String:
                 case DbType.Object: // Because of null management with Dapper
                     return UseUnicode ? $"NVARCHAR({l})" : $"VARCHAR({l*2})";
