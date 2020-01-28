@@ -15,6 +15,10 @@ namespace SimpleStack.Orm
         {
 	        return SelectAsync(tableName, selectStatement, flags).Result;
         }
+        public IEnumerable<dynamic> Select(string tableName,string schemaName, Action<DynamicSelectStatement> selectStatement, CommandFlags flags = CommandFlags.Buffered)
+        {
+	        return SelectAsync(tableName,schemaName, selectStatement, flags).Result;
+        }
 
         /// <summary>An OrmConnection method that selects.</summary>
         /// <typeparam name="T">Generic type parameter.</typeparam>
@@ -140,6 +144,10 @@ namespace SimpleStack.Orm
 		public long Count(string tableName, Action<DynamicCountStatement> expression)
 		{
 			return CountAsync(tableName, expression).Result;
+		}
+		public long Count(string tableName,string schemaName, Action<DynamicCountStatement> expression)
+		{
+			return CountAsync(tableName, schemaName, expression).Result;
 		}
 
 		/// <summary>

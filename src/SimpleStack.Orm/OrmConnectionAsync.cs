@@ -14,9 +14,14 @@ namespace SimpleStack.Orm
 	{
 		public async Task<IEnumerable<dynamic>> SelectAsync(string tableName, Action<DynamicSelectStatement> selectStatement, CommandFlags flags = CommandFlags.Buffered)
 		{
+			return await SelectAsync(tableName, null, selectStatement, flags);
+		}
+		
+		public async Task<IEnumerable<dynamic>> SelectAsync(string tableName, string schemaName, Action<DynamicSelectStatement> selectStatement, CommandFlags flags = CommandFlags.Buffered)
+		{
 			DynamicSelectStatement statement = new DynamicSelectStatement(DialectProvider);
 
-			selectStatement(statement.From(tableName));
+			selectStatement(statement.From(tableName, schemaName));
 
 			CommandDefinition cmd = DialectProvider.ToSelectStatement(statement.Statement, flags);
 			return await this.QueryAsync(cmd.CommandText, cmd.Parameters, cmd.Transaction, cmd.CommandTimeout,cmd.CommandType);
@@ -157,8 +162,13 @@ namespace SimpleStack.Orm
 		
 		public async Task<long> CountAsync(string tableName, Action<DynamicSelectStatement> expression)
 		{
+			return await CountAsync(tableName, null, expression);
+		}
+		
+		public async Task<long> CountAsync(string tableName, string schemaName, Action<DynamicSelectStatement> expression)
+		{
 			DynamicSelectStatement select = new DynamicSelectStatement(DialectProvider);
-			expression(select.From(tableName));
+			expression(select.From(tableName,schemaName));
 
 			return await this.ExecuteScalarAsync<long>(DialectProvider.ToCountStatement(select.Statement,CommandFlags.None));
 		}
