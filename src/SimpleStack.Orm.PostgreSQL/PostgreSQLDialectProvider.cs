@@ -244,6 +244,10 @@ namespace SimpleStack.Orm.PostgreSQL
                     return DbType.DateTimeOffset;
                 case "money":
                     return DbType.Currency;
+                case "numeric":
+                    return DbType.VarNumeric;
+                case "decimal":
+                    return DbType.Decimal;
                 default:
                     return DbType.Object;
             }

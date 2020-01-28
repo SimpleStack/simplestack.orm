@@ -274,9 +274,9 @@ namespace SimpleStack.Orm.SqlServer
 			switch (dataType.ToLower())
 			{
 				case "char":
-					return DbType.Byte;
-				case "varchar":
 					return DbType.AnsiStringFixedLength;
+				case "varchar":
+					return DbType.AnsiString;
 				case "nvarchar":
 					return DbType.String;
 				case "nchar":
