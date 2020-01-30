@@ -272,9 +272,9 @@ namespace SimpleStack.Orm
 			return TableExistsAsync<T>().Result;
 		}
 
-		public bool TableExists(string tableName)
+		public bool TableExists(string tableName, string schemaName = null)
 		{
-			return TableExistsAsync(tableName).Result;
+			return TableExistsAsync(tableName,schemaName).Result;
 		}
 		public void CreateSchemaIfNotExists(string schemaName)
 		{

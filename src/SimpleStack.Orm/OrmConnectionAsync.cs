@@ -349,10 +349,10 @@ namespace SimpleStack.Orm
 					tableModelDef.Schema));
 		}
 
-		public async Task<bool> TableExistsAsync(string tableName)
+		public async Task<bool> TableExistsAsync(string tableName, string schema = null)
 		{
 			return await Task.Run(() =>
-				DialectProvider.DoesTableExist(this, tableName));
+				DialectProvider.DoesTableExist(this, tableName, schema));
 		}
 
 		public async Task<bool> DropTableIfExistsAsync<T>()
