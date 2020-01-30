@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Text;
 
 namespace SimpleStack.Orm.Expressions
 {
@@ -309,8 +310,15 @@ namespace SimpleStack.Orm.Expressions
                 case "COALESCE":
                     return new StatementPart($"{operand}({left},{right})");
                 default:
-                    return new StatementPart((left == null ? "NULL" : left.ToString()) + " " + operand + " " +
-                                             (right == null ? "NULL" : right.ToString()));
+                    StringBuilder part = new StringBuilder("(");
+                    part.Append(left == null ? "NULL" : left.ToString());
+                    part.Append(" ");
+                    part.Append(operand);
+                    part.Append(" ");
+                    part.Append(right == null ? "NULL" : right.ToString());
+                    part.Append(")");
+                        
+                    return new StatementPart(part.ToString());
             }
         }
 
