@@ -15,7 +15,7 @@
     <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
     <AssemblyVersion>1.2.0.0</AssemblyVersion>
     <FileVersion>1.2.0.0</FileVersion>
-    <PackageVersion>1.2.0-beta97</PackageVersion>
+    <PackageVersion>1.2.0-beta98</PackageVersion>
   </PropertyGroup>
 
   <ItemGroup>
