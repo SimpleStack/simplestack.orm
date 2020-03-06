@@ -39,10 +39,12 @@ namespace Test{
 
    public class sample{
 
+      [Alias("dogs")]
       public class Dog{
          [PrimaryKey]
          public int Id{get; set;}
          public string Name{get; set;}
+	 [Alias("birth_date")]
          public DateTime? BirthDate{get; set;}
          public decimal Weight{get; set;}
          public string Breed{get; set;}
