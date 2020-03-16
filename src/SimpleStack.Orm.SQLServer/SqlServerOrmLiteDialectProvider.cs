@@ -237,7 +237,8 @@ namespace SimpleStack.Orm.SqlServer
 
 		public override IEnumerable<IColumnDefinition> GetTableColumnDefinitions(IDbConnection connection, string tableName, string schemaName = null)
         {
-            string sqlQuery = @"SELECT *, OBJECTPROPERTY(OBJECT_ID(CONSTRAINT_SCHEMA + '.' + QUOTENAME(CONSTRAINT_NAME)), 'IsPrimaryKey') as IS_PRIMARY_KEY
+            string sqlQuery = @"SELECT *, OBJECTPROPERTY(OBJECT_ID(CONSTRAINT_SCHEMA + '.' + QUOTENAME(CONSTRAINT_NAME)), 'IsPrimaryKey') as IS_PRIMARY_KEY,
+								OBJECTPROPERTY(OBJECT_ID(CONSTRAINT_SCHEMA + '.' + QUOTENAME(CONSTRAINT_NAME)), 'IsIndexed') as IS_UNIQUE
                                 FROM INFORMATION_SCHEMA.COLUMNS
                                 LEFT JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE ON INFORMATION_SCHEMA.KEY_COLUMN_USAGE.TABLE_NAME = INFORMATION_SCHEMA.COLUMNS.TABLE_NAME
                                                                              AND INFORMATION_SCHEMA.KEY_COLUMN_USAGE.TABLE_CATALOG = INFORMATION_SCHEMA.COLUMNS.TABLE_CATALOG
@@ -246,8 +247,14 @@ namespace SimpleStack.Orm.SqlServer
                                                                              AND (OBJECTPROPERTY(OBJECT_ID(CONSTRAINT_SCHEMA + '.' + QUOTENAME(CONSTRAINT_NAME)), 'IsPrimaryKey') = 1)
                                 WHERE INFORMATION_SCHEMA.COLUMNS.TABLE_NAME = @TableName ";
 
-
-            if (!string.IsNullOrWhiteSpace(schemaName))
+            string uniqueQuery = @"SELECT COL_NAME(ic.object_id,ic.column_id) AS column_name  , is_unique
+									FROM sys.indexes AS i  
+									INNER JOIN sys.index_columns AS ic
+									    ON i.object_id = ic.object_id AND i.index_id = ic.index_id 
+										WHERE i.object_id = OBJECT_ID(@TableName)
+										AND is_unique = 1;";
+            var uniqueCols = connection.Query(uniqueQuery, new {TableName = tableName, SchemaName = schemaName}).ToArray();
+            if (!string.IsNullOrWhiteSpace(schemaName))	
             {
                 sqlQuery +=" AND INFORMATION_SCHEMA.COLUMNS.TABLE_SCHEMA = @SchemaName";
             }
@@ -260,6 +267,7 @@ namespace SimpleStack.Orm.SqlServer
 		            Definition = c.DATA_TYPE,
 		            DefaultValue = c.COLUMN_DEFAULT,
 		            PrimaryKey = c.IS_PRIMARY_KEY == 1,
+		            Unique = uniqueCols.Any(x => x.column_name == c.COLUMN_NAME),
 		            Length = c.CHARACTER_MAXIMUM_LENGTH,
 		            Nullable = c.IS_NULLABLE == "YES",
 		            Precision = c.NUMERIC_PRECISION,

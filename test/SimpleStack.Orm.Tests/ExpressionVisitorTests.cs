@@ -500,6 +500,7 @@ namespace SimpleStack.Orm.Tests
 		
 		/// <summary>Gets or sets the text col.</summary>
 		/// <value>The text col.</value>
+		[Index(Unique = true)]
 		public string TextCol { get; set; }
 
 		/// <summary>Gets or sets a value indicating whether the col.</summary>
