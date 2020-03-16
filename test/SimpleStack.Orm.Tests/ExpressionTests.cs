@@ -255,7 +255,7 @@ namespace SimpleStack.Orm.Tests
 		{
 		}
 
-		protected override string ConnectionString => @"server=localhost;User id=sa;Password=depfac$2000;database=test";
+		protected override string ConnectionString => @"server=LAP-2019-001\SQLEXPRESS; Integrated Security= True; Initial Catalog=test";
 	}
 	public class SQLLiteTests : ExpressionTests
 	{

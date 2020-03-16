@@ -4,9 +4,45 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using NUnit.Framework;
+using SimpleStack.Orm.Attributes;
 
 namespace SimpleStack.Orm.Tests
 {
+    [Schema("schema1")]
+    class TestUnique1
+    {
+        [PrimaryKey]
+        public int Id { get; set; }
+
+        [Index(Unique = true)]
+        public string TextCol { get; set; }
+        
+        public bool BoolCol { get; set; }
+    }
+
+    [Schema("schema2")]
+    class TestUnique2
+    {
+        [PrimaryKey]
+        public int Id { get; set; }
+        
+        [Index(Unique = false)]
+        public string TextCol { get; set; }
+        
+        public bool BoolCol { get; set; }
+    }
+    
+    [Schema("schema3")]
+    class TestUnique3
+    {
+        [PrimaryKey]
+        public int Id { get; set; }
+        
+        public string TextCol { get; set; }
+        
+        public bool BoolCol { get; set; }
+    }
+    
     public partial class ExpressionTests
     {
         [Test]
@@ -57,6 +93,34 @@ namespace SimpleStack.Orm.Tests
                 Assert.AreEqual(false, columns[7].PrimaryKey);
                 Assert.False(columns[7].Unique);
                 Assert.AreEqual(DbType.Int64, columns[7].DbType);
+            }
+        }
+        
+        [Test]
+        public void TestIndexUniqueFlag()
+        {
+            using (var db = OpenDbConnection())
+            {
+                db.CreateSchemaIfNotExists("schema1");
+                db.CreateSchemaIfNotExists("schema2");
+                db.CreateSchemaIfNotExists("schema3");
+                
+                db.CreateTable<TestUnique1>(true);
+                db.CreateTable<TestUnique2>(true);
+                db.CreateTable<TestUnique3>(true);
+                
+                var columnsInTable1 = db.GetTableColumnsInformation("TestUnique1", "schema1").ToArray();
+                var columnsInTable2 = db.GetTableColumnsInformation("TestUnique2", "schema2").ToArray();
+                var columnsInTable3 = db.GetTableColumnsInformation("TestUnique3", "schema3").ToArray();
+
+                Assert.AreEqual("textcol", columnsInTable1[1].Name.ToLower());
+                Assert.True(columnsInTable1[1].Unique);
+
+                Assert.AreEqual("textcol", columnsInTable2[1].Name.ToLower());
+                Assert.False(columnsInTable2[1].Unique);
+
+                Assert.AreEqual("textcol", columnsInTable3[1].Name.ToLower());
+                Assert.False(columnsInTable3[1].Unique);
             }
         }
     }

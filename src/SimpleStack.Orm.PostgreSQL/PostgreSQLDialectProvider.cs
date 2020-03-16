@@ -182,18 +182,20 @@ namespace SimpleStack.Orm.PostgreSQL
                 sqlQuery += " AND table_schema = @SchemaName";
             }
 
+            string tableNameWithSchema = schemaName == null ? tableName : $"{schemaName}.{tableName}";
+            
             var pks = connection.Query($@"SELECT a.attname
                 FROM   pg_index i
                 JOIN   pg_attribute a ON a.attrelid = i.indrelid
                                      AND a.attnum = ANY(i.indkey)
-                WHERE  i.indrelid = '{tableName}'::regclass
+                WHERE  i.indrelid = '{tableNameWithSchema}'::regclass
                 AND    i.indisprimary;").ToArray();
             
             var uniqueCols = connection.Query($@"SELECT a.attname
                 FROM   pg_index i
                 JOIN   pg_attribute a ON a.attrelid = i.indrelid
                                      AND a.attnum = ANY(i.indkey)
-                WHERE  i.indrelid = '{tableName}'::regclass
+                WHERE  i.indrelid = '{tableNameWithSchema}'::regclass
                 AND    i.indisunique;").ToArray();
             foreach (var c in connection.Query<ColumnInformationSchema>(sqlQuery, new { 
                 TableName = NamingStrategy.GetTableName(tableName),
