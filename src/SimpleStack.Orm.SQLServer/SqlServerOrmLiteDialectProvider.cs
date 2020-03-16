@@ -76,8 +76,8 @@ namespace SimpleStack.Orm.SqlServer
 		{
 			return ignoreIfExists ? 
 				$@"IF NOT EXISTS ( SELECT * FROM sys.schemas WHERE name = N'{schema}' )
-						EXEC('CREATE SCHEMA [app]')" : 
-				$"CREATE SCHEMA {schema}";
+						EXEC('CREATE SCHEMA {schema}')" : 
+				$"CREATE SCHEMA N'{schema}'";
 		}
 
 		/// <summary>Gets or sets a value indicating whether this object use unicode.</summary>
@@ -246,14 +246,14 @@ namespace SimpleStack.Orm.SqlServer
                                                                              AND INFORMATION_SCHEMA.KEY_COLUMN_USAGE.COLUMN_NAME = INFORMATION_SCHEMA.COLUMNS.COLUMN_NAME
                                                                              AND (OBJECTPROPERTY(OBJECT_ID(CONSTRAINT_SCHEMA + '.' + QUOTENAME(CONSTRAINT_NAME)), 'IsPrimaryKey') = 1)
                                 WHERE INFORMATION_SCHEMA.COLUMNS.TABLE_NAME = @TableName ";
-
+            string tableNameWithSchema = schemaName == null ? tableName : $"{schemaName}.{tableName}";
             string uniqueQuery = @"SELECT COL_NAME(ic.object_id,ic.column_id) AS column_name  , is_unique
 									FROM sys.indexes AS i  
 									INNER JOIN sys.index_columns AS ic
 									    ON i.object_id = ic.object_id AND i.index_id = ic.index_id 
 										WHERE i.object_id = OBJECT_ID(@TableName)
 										AND is_unique = 1;";
-            var uniqueCols = connection.Query(uniqueQuery, new {TableName = tableName, SchemaName = schemaName}).ToArray();
+            var uniqueCols = connection.Query(uniqueQuery, new {TableName = tableNameWithSchema}).ToArray();
             if (!string.IsNullOrWhiteSpace(schemaName))	
             {
                 sqlQuery +=" AND INFORMATION_SCHEMA.COLUMNS.TABLE_SCHEMA = @SchemaName";
