@@ -16,7 +16,7 @@
       <ProjectReference Include="..\..\src\SimpleStack.Orm.MySQLConnector\SimpleStack.Orm.MySQLConnector.csproj" />
       <ProjectReference Include="..\..\src\SimpleStack.Orm.MySQL\SimpleStack.Orm.MySQL.csproj" />
       <ProjectReference Include="..\..\src\SimpleStack.Orm.PostgreSQL\SimpleStack.Orm.PostgreSQL.csproj" />
-      <ProjectReference Include="..\..\src\SimpleStack.Orm.SDSQlite\SimpleStack.Orm.SDSQlite.csproj" />
+      <ProjectReference Include="..\..\src\SimpleStack.Orm.SDSQLite\SimpleStack.Orm.SDSQLite.csproj" />
       <ProjectReference Include="..\..\src\SimpleStack.Orm.SQLite\SimpleStack.Orm.SQLite.csproj" />
       <ProjectReference Include="..\..\src\SimpleStack.Orm.SQLServer\SimpleStack.Orm.SQLServer.csproj" />
       <ProjectReference Include="..\..\src\SimpleStack.Orm\SimpleStack.Orm.csproj" />

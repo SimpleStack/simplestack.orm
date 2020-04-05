@@ -1,7 +1,7 @@
 using System;
 using System.Data;
 
-namespace SimpleStack.Orm.SDSQlite
+namespace SimpleStack.Orm.SDSQLite
 {
     public class SqliteTypeMapper : DbTypeMapperBase
     {

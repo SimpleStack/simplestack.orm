@@ -29,7 +29,7 @@ namespace SimpleStack.Orm.xUnit.Tools
             builder.Cache = SqliteCacheMode.Shared;
 
             Factories.Add(new OrmConnectionFactory(new SqliteDialectProvider(), builder.ToString()));
-            Factories.Add(new OrmConnectionFactory(new SDSQlite.SqliteDialectProvider(), $"Data Source={Path.Combine(Path.GetTempPath(),"test.db")};foreign keys=true;Version=3;New=True;BinaryGUID=False"));
+            Factories.Add(new OrmConnectionFactory(new SDSQLite.SqliteDialectProvider(), $"Data Source={Path.Combine(Path.GetTempPath(),"test.db")};foreign keys=true;Version=3;New=True;BinaryGUID=False"));
         }
 
         public static IEnumerable<object[]> All

@@ -26,7 +26,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleStack.Orm.SQLite", "s
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleStack.Orm.MySQLConnector", "src\SimpleStack.Orm.MySQLConnector\SimpleStack.Orm.MySQLConnector.csproj", "{75E2C0D4-FE33-484F-8EC1-58EA1EBFEBE0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleStack.Orm.SDSQlite", "src\SimpleStack.Orm.SDSQlite\SimpleStack.Orm.SDSQlite.csproj", "{49DB362E-E574-4BF2-A4D2-76CAD8EA6E85}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleStack.Orm.SDSQLite", "src\SimpleStack.Orm.SDSQLite\SimpleStack.Orm.SDSQLite.csproj", "{49DB362E-E574-4BF2-A4D2-76CAD8EA6E85}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleStack.Orm.xUnit", "test\SimpleStack.Orm.xUnit\SimpleStack.Orm.xUnit.csproj", "{41DD3284-5112-4A27-AE18-09493B040031}"
 EndProject

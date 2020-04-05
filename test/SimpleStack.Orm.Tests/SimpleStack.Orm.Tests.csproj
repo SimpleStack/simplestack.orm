@@ -13,7 +13,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\SimpleStack.Orm.SDSQlite\SimpleStack.Orm.SDSQlite.csproj" />
+    <ProjectReference Include="..\..\src\SimpleStack.Orm.SDSQLite\SimpleStack.Orm.SDSQLite.csproj" />
     <ProjectReference Include="..\..\src\SimpleStack.Orm.SQLite\SimpleStack.Orm.SQLite.csproj" />
     <ProjectReference Include="..\..\src\SimpleStack.Orm\SimpleStack.Orm.csproj" />
     <ProjectReference Include="..\..\src\SimpleStack.Orm.MySQL\SimpleStack.Orm.MySQL.csproj" />

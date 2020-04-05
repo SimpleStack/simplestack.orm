@@ -5,7 +5,7 @@ using System.Data.Common;
 using System.Threading.Tasks;
 using Dapper;
 
-namespace SimpleStack.Orm.SDSQlite
+namespace SimpleStack.Orm.SDSQLite
 {
 	/// <summary>A sqlite ORM lite dialect provider base.</summary>
 	public class SqliteDialectProvider : DialectProviderBase

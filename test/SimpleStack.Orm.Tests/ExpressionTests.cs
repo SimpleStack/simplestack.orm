@@ -278,9 +278,9 @@ namespace SimpleStack.Orm.Tests
 		protected override string ConnectionString => builder.ToString();
 	}
 	
-	public class SDQLLiteTests : ExpressionTests
+	public class SDQLiteTests : ExpressionTests
 	{
-		public SDQLLiteTests() : base(new SimpleStack.Orm.SDSQlite.SqliteDialectProvider())
+		public SDQLiteTests() : base(new SimpleStack.Orm.SDSQLite.SqliteDialectProvider())
 		{
 		}
 
