@@ -99,7 +99,7 @@ namespace SimpleStack.Orm.Expressions
                     throw new NotSupportedException();
             }
 
-            return new StatementPart(statement);
+            return new StatementPart(statement + " AS " + quotedColName);
         }
 
         protected override bool IsColumnAccess(MethodCallExpression m)
@@ -156,6 +156,14 @@ namespace SimpleStack.Orm.Expressions
         protected override StatementPart VisitNew(NewExpression newExpression)
         {
             var exprs = VisitExpressionList(newExpression.Arguments);
+            return new StatementPart(exprs.Select(x => x.Text).Aggregate((x, y) => x + "," + y));
+        }
+
+        protected override StatementPart VisitMemberInit(MemberInitExpression memberInitExpression)
+        {
+            var exprs = VisitExpressionList(memberInitExpression.Bindings
+                .Where(x => x.BindingType == MemberBindingType.Assignment)
+                .Select(x => ((MemberAssignment)x).Expression));
             return new StatementPart(exprs.Select(x => x.Text).Aggregate((x, y) => x + "," + y));
         }
     }
