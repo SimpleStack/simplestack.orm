@@ -3,301 +3,301 @@ using NUnit.Framework;
 
 namespace SimpleStack.Orm.Tests
 {
-	/// <summary>A string function tests.</summary>
-	public partial class ExpressionTests
-	{
-		/// <summary>Can select using contains.</summary>
-		[Test]
-		public void Can_select_using_contains()
-		{
-			var stringVal = "stringValue";
+    /// <summary>A string function tests.</summary>
+    public partial class ExpressionTests
+    {
+        /// <summary>Can select using contains.</summary>
+        [Test]
+        public void Can_select_using_contains()
+        {
+            var stringVal = "stringValue";
 
-			var expected = new TestType()
-			{
-				IntColumn = 7,
-				BoolColumn = true,
-				StringColumn = stringVal
-			};
+            var expected = new TestType
+            {
+                IntColumn = 7,
+                BoolColumn = true,
+                StringColumn = stringVal
+            };
 
-			EstablishContext(10, expected);
-			using (var conn = OpenDbConnection())
-			{
-				var actual = conn.Select<TestType>(q => q.StringColumn.Contains("gVal"));
+            EstablishContext(10, expected);
+            using (var conn = OpenDbConnection())
+            {
+                var actual = conn.Select<TestType>(q => q.StringColumn.Contains("gVal"));
 
-				Assert.IsNotNull(actual);
-				Assert.AreEqual(1, actual.Count());
-				CollectionAssert.Contains(actual, expected);
-				
-				actual = conn.Select<TestType>(q => q.StringColumn.Contains("TRINGVALU"));
+                Assert.IsNotNull(actual);
+                Assert.AreEqual(1, actual.Count());
+                CollectionAssert.Contains(actual, expected);
 
-				Assert.IsNotNull(actual);
-				Assert.AreEqual(1, actual.Count());
-				CollectionAssert.Contains(actual, expected);
-			}
-		}
+                actual = conn.Select<TestType>(q => q.StringColumn.Contains("TRINGVALU"));
 
-		/// <summary>Can select using contains with quote in string.</summary>
-		[Test]
-		public void Can_select_using_contains_with_quote_in_string()
-		{
-			var stringVal = "string'ContainingAQuote";
+                Assert.IsNotNull(actual);
+                Assert.AreEqual(1, actual.Count());
+                CollectionAssert.Contains(actual, expected);
+            }
+        }
 
-			var expected = new TestType()
-			{
-				IntColumn = 7,
-				BoolColumn = true,
-				StringColumn = stringVal
-			};
+        /// <summary>Can select using contains with backtick in string.</summary>
+        [Test]
+        public void Can_select_using_contains_with_backtick_in_string()
+        {
+            var stringVal = "string`ContainingAQuote";
 
-			EstablishContext(10, expected);
-			using (var conn = OpenDbConnection())
-			{
-				var actual = conn.Select<TestType>(q => q.StringColumn.Contains("g'Co"));
+            var expected = new TestType
+            {
+                IntColumn = 7,
+                BoolColumn = true,
+                StringColumn = stringVal
+            };
 
-				Assert.IsNotNull(actual);
-				Assert.AreEqual(1, actual.Count());
-				CollectionAssert.Contains(actual, expected);
-			}
-		}
+            EstablishContext(10, expected);
+            using (var conn = OpenDbConnection())
+            {
+                var actual = conn.Select<TestType>(q => q.StringColumn.Contains("ng`Co"));
 
-		/// <summary>Can select using contains with double quote in string.</summary>
-		[Test]
-		public void Can_select_using_contains_with_double_quote_in_string()
-		{
-			var stringVal = "string\"ContainingAQuote";
+                Assert.IsNotNull(actual);
+                Assert.AreEqual(1, actual.Count());
+                CollectionAssert.Contains(actual, expected);
+            }
+        }
 
-			var expected = new TestType()
-			{
-				IntColumn = 7,
-				BoolColumn = true,
-				StringColumn = stringVal
-			};
+        /// <summary>Can select using contains with double quote in string.</summary>
+        [Test]
+        public void Can_select_using_contains_with_double_quote_in_string()
+        {
+            var stringVal = "string\"ContainingAQuote";
 
-			EstablishContext(10, expected);
-			using (var conn = OpenDbConnection())
-			{
-				var actual = conn.Select<TestType>(q => q.StringColumn.Contains("ng\"Con"));
+            var expected = new TestType
+            {
+                IntColumn = 7,
+                BoolColumn = true,
+                StringColumn = stringVal
+            };
 
-				Assert.IsNotNull(actual);
-				Assert.AreEqual(1, actual.Count());
-				CollectionAssert.Contains(actual, expected);
-			}
-		}
+            EstablishContext(10, expected);
+            using (var conn = OpenDbConnection())
+            {
+                var actual = conn.Select<TestType>(q => q.StringColumn.Contains("ng\"Con"));
 
-		/// <summary>Can select using contains with backtick in string.</summary>
-		[Test]
-		public void Can_select_using_contains_with_backtick_in_string()
-		{
-			var stringVal = "string`ContainingAQuote";
+                Assert.IsNotNull(actual);
+                Assert.AreEqual(1, actual.Count());
+                CollectionAssert.Contains(actual, expected);
+            }
+        }
 
-			var expected = new TestType()
-			{
-				IntColumn = 7,
-				BoolColumn = true,
-				StringColumn = stringVal
-			};
+        /// <summary>Can select using contains with quote in string.</summary>
+        [Test]
+        public void Can_select_using_contains_with_quote_in_string()
+        {
+            var stringVal = "string'ContainingAQuote";
 
-			EstablishContext(10, expected);
-			using (var conn = OpenDbConnection())
-			{
-				var actual = conn.Select<TestType>(q => q.StringColumn.Contains("ng`Co"));
+            var expected = new TestType
+            {
+                IntColumn = 7,
+                BoolColumn = true,
+                StringColumn = stringVal
+            };
 
-				Assert.IsNotNull(actual);
-				Assert.AreEqual(1, actual.Count());
-				CollectionAssert.Contains(actual, expected);
-			}
-		}
+            EstablishContext(10, expected);
+            using (var conn = OpenDbConnection())
+            {
+                var actual = conn.Select<TestType>(q => q.StringColumn.Contains("g'Co"));
 
-		/// <summary>Can select using starts with.</summary>
-		[Test]
-		public void Can_select_using_startsWith()
-		{
-			var prefix = "prefix";
+                Assert.IsNotNull(actual);
+                Assert.AreEqual(1, actual.Count());
+                CollectionAssert.Contains(actual, expected);
+            }
+        }
 
-			var expected = new TestType()
-			{
-				IntColumn = 7,
-				BoolColumn = true,
-				StringColumn = prefix + "asdfasdfasdf"
-			};
+        /// <summary>Can select using ends with.</summary>
+        [Test]
+        public void Can_select_using_endsWith()
+        {
+            var postfix = "postfix";
 
-			EstablishContext(10, expected);
-			using (var conn = OpenDbConnection())
-			{
-				var actual = conn.Select<TestType>(q => q.StringColumn.StartsWith(prefix));
+            var expected = new TestType
+            {
+                IntColumn = 7,
+                BoolColumn = true,
+                StringColumn = "asdfasdfasdf" + postfix
+            };
 
-				Assert.IsNotNull(actual);
-				Assert.AreEqual(1, actual.Count());
-				CollectionAssert.Contains(actual, expected);
-			}
-		}
+            EstablishContext(10, expected);
+            using (var conn = OpenDbConnection())
+            {
+                var actual = conn.Select<TestType>(q => q.StringColumn.EndsWith(postfix));
 
-		/// <summary>Can select using starts with quote in string.</summary>
-		[Test]
-		public void Can_select_using_startsWith_with_quote_in_string()
-		{
-			var prefix = "prefix";
+                Assert.IsNotNull(actual);
+                Assert.AreEqual(1, actual.Count());
+                CollectionAssert.Contains(actual, expected);
+            }
+        }
 
-			var expected = new TestType()
-			{
-				IntColumn = 7,
-				BoolColumn = true,
-				StringColumn = prefix + "'asdfasdfasdf"
-			};
+        /// <summary>Can select using ends with backtick in string.</summary>
+        [Test]
+        public void Can_select_using_endsWith_with_backtick_in_string()
+        {
+            var postfix = "postfix";
 
-			EstablishContext(10, expected);
-			using (var conn = OpenDbConnection())
-			{
-				var actual = conn.Select<TestType>(q => q.StringColumn.StartsWith(prefix));
+            var expected = new TestType
+            {
+                IntColumn = 7,
+                BoolColumn = true,
+                StringColumn = "asdfasd`fasdf" + postfix
+            };
 
-				Assert.IsNotNull(actual);
-				Assert.AreEqual(1, actual.Count());
-				CollectionAssert.Contains(actual, expected);
-			}
-		}
+            EstablishContext(10, expected);
+            using (var conn = OpenDbConnection())
+            {
+                var actual = conn.Select<TestType>(q => q.StringColumn.EndsWith(postfix));
 
-		/// <summary>Can select using starts with double quote in string.</summary>
-		[Test]
-		public void Can_select_using_startsWith_with_double_quote_in_string()
-		{
-			var prefix = "prefix";
+                Assert.IsNotNull(actual);
+                Assert.AreEqual(1, actual.Count());
+                CollectionAssert.Contains(actual, expected);
+            }
+        }
 
-			var expected = new TestType()
-			{
-				IntColumn = 7,
-				BoolColumn = true,
-				StringColumn = prefix + "\"asdfasdfasdf"
-			};
+        /// <summary>Can select using ends with double quote in string.</summary>
+        [Test]
+        public void Can_select_using_endsWith_with_double_quote_in_string()
+        {
+            var postfix = "postfix";
 
-			EstablishContext(10, expected);
-			using (var conn = OpenDbConnection())
-			{
-				var actual = conn.Select<TestType>(q => q.StringColumn.StartsWith(prefix));
+            var expected = new TestType
+            {
+                IntColumn = 7,
+                BoolColumn = true,
+                StringColumn = "asdfasd\"fasdf" + postfix
+            };
 
-				Assert.IsNotNull(actual);
-				Assert.AreEqual(1, actual.Count());
-				CollectionAssert.Contains(actual, expected);
-			}
-		}
+            EstablishContext(10, expected);
+            using (var conn = OpenDbConnection())
+            {
+                var actual = conn.Select<TestType>(q => q.StringColumn.EndsWith(postfix));
 
-		/// <summary>Can select using starts with backtick in string.</summary>
-		[Test]
-		public void Can_select_using_startsWith_with_backtick_in_string()
-		{
-			var prefix = "prefix";
+                Assert.IsNotNull(actual);
+                Assert.AreEqual(1, actual.Count());
+                CollectionAssert.Contains(actual, expected);
+            }
+        }
 
-			var expected = new TestType()
-			{
-				IntColumn = 7,
-				BoolColumn = true,
-				StringColumn = prefix + "`asdfasdfasdf"
-			};
+        /// <summary>Can select using ends with quote in string.</summary>
+        [Test]
+        public void Can_select_using_endsWith_with_quote_in_string()
+        {
+            var postfix = "postfix";
 
-			EstablishContext(10, expected);
-			using (var conn = OpenDbConnection())
-			{
-				var actual = conn.Select<TestType>(q => q.StringColumn.StartsWith(prefix));
+            var expected = new TestType
+            {
+                IntColumn = 7,
+                BoolColumn = true,
+                StringColumn = "asdfasd'fasdf" + postfix
+            };
 
-				Assert.IsNotNull(actual);
-				Assert.AreEqual(1, actual.Count());
-				CollectionAssert.Contains(actual, expected);
-			}
-		}
+            EstablishContext(10, expected);
+            using (var conn = OpenDbConnection())
+            {
+                var actual = conn.Select<TestType>(q => q.StringColumn.EndsWith(postfix));
 
-		/// <summary>Can select using ends with.</summary>
-		[Test]
-		public void Can_select_using_endsWith()
-		{
-			var postfix = "postfix";
+                Assert.IsNotNull(actual);
+                Assert.AreEqual(1, actual.Count());
+                CollectionAssert.Contains(actual, expected);
+            }
+        }
 
-			var expected = new TestType()
-			{
-				IntColumn = 7,
-				BoolColumn = true,
-				StringColumn = "asdfasdfasdf" + postfix
-			};
+        /// <summary>Can select using starts with.</summary>
+        [Test]
+        public void Can_select_using_startsWith()
+        {
+            var prefix = "prefix";
 
-			EstablishContext(10, expected);
-			using (var conn = OpenDbConnection())
-			{
-				var actual = conn.Select<TestType>(q => q.StringColumn.EndsWith(postfix));
+            var expected = new TestType
+            {
+                IntColumn = 7,
+                BoolColumn = true,
+                StringColumn = prefix + "asdfasdfasdf"
+            };
 
-				Assert.IsNotNull(actual);
-				Assert.AreEqual(1, actual.Count());
-				CollectionAssert.Contains(actual, expected);
-			}
-		}
+            EstablishContext(10, expected);
+            using (var conn = OpenDbConnection())
+            {
+                var actual = conn.Select<TestType>(q => q.StringColumn.StartsWith(prefix));
 
-		/// <summary>Can select using ends with quote in string.</summary>
-		[Test]
-		public void Can_select_using_endsWith_with_quote_in_string()
-		{
-			var postfix = "postfix";
+                Assert.IsNotNull(actual);
+                Assert.AreEqual(1, actual.Count());
+                CollectionAssert.Contains(actual, expected);
+            }
+        }
 
-			var expected = new TestType()
-			{
-				IntColumn = 7,
-				BoolColumn = true,
-				StringColumn = "asdfasd'fasdf" + postfix
-			};
+        /// <summary>Can select using starts with backtick in string.</summary>
+        [Test]
+        public void Can_select_using_startsWith_with_backtick_in_string()
+        {
+            var prefix = "prefix";
 
-			EstablishContext(10, expected);
-			using (var conn = OpenDbConnection())
-			{
-				var actual = conn.Select<TestType>(q => q.StringColumn.EndsWith(postfix));
+            var expected = new TestType
+            {
+                IntColumn = 7,
+                BoolColumn = true,
+                StringColumn = prefix + "`asdfasdfasdf"
+            };
 
-				Assert.IsNotNull(actual);
-				Assert.AreEqual(1, actual.Count());
-				CollectionAssert.Contains(actual, expected);
-			}
-		}
+            EstablishContext(10, expected);
+            using (var conn = OpenDbConnection())
+            {
+                var actual = conn.Select<TestType>(q => q.StringColumn.StartsWith(prefix));
 
-		/// <summary>Can select using ends with double quote in string.</summary>
-		[Test]
-		public void Can_select_using_endsWith_with_double_quote_in_string()
-		{
-			var postfix = "postfix";
+                Assert.IsNotNull(actual);
+                Assert.AreEqual(1, actual.Count());
+                CollectionAssert.Contains(actual, expected);
+            }
+        }
 
-			var expected = new TestType()
-			{
-				IntColumn = 7,
-				BoolColumn = true,
-				StringColumn = "asdfasd\"fasdf" + postfix
-			};
+        /// <summary>Can select using starts with double quote in string.</summary>
+        [Test]
+        public void Can_select_using_startsWith_with_double_quote_in_string()
+        {
+            var prefix = "prefix";
 
-			EstablishContext(10, expected);
-			using (var conn = OpenDbConnection())
-			{
-				var actual = conn.Select<TestType>(q => q.StringColumn.EndsWith(postfix));
+            var expected = new TestType
+            {
+                IntColumn = 7,
+                BoolColumn = true,
+                StringColumn = prefix + "\"asdfasdfasdf"
+            };
 
-				Assert.IsNotNull(actual);
-				Assert.AreEqual(1, actual.Count());
-				CollectionAssert.Contains(actual, expected);
-			}
-		}
+            EstablishContext(10, expected);
+            using (var conn = OpenDbConnection())
+            {
+                var actual = conn.Select<TestType>(q => q.StringColumn.StartsWith(prefix));
 
-		/// <summary>Can select using ends with backtick in string.</summary>
-		[Test]
-		public void Can_select_using_endsWith_with_backtick_in_string()
-		{
-			var postfix = "postfix";
+                Assert.IsNotNull(actual);
+                Assert.AreEqual(1, actual.Count());
+                CollectionAssert.Contains(actual, expected);
+            }
+        }
 
-			var expected = new TestType()
-			{
-				IntColumn = 7,
-				BoolColumn = true,
-				StringColumn = "asdfasd`fasdf" + postfix
-			};
+        /// <summary>Can select using starts with quote in string.</summary>
+        [Test]
+        public void Can_select_using_startsWith_with_quote_in_string()
+        {
+            var prefix = "prefix";
 
-			EstablishContext(10, expected);
-			using (var conn = OpenDbConnection())
-			{
-				var actual = conn.Select<TestType>(q => q.StringColumn.EndsWith(postfix));
+            var expected = new TestType
+            {
+                IntColumn = 7,
+                BoolColumn = true,
+                StringColumn = prefix + "'asdfasdfasdf"
+            };
 
-				Assert.IsNotNull(actual);
-				Assert.AreEqual(1, actual.Count());
-				CollectionAssert.Contains(actual, expected);
-			}
-		}
-	}
+            EstablishContext(10, expected);
+            using (var conn = OpenDbConnection())
+            {
+                var actual = conn.Select<TestType>(q => q.StringColumn.StartsWith(prefix));
+
+                Assert.IsNotNull(actual);
+                Assert.AreEqual(1, actual.Count());
+                CollectionAssert.Contains(actual, expected);
+            }
+        }
+    }
 }

@@ -7,8 +7,6 @@ using System.Linq.Expressions;
 using System.Text;
 using Dapper;
 using Npgsql;
-using SimpleStack.Orm.Attributes;
-using SimpleStack.Orm.Expressions;
 
 namespace SimpleStack.Orm.PostgreSQL
 {
@@ -109,12 +107,14 @@ namespace SimpleStack.Orm.PostgreSQL
                        WHERE relname = :table AND nspname = ";
 
             if (string.IsNullOrEmpty(schemaName))
+            {
                 query += "current_schema()";
+            }
             else
             {
                 query += $"'{NamingStrategy.GetTableName(schemaName)}'";
             }
-            
+
             var result = connection.ExecuteScalar<long>(query, new {table = NamingStrategy.GetTableName(tableName)});
 
             return result > 0;
@@ -133,46 +133,57 @@ namespace SimpleStack.Orm.PostgreSQL
 //			return string.Format("\"{0}\".\"{1}\"", escapedSchema, base.NamingStrategy.GetTableName(modelDef.ModelName));
 //		}
 
-		/// <summary>
-		/// based on Npgsql2's source: Npgsql2\src\NpgsqlTypes\NpgsqlTypeConverters.cs.
-		/// </summary>
-		/// <param name="NativeData">.</param>
-		/// <returns>A binary represenation of this object.</returns>
-		/// ### <param name="TypeInfo">        .</param>
-		/// ### <param name="ForExtendedQuery">.</param>
-		internal static String ToBinary(Object NativeData)
-		{
-			Byte[] byteArray = (Byte[])NativeData;
-			StringBuilder res = new StringBuilder(byteArray.Length * 5);
-			foreach (byte b in byteArray)
-				if (b >= 0x20 && b < 0x7F && b != 0x27 && b != 0x5C)
-					res.Append((char)b);
-				else
-					res.Append("\\\\")
-						.Append((char)('0' + (7 & (b >> 6))))
-						.Append((char)('0' + (7 & (b >> 3))))
-						.Append((char)('0' + (7 & b)));
-			return res.ToString();
-		}
-
-		public override string GetDropTableStatement(ModelDefinition modelDef)
-		{
-			return "DROP TABLE " + GetQuotedTableName(modelDef) + " CASCADE";
-		}
-
-		public override string GetDatePartFunction(string name, string quotedColName)
-		{
-			return $"date_part('{name.ToLower()}', {quotedColName})";
-		}
-        
-        public override string GetCreateSchemaStatement(string schema, bool ignoreIfExists)
+/// <summary>
+///     based on Npgsql2's source: Npgsql2\src\NpgsqlTypes\NpgsqlTypeConverters.cs.
+/// </summary>
+/// <param name="NativeData">.</param>
+/// <returns>A binary represenation of this object.</returns>
+/// ###
+/// <param name="TypeInfo">        .</param>
+/// ###
+/// <param name="ForExtendedQuery">.</param>
+internal static string ToBinary(object NativeData)
         {
-            return $"CREATE SCHEMA {(ignoreIfExists ? "IF NOT EXISTS" : string.Empty)} {NamingStrategy.GetTableName(schema)}";
+            var byteArray = (byte[]) NativeData;
+            var res = new StringBuilder(byteArray.Length * 5);
+            foreach (var b in byteArray)
+            {
+                if (b >= 0x20 && b < 0x7F && b != 0x27 && b != 0x5C)
+                {
+                    res.Append((char) b);
+                }
+                else
+                {
+                    res.Append("\\\\")
+                        .Append((char) ('0' + (7 & (b >> 6))))
+                        .Append((char) ('0' + (7 & (b >> 3))))
+                        .Append((char) ('0' + (7 & b)));
+                }
+            }
+
+            return res.ToString();
         }
 
-        public override IEnumerable<IColumnDefinition> GetTableColumnDefinitions(IDbConnection connection, string tableName, string schemaName = null)
+        public override string GetDropTableStatement(ModelDefinition modelDef)
         {
-            string sqlQuery = "SELECT * FROM information_schema.columns WHERE lower(table_name) = @tableName ";
+            return "DROP TABLE " + GetQuotedTableName(modelDef) + " CASCADE";
+        }
+
+        public override string GetDatePartFunction(string name, string quotedColName)
+        {
+            return $"date_part('{name.ToLower()}', {quotedColName})";
+        }
+
+        public override string GetCreateSchemaStatement(string schema, bool ignoreIfExists)
+        {
+            return
+                $"CREATE SCHEMA {(ignoreIfExists ? "IF NOT EXISTS" : string.Empty)} {NamingStrategy.GetTableName(schema)}";
+        }
+
+        public override IEnumerable<IColumnDefinition> GetTableColumnDefinitions(IDbConnection connection,
+            string tableName, string schemaName = null)
+        {
+            var sqlQuery = "SELECT * FROM information_schema.columns WHERE lower(table_name) = @tableName ";
             if (string.IsNullOrWhiteSpace(schemaName))
             {
                 sqlQuery += " AND table_schema = current_schema()";
@@ -189,21 +200,23 @@ namespace SimpleStack.Orm.PostgreSQL
                 WHERE  i.indrelid = '{tableName}'::regclass
                 AND    i.indisprimary;").ToArray();
 
-            foreach (var c in connection.Query<ColumnInformationSchema>(sqlQuery, new { 
+            foreach (var c in connection.Query<ColumnInformationSchema>(sqlQuery, new
+            {
                 TableName = NamingStrategy.GetTableName(tableName),
-                SchemaName = schemaName == null ? null : NamingStrategy.GetTableName(schemaName) }))
+                SchemaName = schemaName == null ? null : NamingStrategy.GetTableName(schemaName)
+            }))
             {
                 yield return new ColumnDefinition
-                             {
-                                 Name = c.column_name,
-                                 PrimaryKey = pks.Any(x => x.attname == c.column_name),
-                                 Length = c.character_maximum_length,
-                                 DefaultValue = c.column_default,
-                                 Definition = c.data_type,
-                                 Nullable = c.is_nullable == "YES",
-                                 Precision = c.numeric_precision,
-                                 Scale = c.numeric_scale,
-                                 DbType = GetDbType(c)
+                {
+                    Name = c.column_name,
+                    PrimaryKey = pks.Any(x => x.attname == c.column_name),
+                    Length = c.character_maximum_length,
+                    DefaultValue = c.column_default,
+                    Definition = c.data_type,
+                    Nullable = c.is_nullable == "YES",
+                    Precision = c.numeric_precision,
+                    Scale = c.numeric_scale,
+                    DbType = GetDbType(c)
                 };
             }
         }
@@ -221,7 +234,7 @@ namespace SimpleStack.Orm.PostgreSQL
                 case "boolean":
                 case "bit":
                     return DbType.Boolean;
-                case "uuid" :
+                case "uuid":
                     return DbType.Guid;
                 case "smallint":
                     return DbType.Int16;
@@ -255,7 +268,7 @@ namespace SimpleStack.Orm.PostgreSQL
 
         public override string BindOperand(ExpressionType e, bool isLogical)
         {
-	        return e == ExpressionType.ExclusiveOr ? "#" : base.BindOperand(e, isLogical);
+            return e == ExpressionType.ExclusiveOr ? "#" : base.BindOperand(e, isLogical);
         }
     }
 }

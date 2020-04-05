@@ -1,8 +1,5 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -24,7 +21,9 @@ namespace SimpleStack.Orm.Expressions
         protected override StatementPart VisitMemberAccess(MemberExpression m)
         {
             if (m.Member.DeclaringType == typeof(DateTime))
+            {
                 return VisitDateTimeMemberAccess(m);
+            }
 
             if (m.Expression != null && (m.Expression.NodeType == ExpressionType.Parameter ||
                                          m.Expression.NodeType == ExpressionType.Convert))
@@ -40,10 +39,12 @@ namespace SimpleStack.Orm.Expressions
         protected override bool IsColumnAccess(MethodCallExpression m)
         {
             if (m.Object is MethodCallExpression mce)
+            {
                 return IsColumnAccess(mce);
+            }
 
             var exp = m.Object as MemberExpression;
-            return exp?.Expression != null && 
+            return exp?.Expression != null &&
                    exp.Expression.Type == typeof(T) &&
                    exp.Expression.NodeType == ExpressionType.Parameter;
         }
@@ -59,10 +60,10 @@ namespace SimpleStack.Orm.Expressions
                     var quotedColName = args.Last(x => x is ColumnAccessPart);
 
                     IEnumerable<StatementPart> parameters;
-                    parameters = m.Object == null ? 
-                        args.TakeWhile(x => x is ParameterPart) : 
-                        VisitExpressionList(new []{m.Object});
-                    
+                    parameters = m.Object == null
+                        ? args.TakeWhile(x => x is ParameterPart)
+                        : VisitExpressionList(new[] {m.Object});
+
                     var sIn = parameters.Select(x => x.Text).Aggregate((x, y) => x + "," + y);
 
                     statement = $"{quotedColName} IN ({(string.IsNullOrEmpty(sIn) ? "NULL" : sIn)})";
@@ -78,8 +79,11 @@ namespace SimpleStack.Orm.Expressions
         protected virtual string GetQuotedColumnName(string memberName)
         {
             var fd = _modelDefinition.FieldDefinitions.FirstOrDefault(x => x.Name.ToLower() == memberName.ToLower());
-            if(fd == null)
+            if (fd == null)
+            {
                 throw new OrmException($"Column name '{memberName}' not found in type '{_modelDefinition.Name}'");
+            }
+
             return fd.IsComputed ? fd.ComputeExpression : DialectProvider.GetQuotedColumnName(fd.FieldName);
         }
     }

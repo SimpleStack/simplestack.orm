@@ -19,7 +19,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Dapper;
 using SimpleStack.Orm.Attributes;
-using SimpleStack.Orm.Expressions;
 using SimpleStack.Orm.Expressions.Statements;
 
 namespace SimpleStack.Orm
@@ -27,12 +26,13 @@ namespace SimpleStack.Orm
     /// <summary>An ORM lite dialect provider base.</summary>
     public abstract class DialectProviderBase : IDialectProvider
     {
-        protected char EscapeChar = '\"';
         /// <summary>The AutoIncrement column definition.</summary>
         protected string AutoIncrementDefinition = "AUTOINCREMENT";
 
         /// <summary>The default value format.</summary>
         protected string DefaultValueFormat = " DEFAULT ('{0}')";
+
+        protected char EscapeChar = '\"';
 
         /// <summary>
         ///     Initializes a new instance of the NServiceKit.OrmLite.OrmLiteDialectProviderBase&lt;
@@ -46,11 +46,10 @@ namespace SimpleStack.Orm
         }
 
 
-
         /// <summary>Gets or sets the select identity SQL.</summary>
         /// <value>The select identity SQL.</value>
         public virtual string SelectIdentitySql { get; set; }
-        
+
 
         /// <summary>Gets or sets the parameter string.</summary>
         /// <value>The parameter string.</value>
@@ -59,7 +58,7 @@ namespace SimpleStack.Orm
         /// <summary>Gets or sets the naming strategy.</summary>
         /// <value>The naming strategy.</value>
         public INamingStrategy NamingStrategy { get; set; }
-        
+
         public IDbTypeMapper TypesMapper { get; set; }
 
         /// <summary>Creates a connection.</summary>
@@ -69,8 +68,6 @@ namespace SimpleStack.Orm
         {
             return new OrmConnection(CreateIDbConnection(connectionString), this);
         }
-
-        public abstract DbConnection CreateIDbConnection(string connectionString);
 
         public string GetParameterName(int parameterCount)
         {
@@ -91,9 +88,9 @@ namespace SimpleStack.Orm
         /// <returns>The quoted table name.</returns>
         public virtual string GetQuotedTableName(string tableName, string schemaName = null)
         {
-            return string.IsNullOrEmpty(schemaName) ?
-                $"{EscapeChar}{NamingStrategy.GetTableName(tableName)}{EscapeChar}" :
-                $"{EscapeChar}{NamingStrategy.GetTableName(schemaName)}{EscapeChar}.{EscapeChar}{NamingStrategy.GetTableName(tableName)}{EscapeChar}";
+            return string.IsNullOrEmpty(schemaName)
+                ? $"{EscapeChar}{NamingStrategy.GetTableName(tableName)}{EscapeChar}"
+                : $"{EscapeChar}{NamingStrategy.GetTableName(schemaName)}{EscapeChar}.{EscapeChar}{NamingStrategy.GetTableName(tableName)}{EscapeChar}";
         }
 
         /// <summary>Gets quoted column name.</summary>
@@ -104,57 +101,6 @@ namespace SimpleStack.Orm
             return $"{EscapeChar}{NamingStrategy.GetColumnName(columnName)}{EscapeChar}";
         }
 
-        /// <summary>Gets quoted name.</summary>
-        /// <param name="name">Name of the column.</param>
-        /// <returns>The quoted name.</returns>
-        public virtual string GetQuotedName(string name)
-        {
-            return $"{EscapeChar}{name}{EscapeChar}";
-        }
-
-        /// <summary>Gets column definition.</summary>
-        /// <param name="fieldName">    Name of the field.</param>
-        /// <param name="fieldType">    Type of the field.</param>
-        /// <param name="isPrimaryKey"> true if this object is primary key.</param>
-        /// <param name="autoIncrement">true to automatically increment.</param>
-        /// <param name="isNullable">   true if this object is nullable.</param>
-        /// <param name="fieldLength">  Length of the field.</param>
-        /// <param name="scale">        The scale.</param>
-        /// <param name="defaultValue"> The default value.</param>
-        /// <returns>The column definition.</returns>
-        public virtual string GetColumnDefinition(string fieldName, Type fieldType,
-            bool isPrimaryKey, bool autoIncrement, bool isNullable,
-            int? fieldLength, int? scale, object defaultValue)
-        {
-            var sql = new StringBuilder();
-            sql.AppendFormat("{0} {1}", GetQuotedColumnName(fieldName), GetColumnTypeDefinition(fieldType, fieldName, fieldLength));
-
-            if (isPrimaryKey)
-            {
-                if (autoIncrement)
-                {
-                    sql.Append(" PRIMARY KEY");
-                    sql.Append(" ").Append(AutoIncrementDefinition);
-                }
-            }
-            else
-            {
-                sql.Append(isNullable ? " NULL" : " NOT NULL");
-            }
-
-            if (defaultValue != null)
-            {
-                sql.AppendFormat(DefaultValueFormat, GetDefaultValueDefinition(defaultValue));
-            }
-
-            return sql.ToString();
-        }
-
-        protected virtual string GetDefaultValueDefinition(object defaultValue)
-        {
-            return defaultValue.ToString();
-        }
-        
         /// <inheritdoc />
         public virtual CommandDefinition ToSelectStatement(SelectStatement statement, CommandFlags flags)
         {
@@ -194,7 +140,7 @@ namespace SimpleStack.Orm
                 sql.Append(statement.OrderByExpression);
             }
 
-            string limit = GetLimitExpression(statement.Offset, statement.MaxRows);
+            var limit = GetLimitExpression(statement.Offset, statement.MaxRows);
             if (limit.Length > 0)
             {
                 sql.Append("\n ");
@@ -208,7 +154,7 @@ namespace SimpleStack.Orm
         public virtual CommandDefinition ToCountStatement(CountStatement statement, CommandFlags flags)
         {
             var sql = new StringBuilder("SELECT COUNT(");
-            
+
             if (statement.IsDistinct)
             {
                 sql.Append(" DISTINCT ");
@@ -241,20 +187,20 @@ namespace SimpleStack.Orm
 
         public virtual CommandDefinition ToDeleteStatement(DeleteStatement statement)
         {
-            StringBuilder query = new StringBuilder("DELETE FROM ");
+            var query = new StringBuilder("DELETE FROM ");
             query.Append(statement.TableName);
             if (statement.WhereExpression.Length > 0)
             {
                 query.Append(" WHERE ");
                 query.Append(statement.WhereExpression);
             }
-            
+
             return new CommandDefinition(query.ToString(), statement.Parameters);
         }
-        
+
         public virtual CommandDefinition ToInsertStatement(InsertStatement insertStatement, CommandFlags flags)
         {
-            StringBuilder query = new StringBuilder("INSERT INTO ");
+            var query = new StringBuilder("INSERT INTO ");
             query.Append(insertStatement.TableName);
             query.Append(" (");
             query.Append(insertStatement.InsertFields.Aggregate((x, y) => x + ", " + y));
@@ -262,23 +208,24 @@ namespace SimpleStack.Orm
             query.Append(insertStatement.Parameters.Select(x => x.Key).Aggregate((x, y) => x + ", " + y));
             query.Append(")");
 
-            return new CommandDefinition(query.ToString(),insertStatement.Parameters,flags: flags);
+            return new CommandDefinition(query.ToString(), insertStatement.Parameters, flags: flags);
         }
-        
-        
+
+
         public virtual CommandDefinition ToUpdateStatement(UpdateStatement statement, CommandFlags flags)
         {
-            StringBuilder query = new StringBuilder("UPDATE ");
+            var query = new StringBuilder("UPDATE ");
             query.Append(statement.TableName);
             query.Append(" SET ");
 
-            bool first = true;
+            var first = true;
             foreach (var f in statement.UpdateFields)
             {
                 if (!first)
                 {
                     query.Append(", ");
                 }
+
                 query.Append(f.Key);
                 query.Append("=");
                 query.Append(f.Value);
@@ -290,10 +237,10 @@ namespace SimpleStack.Orm
                 query.Append(" WHERE ");
                 query.Append(statement.WhereExpression);
             }
-            
-            return new CommandDefinition(query.ToString(),statement.Parameters,flags: flags);
+
+            return new CommandDefinition(query.ToString(), statement.Parameters, flags: flags);
         }
-        
+
         /// <summary>Converts a tableType to a create table statement.</summary>
         /// <param name="modelDef">Model Definition.</param>
         /// <returns>tableType as a string.</returns>
@@ -305,7 +252,10 @@ namespace SimpleStack.Orm
 
             foreach (var fieldDef in modelDef.FieldDefinitions.Where(x => !x.IsComputed))
             {
-                if (sbColumns.Length != 0) sbColumns.Append(", \n  ");
+                if (sbColumns.Length != 0)
+                {
+                    sbColumns.Append(", \n  ");
+                }
 
                 var columnDefinition = GetColumnDefinition(
                     fieldDef.FieldName,
@@ -330,7 +280,8 @@ namespace SimpleStack.Orm
                     var refModelDef = fieldDef.ForeignKey.ReferenceType.GetModelDefinition();
                     sbConstraints.AppendFormat(
                         ", \n\n  CONSTRAINT {0} FOREIGN KEY ({1}) REFERENCES {2} ({3})",
-                        GetQuotedName(fieldDef.ForeignKey.GetForeignKeyName(modelDef, refModelDef, NamingStrategy, fieldDef)),
+                        GetQuotedName(fieldDef.ForeignKey.GetForeignKeyName(modelDef, refModelDef, NamingStrategy,
+                            fieldDef)),
                         GetQuotedColumnName(fieldDef.FieldName),
                         GetQuotedTableName(refModelDef),
                         GetQuotedColumnName(refModelDef.PrimaryKey.FieldName));
@@ -345,7 +296,8 @@ namespace SimpleStack.Orm
                 sbPrimaryKeys.Append(")");
             }
 
-            return $"CREATE TABLE {GetQuotedTableName(modelDef)} \n(\n  {sbColumns}{sbPrimaryKeys}{sbConstraints} \n); \n";
+            return
+                $"CREATE TABLE {GetQuotedTableName(modelDef)} \n(\n  {sbColumns}{sbPrimaryKeys}{sbConstraints} \n); \n";
         }
 
         /// <summary>Converts a tableType to a create index statements.</summary>
@@ -357,7 +309,10 @@ namespace SimpleStack.Orm
 
             foreach (var fieldDef in modelDef.FieldDefinitions)
             {
-                if (!fieldDef.IsIndexed) continue;
+                if (!fieldDef.IsIndexed)
+                {
+                    continue;
+                }
 
                 var indexName = GetIndexName(fieldDef.IsUnique, modelDef.ModelName.SafeVarName(), fieldDef.FieldName);
 
@@ -378,29 +333,6 @@ namespace SimpleStack.Orm
             return sqlIndexes;
         }
 
-        /// <summary>Gets column database type.</summary>
-        /// <param name="valueType">Type of the value.</param>
-        /// <returns>The column database type.</returns>
-        /// <summary>Gets column type definition.</summary>
-        /// <param name="fieldType">Type of the field.</param>
-        /// <param name="fieldName"></param>
-        /// <param name="fieldLength"></param>
-        /// <returns>The column type definition.</returns>
-        public virtual string GetColumnTypeDefinition(Type fieldType, string fieldName, int? fieldLength)
-        {
-#pragma warning disable 618
-            var dbType = SqlMapper.LookupDbType(fieldType, fieldName, false, out var typeHandler);
-#pragma warning restore 618
-
-            if (typeHandler is ITypeHandlerColumnType typeHandlerColumnType)
-            {
-                dbType = typeHandlerColumnType.ColumnType;
-                fieldLength = typeHandlerColumnType.Length;
-            }
-
-            return TypesMapper.GetFieldDefinition(dbType,fieldLength);
-        }
-
         /// <summary>Query if 'dbCmd' does table exist.</summary>
         /// <param name="connection">The database.</param>
         /// <param name="tableName">Name of the table.</param>
@@ -409,7 +341,7 @@ namespace SimpleStack.Orm
         {
             return false;
         }
-        
+
         /// <summary>Query if 'dbCmd' does table exist.</summary>
         /// <param name="connection">The database.</param>
         /// <param name="tableName">Name of the table.</param>
@@ -466,8 +398,8 @@ namespace SimpleStack.Orm
         {
             return string.Empty;
         }
-        
-        
+
+
         public virtual string GetCreateSchemaStatement(string schema, bool ignoreIfExists)
         {
             return "SELECT 1";
@@ -489,22 +421,6 @@ namespace SimpleStack.Orm
             return null;
         }
 
-        /// <summary>Gets foreign key on delete clause.</summary>
-		/// <param name="foreignKey">The foreign key.</param>
-		/// <returns>The foreign key on delete clause.</returns>
-		public virtual string GetForeignKeyOnDeleteClause(ForeignKeyConstraint foreignKey)
-        {
-            return !string.IsNullOrEmpty(foreignKey.OnDelete) ? " ON DELETE " + foreignKey.OnDelete : "";
-        }
-
-        /// <summary>Gets foreign key on update clause.</summary>
-        /// <param name="foreignKey">The foreign key.</param>
-        /// <returns>The foreign key on update clause.</returns>
-        public virtual string GetForeignKeyOnUpdateClause(ForeignKeyConstraint foreignKey)
-        {
-            return !string.IsNullOrEmpty(foreignKey.OnUpdate) ? " ON UPDATE " + foreignKey.OnUpdate : "";
-        }
-
         /// <summary>Gets index name.</summary>
         /// <param name="isUnique"> true if this object is unique.</param>
         /// <param name="modelName">Name of the model.</param>
@@ -520,6 +436,237 @@ namespace SimpleStack.Orm
             throw new NotImplementedException();
         }
 
+        public virtual string GetDropTableStatement(ModelDefinition modelDef)
+        {
+            return "DROP TABLE " + GetQuotedTableName(modelDef);
+        }
+
+        public virtual IEnumerable<IColumnDefinition> GetTableColumnDefinitions(
+            IDbConnection connection,
+            string tableName,
+            string schemaName = null)
+        {
+            return new IColumnDefinition[0];
+        }
+
+        public virtual async Task<IEnumerable<ITableDefinition>> GetTableDefinitions(
+            IDbConnection connection,
+            string schemaName = null,
+            bool includeViews = false)
+        {
+            var sqlQuery = "SELECT table_name,table_schema FROM INFORMATION_SCHEMA.TABLES where";
+
+            if (includeViews)
+            {
+                sqlQuery += " (TABLE_TYPE = 'BASE TABLE' OR TABLE_TYPE = 'VIEW')";
+            }
+            else
+            {
+                sqlQuery += " TABLE_TYPE = 'BASE TABLE'";
+            }
+
+            if (!string.IsNullOrWhiteSpace(schemaName))
+            {
+                sqlQuery +=
+                    $" AND {GetStringFunction("ToLower", "table_schema", null)} = {GetStringFunction("ToLower", "@SchemaName", null)} ";
+            }
+
+            var tables = new List<TableDefinition>();
+            foreach (var table in await connection.QueryAsync(sqlQuery, new {SchemaName = schemaName}))
+            {
+                tables.Add(new TableDefinition
+                {
+                    Name = table.table_name,
+                    SchemaName = table.table_schema
+                });
+            }
+
+            return tables;
+        }
+
+        public virtual string BindOperand(ExpressionType e, bool isIntegral)
+        {
+            switch (e)
+            {
+                case ExpressionType.Equal:
+                    return "=";
+                case ExpressionType.NotEqual:
+                    return "<>";
+                case ExpressionType.GreaterThan:
+                    return ">";
+                case ExpressionType.GreaterThanOrEqual:
+                    return ">=";
+                case ExpressionType.LessThan:
+                    return "<";
+                case ExpressionType.LessThanOrEqual:
+                    return "<=";
+                case ExpressionType.AndAlso:
+                    return "AND";
+                case ExpressionType.OrElse:
+                    return "OR";
+                case ExpressionType.Add:
+                    return "+";
+                case ExpressionType.Subtract:
+                    return "-";
+                case ExpressionType.Multiply:
+                    return "*";
+                case ExpressionType.Divide:
+                    return "/";
+                case ExpressionType.Modulo:
+                    return "MOD";
+                case ExpressionType.Coalesce:
+                    return "COALESCE";
+                case ExpressionType.And:
+                    return isIntegral ? "&" : "AND";
+                case ExpressionType.Or:
+                    return isIntegral ? "|" : "OR";
+                case ExpressionType.ExclusiveOr:
+                    return isIntegral ? "^" : "XOR";
+                case ExpressionType.LeftShift:
+                    return "<<";
+                case ExpressionType.RightShift:
+                    return ">>";
+                default:
+                    return null;
+            }
+        }
+
+        public virtual string GetStringFunction(string functionName, string quotedColumnName,
+            IDictionary<string, object> parameters, params string[] availableParameters)
+        {
+            switch (functionName.ToLower())
+            {
+                case "length":
+                    return "LEN(" + quotedColumnName + ")";
+                case "trim":
+                    return $"ltrim(rtrim({quotedColumnName}))";
+                case "tlrim":
+                    return $"ltrim({quotedColumnName})";
+                case "rtrim":
+                    return $"rtrim({quotedColumnName})";
+                case "toupper":
+                    return $"upper({quotedColumnName})";
+                case "tolower":
+                    return $"lower({quotedColumnName})";
+                case "startswith":
+                    parameters[availableParameters[0]] = parameters[availableParameters[0]].ToString().ToUpper() + "%";
+                    return $"upper({quotedColumnName}) LIKE {availableParameters[0]} ";
+                case "endswith":
+                    parameters[availableParameters[0]] = "%" + parameters[availableParameters[0]].ToString().ToUpper();
+                    return $"upper({quotedColumnName}) LIKE {availableParameters[0]} ";
+                case "contains":
+                    parameters[availableParameters[0]] =
+                        "%" + parameters[availableParameters[0]].ToString().ToUpper() + "%";
+                    return $"upper({quotedColumnName}) LIKE {availableParameters[0]} ";
+                case "substring":
+                    //Ensure Offset is start at 1 instead of 0
+                    var offset = (int) parameters[availableParameters[0]] + 1;
+                    parameters[availableParameters[0]] = offset;
+
+                    if (parameters.Count == 2)
+                    {
+                        return $"substr({quotedColumnName},{availableParameters[0]},{availableParameters[1]})";
+                    }
+
+                    return $"substr({quotedColumnName},{availableParameters[0]})";
+                default:
+                    throw new NotSupportedException();
+            }
+        }
+
+        public abstract DbConnection CreateIDbConnection(string connectionString);
+
+        /// <summary>Gets quoted name.</summary>
+        /// <param name="name">Name of the column.</param>
+        /// <returns>The quoted name.</returns>
+        public virtual string GetQuotedName(string name)
+        {
+            return $"{EscapeChar}{name}{EscapeChar}";
+        }
+
+        /// <summary>Gets column definition.</summary>
+        /// <param name="fieldName">    Name of the field.</param>
+        /// <param name="fieldType">    Type of the field.</param>
+        /// <param name="isPrimaryKey"> true if this object is primary key.</param>
+        /// <param name="autoIncrement">true to automatically increment.</param>
+        /// <param name="isNullable">   true if this object is nullable.</param>
+        /// <param name="fieldLength">  Length of the field.</param>
+        /// <param name="scale">        The scale.</param>
+        /// <param name="defaultValue"> The default value.</param>
+        /// <returns>The column definition.</returns>
+        public virtual string GetColumnDefinition(string fieldName, Type fieldType,
+            bool isPrimaryKey, bool autoIncrement, bool isNullable,
+            int? fieldLength, int? scale, object defaultValue)
+        {
+            var sql = new StringBuilder();
+            sql.AppendFormat("{0} {1}", GetQuotedColumnName(fieldName),
+                GetColumnTypeDefinition(fieldType, fieldName, fieldLength));
+
+            if (isPrimaryKey)
+            {
+                if (autoIncrement)
+                {
+                    sql.Append(" PRIMARY KEY");
+                    sql.Append(" ").Append(AutoIncrementDefinition);
+                }
+            }
+            else
+            {
+                sql.Append(isNullable ? " NULL" : " NOT NULL");
+            }
+
+            if (defaultValue != null)
+            {
+                sql.AppendFormat(DefaultValueFormat, GetDefaultValueDefinition(defaultValue));
+            }
+
+            return sql.ToString();
+        }
+
+        protected virtual string GetDefaultValueDefinition(object defaultValue)
+        {
+            return defaultValue.ToString();
+        }
+
+        /// <summary>Gets column database type.</summary>
+        /// <param name="valueType">Type of the value.</param>
+        /// <returns>The column database type.</returns>
+        /// <summary>Gets column type definition.</summary>
+        /// <param name="fieldType">Type of the field.</param>
+        /// <param name="fieldName"></param>
+        /// <param name="fieldLength"></param>
+        /// <returns>The column type definition.</returns>
+        public virtual string GetColumnTypeDefinition(Type fieldType, string fieldName, int? fieldLength)
+        {
+#pragma warning disable 618
+            var dbType = SqlMapper.LookupDbType(fieldType, fieldName, false, out var typeHandler);
+#pragma warning restore 618
+
+            if (typeHandler is ITypeHandlerColumnType typeHandlerColumnType)
+            {
+                dbType = typeHandlerColumnType.ColumnType;
+                fieldLength = typeHandlerColumnType.Length;
+            }
+
+            return TypesMapper.GetFieldDefinition(dbType, fieldLength);
+        }
+
+        /// <summary>Gets foreign key on delete clause.</summary>
+        /// <param name="foreignKey">The foreign key.</param>
+        /// <returns>The foreign key on delete clause.</returns>
+        public virtual string GetForeignKeyOnDeleteClause(ForeignKeyConstraint foreignKey)
+        {
+            return !string.IsNullOrEmpty(foreignKey.OnDelete) ? " ON DELETE " + foreignKey.OnDelete : "";
+        }
+
+        /// <summary>Gets foreign key on update clause.</summary>
+        /// <param name="foreignKey">The foreign key.</param>
+        /// <returns>The foreign key on update clause.</returns>
+        public virtual string GetForeignKeyOnUpdateClause(ForeignKeyConstraint foreignKey)
+        {
+            return !string.IsNullOrEmpty(foreignKey.OnUpdate) ? " ON UPDATE " + foreignKey.OnUpdate : "";
+        }
+
         /// <summary>Gets composite index name.</summary>
         /// <param name="compositeIndex">Zero-based index of the composite.</param>
         /// <param name="modelDef">      The model definition.</param>
@@ -531,16 +678,17 @@ namespace SimpleStack.Orm
         }
 
         /// <summary>Converts this object to a create index statement.</summary>
-		/// <param name="isUnique">  true if this object is unique.</param>
-		/// <param name="indexName"> Name of the index.</param>
-		/// <param name="modelDef">  The model definition.</param>
-		/// <param name="fieldName"> Name of the field.</param>
-		/// <param name="isCombined">true if this object is combined.</param>
-		/// <returns>The given data converted to a string.</returns>
-		protected virtual string ToCreateIndexStatement(bool isUnique, string indexName, ModelDefinition modelDef,
+        /// <param name="isUnique">  true if this object is unique.</param>
+        /// <param name="indexName"> Name of the index.</param>
+        /// <param name="modelDef">  The model definition.</param>
+        /// <param name="fieldName"> Name of the field.</param>
+        /// <param name="isCombined">true if this object is combined.</param>
+        /// <returns>The given data converted to a string.</returns>
+        protected virtual string ToCreateIndexStatement(bool isUnique, string indexName, ModelDefinition modelDef,
             string fieldName, bool isCombined = false)
         {
-            return $"CREATE {(isUnique ? "UNIQUE" : string.Empty)} INDEX {indexName} ON {GetQuotedTableName(modelDef)} ({((isCombined) ? fieldName : GetQuotedColumnName(fieldName))} ASC); \n";
+            return
+                $"CREATE {(isUnique ? "UNIQUE" : string.Empty)} INDEX {indexName} ON {GetQuotedTableName(modelDef)} ({(isCombined ? fieldName : GetQuotedColumnName(fieldName))} ASC); \n";
         }
 
         /// <summary>Gets a model.</summary>
@@ -592,7 +740,8 @@ namespace SimpleStack.Orm
                 fieldDef.FieldLength,
                 fieldDef.Scale,
                 fieldDef.DefaultValue);
-            return $"ALTER TABLE {GetQuotedTableName(modelType.GetModelDefinition().ModelName)} MODIFY COLUMN {column};";
+            return
+                $"ALTER TABLE {GetQuotedTableName(modelType.GetModelDefinition().ModelName)} MODIFY COLUMN {column};";
         }
 
         /// <summary>Converts this object to a change column name statement.</summary>
@@ -673,22 +822,24 @@ namespace SimpleStack.Orm
         public virtual string GetLimitExpression(int? skip, int? rows)
         {
             if (!skip.HasValue && !rows.HasValue)
+            {
                 return string.Empty;
-            
+            }
+
             //LIMIT 10 OFFSET 15
-            StringBuilder limit = new StringBuilder();
+            var limit = new StringBuilder();
             if (rows.HasValue)
-            {                
+            {
                 limit.Append(" LIMIT ");
                 limit.Append(rows.Value);
             }
-            
+
             if (skip.HasValue)
             {
                 limit.Append(" OFFSET ");
                 limit.Append(skip.Value);
             }
-            
+
             return limit.ToString();
         }
 
@@ -714,138 +865,5 @@ namespace SimpleStack.Orm
         }
 
         #endregion DDL
-
-        public virtual string GetDropTableStatement(ModelDefinition modelDef)
-        {
-            return "DROP TABLE " + GetQuotedTableName(modelDef);
-        }
-        public virtual IEnumerable<IColumnDefinition> GetTableColumnDefinitions(
-            IDbConnection connection,
-            string tableName,
-            string schemaName = null)
-        {
-            return new IColumnDefinition[0];
-        }
-
-        public virtual async Task<IEnumerable<ITableDefinition>> GetTableDefinitions(
-            IDbConnection connection,
-            string schemaName = null,
-            bool includeViews = false)
-        {
-            string sqlQuery = "SELECT table_name,table_schema FROM INFORMATION_SCHEMA.TABLES where";
-
-            if (includeViews)
-            {
-                sqlQuery += " (TABLE_TYPE = 'BASE TABLE' OR TABLE_TYPE = 'VIEW')";
-            }
-            else
-            {
-                sqlQuery += " TABLE_TYPE = 'BASE TABLE'";
-            }
-            
-            if (!string.IsNullOrWhiteSpace(schemaName))
-            {
-                sqlQuery += $" AND {GetStringFunction("ToLower","table_schema",null)} = {GetStringFunction("ToLower","@SchemaName",null)} ";
-            }
-            
-            List<TableDefinition> tables = new List<TableDefinition>();
-            foreach (var table in await connection.QueryAsync(sqlQuery, new { SchemaName = schemaName }))
-            {
-                tables.Add(new TableDefinition
-                {
-                    Name = table.table_name,
-                    SchemaName = table.table_schema
-                });
-            }
-
-            return tables;
-        }
-
-        public virtual string BindOperand(ExpressionType e, bool isIntegral)
-        {
-            switch (e)
-            {
-                case ExpressionType.Equal:
-                    return "=";
-                case ExpressionType.NotEqual:
-                    return "<>";
-                case ExpressionType.GreaterThan:
-                    return ">";
-                case ExpressionType.GreaterThanOrEqual:
-                    return ">=";
-                case ExpressionType.LessThan:
-                    return "<";
-                case ExpressionType.LessThanOrEqual:
-                    return "<=";
-                case ExpressionType.AndAlso:
-                    return "AND";
-                case ExpressionType.OrElse:
-                    return "OR";
-                case ExpressionType.Add:
-                    return "+";
-                case ExpressionType.Subtract:
-                    return "-";
-                case ExpressionType.Multiply:
-                    return "*";
-                case ExpressionType.Divide:
-                    return "/";
-                case ExpressionType.Modulo:
-                    return "MOD";
-                case ExpressionType.Coalesce:
-                    return "COALESCE";
-                case ExpressionType.And:
-                    return isIntegral ? "&": "AND";
-                case ExpressionType.Or:
-                    return isIntegral ? "|": "OR";
-                case ExpressionType.ExclusiveOr:
-                    return isIntegral ? "^": "XOR";
-                case ExpressionType.LeftShift:
-                    return "<<";
-                case ExpressionType.RightShift:
-                    return ">>";
-                default:
-                    return null;
-            }
-        }
-
-        public virtual string GetStringFunction(string functionName, string quotedColumnName, IDictionary<string, Object> parameters, params string[] availableParameters)
-        {
-            switch (functionName.ToLower())
-            {
-                case "length":
-                    return "LEN(" + quotedColumnName + ")";
-                case "trim":
-                    return $"ltrim(rtrim({quotedColumnName}))";
-                case "tlrim":
-                    return $"ltrim({quotedColumnName})";
-                case "rtrim":
-                    return $"rtrim({quotedColumnName})";
-                case "toupper":
-                    return $"upper({quotedColumnName})";
-                case "tolower":
-                    return $"lower({quotedColumnName})";
-                case "startswith":
-                    parameters[availableParameters[0]] = parameters[availableParameters[0]].ToString().ToUpper() + "%";
-                    return $"upper({quotedColumnName}) LIKE {availableParameters[0]} ";
-                case "endswith":
-                    parameters[availableParameters[0]] = "%" + parameters[availableParameters[0]].ToString().ToUpper();
-                    return $"upper({quotedColumnName}) LIKE {availableParameters[0]} ";
-                case "contains":
-                    parameters[availableParameters[0]] = "%" + parameters[availableParameters[0]].ToString().ToUpper() +"%";
-                    return $"upper({quotedColumnName}) LIKE {availableParameters[0]} ";
-                case "substring":
-                    //Ensure Offset is start at 1 instead of 0
-                    int offset = ((int) parameters[availableParameters[0]]) + 1;
-                    parameters[availableParameters[0]] = offset;
-
-                    if (parameters.Count == 2)
-                    {
-                        return $"substr({quotedColumnName},{availableParameters[0]},{availableParameters[1]})";
-                    }
-                    return $"substr({quotedColumnName},{availableParameters[0]})";
-                default:
-                    throw new NotSupportedException();
-            }
-        }
     }
 }

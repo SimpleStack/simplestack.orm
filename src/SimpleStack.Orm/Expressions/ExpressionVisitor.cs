@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -24,22 +23,32 @@ namespace SimpleStack.Orm.Expressions
         public virtual string VisitExpression(Expression exp)
         {
             var statement = Visit(exp);
-            
+
             if (statement == null)
+            {
                 return string.Empty;
-            
-            if (statement is ParameterPart pp) 
+            }
+
+            if (statement is ParameterPart pp)
+            {
                 return (bool) Parameters[pp.Text] ? "1=1" : "1=0";
-            
-            if (statement is ColumnAccessPart cp) 
+            }
+
+            if (statement is ColumnAccessPart cp)
+            {
                 return $"{cp.Text} = {AddParameter(true)}";
-            
+            }
+
             return statement.ToString();
         }
 
         protected StatementPart Visit(Expression exp)
         {
-            if (exp == null) return null;
+            if (exp == null)
+            {
+                return null;
+            }
+
             switch (exp.NodeType)
             {
                 case ExpressionType.Lambda:
@@ -125,14 +134,21 @@ namespace SimpleStack.Orm.Expressions
         protected virtual StatementPart VisitMethodCall(MethodCallExpression m)
         {
             if (IsColumnAccess(m))
+            {
                 return VisitColumnAccessMethod(m);
-            
+            }
+
             if (IsIEnumerableContainsMethod(m))
+            {
                 return VisitArrayMethodCall(m);
+            }
 
             var value = Expression.Lambda(m).Compile().DynamicInvoke();
             if (value == null)
+            {
                 return null;
+            }
+
             return AddParameter(value);
         }
 
@@ -140,9 +156,13 @@ namespace SimpleStack.Orm.Expressions
         {
             var args = new List<StatementPart>();
             if (m.Arguments.Count == 1 && m.Arguments[0].NodeType == ExpressionType.Constant)
+            {
                 args.Add(VisitConstant((ConstantExpression) m.Arguments[0]));
+            }
             else
+            {
                 args.AddRange(VisitExpressionList(m.Arguments));
+            }
 
             var quotedColName = Visit(m.Object).ToString();
             var statement = DialectProvider.GetStringFunction(
@@ -158,13 +178,13 @@ namespace SimpleStack.Orm.Expressions
         {
             if (m.Method.Name == "Contains")
             {
-                if (m.Method.DeclaringType == typeof(Enumerable) || 
+                if (m.Method.DeclaringType == typeof(Enumerable) ||
                     typeof(IEnumerable).IsAssignableFrom(m.Method.DeclaringType))
                 {
                     return true;
                 }
             }
-            
+
             return false;
         }
 
@@ -177,8 +197,9 @@ namespace SimpleStack.Orm.Expressions
         {
             var list = new List<StatementPart>();
             var original = parameters.ToArray();
-            
+
             for (int i = 0, n = original.Length; i < n; i++)
+            {
                 if (original[i].NodeType == ExpressionType.NewArrayInit ||
                     original[i].NodeType == ExpressionType.NewArrayBounds)
                 {
@@ -195,6 +216,8 @@ namespace SimpleStack.Orm.Expressions
                 {
                     list.Add(Visit(original[i]));
                 }
+            }
+
             return list;
         }
 
@@ -218,7 +241,9 @@ namespace SimpleStack.Orm.Expressions
                     }
 
                     if (o is ColumnAccessPart oc && oc.ColumnType == typeof(bool))
+                    {
                         o = new StatementPart($"{o.Text} = {AddParameter(true)}");
+                    }
 
                     return new StatementPart($"NOT ({o})");
 
@@ -226,7 +251,11 @@ namespace SimpleStack.Orm.Expressions
                     if (unaryExpression.Method != null)
                     {
                         var value = Expression.Lambda(unaryExpression).Compile().DynamicInvoke();
-                        if (value != null) return AddParameter(value);
+                        if (value != null)
+                        {
+                            return AddParameter(value);
+                        }
+
                         return null;
                     }
 
@@ -270,24 +299,34 @@ namespace SimpleStack.Orm.Expressions
             if (operand == "AND" || operand == "OR")
             {
                 if (leftca?.ColumnType == typeof(bool))
+                {
                     left = new StatementPart($"{leftca.Text} = {AddParameter(true)}");
+                }
 
                 if (rightca?.ColumnType == typeof(bool))
+                {
                     right = new StatementPart($"{rightca.Text} = {AddParameter(true)}");
+                }
 
                 if (leftp?.ParameterType == typeof(bool) || rightp?.ParameterType == typeof(bool))
                 {
                     var boolValue = (bool) (leftp != null ? Parameters[leftp.Text] : Parameters[rightp.Text]);
                     if (operand == "AND")
                     {
-                        if (boolValue) return leftp != null ? left : right;
+                        if (boolValue)
+                        {
+                            return leftp != null ? left : right;
+                        }
 
                         return AddParameter(false);
                     }
 
                     if (operand == "OR")
                     {
-                        if (boolValue) return AddParameter(true);
+                        if (boolValue)
+                        {
+                            return AddParameter(true);
+                        }
 
                         return leftp != null ? left : right;
                     }
@@ -296,13 +335,20 @@ namespace SimpleStack.Orm.Expressions
             else
             {
                 if (leftca != null && leftca.ColumnType.IsEnum() && rightp != null)
+                {
                     Parameters[rightp.Text] = Enum.ToObject(leftca.ColumnType, Parameters[rightp.Text]);
+                }
 
                 if (rightca != null && rightca.ColumnType.IsEnum() && leftp != null)
+                {
                     Parameters[leftp.Text] = Enum.ToObject(rightca.ColumnType, Parameters[leftp.Text]);
+                }
             }
 
-            if (right == null || left == null) operand = operand == "=" ? "IS" : "IS NOT";
+            if (right == null || left == null)
+            {
+                operand = operand == "=" ? "IS" : "IS NOT";
+            }
 
             switch (operand)
             {
@@ -310,21 +356,25 @@ namespace SimpleStack.Orm.Expressions
                 case "COALESCE":
                     return new StatementPart($"{operand}({left},{right})");
                 default:
-                    StringBuilder part = new StringBuilder("(");
+                    var part = new StringBuilder("(");
                     part.Append(left == null ? "NULL" : left.ToString());
                     part.Append(" ");
                     part.Append(operand);
                     part.Append(" ");
                     part.Append(right == null ? "NULL" : right.ToString());
                     part.Append(")");
-                        
+
                     return new StatementPart(part.ToString());
             }
         }
 
         protected virtual StatementPart VisitConstant(ConstantExpression constantExpression)
         {
-            if (constantExpression.Value != null) return AddParameter(constantExpression.Value);
+            if (constantExpression.Value != null)
+            {
+                return AddParameter(constantExpression.Value);
+            }
+
             return null;
         }
 
@@ -332,7 +382,9 @@ namespace SimpleStack.Orm.Expressions
         {
             var r = Expression.Lambda(memberExpression).Compile().DynamicInvoke();
             if (r != null)
+            {
                 return AddParameter(r);
+            }
 
             return null;
         }

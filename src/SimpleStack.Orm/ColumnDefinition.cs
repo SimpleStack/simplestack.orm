@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Text;
+﻿using System.Data;
 
 namespace SimpleStack.Orm
 {
@@ -21,13 +18,13 @@ namespace SimpleStack.Orm
     public class ColumnType
     {
         public int? Length { get; set; }
-        
+
         public int? Precision { get; set; }
-        
+
         public int? Scale { get; set; }
-        
+
         public string Definition { get; set; }
-        
+
         public DbType DbType { get; set; }
     }
 

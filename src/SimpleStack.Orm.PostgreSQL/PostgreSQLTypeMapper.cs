@@ -5,8 +5,8 @@ namespace SimpleStack.Orm.PostgreSQL
 {
     public class PostgreSQLTypeMapper : DbTypeMapperBase
     {
-
-        public override string GetFieldDefinition(DbType type, int? length = null, int? scale = null, int? precision = null)
+        public override string GetFieldDefinition(DbType type, int? length = null, int? scale = null,
+            int? precision = null)
         {
             var l = length ?? DefaultStringLength;
             switch (type)

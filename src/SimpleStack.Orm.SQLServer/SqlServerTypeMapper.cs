@@ -1,6 +1,5 @@
 using System;
 using System.Data;
-using System.Data.SqlClient;
 
 namespace SimpleStack.Orm.SqlServer
 {
@@ -8,7 +7,8 @@ namespace SimpleStack.Orm.SqlServer
     {
         public bool UseDateTime2 { get; set; }
 
-        public override string GetFieldDefinition(DbType type, int? length = null, int? scale = null, int? precision = null)
+        public override string GetFieldDefinition(DbType type, int? length = null, int? scale = null,
+            int? precision = null)
         {
             var l = length ?? 4000;
             switch (type)
@@ -19,7 +19,7 @@ namespace SimpleStack.Orm.SqlServer
                 case DbType.AnsiString:
                 case DbType.String:
                 case DbType.Object: // Because of null management with Dapper
-                    return UseUnicode ? $"NVARCHAR({l})" : $"VARCHAR({l*2})";
+                    return UseUnicode ? $"NVARCHAR({l})" : $"VARCHAR({l * 2})";
                 case DbType.Binary:
                     return $"VARBINARY({(length.HasValue ? length.ToString() : "MAX")})";
                 case DbType.Boolean:

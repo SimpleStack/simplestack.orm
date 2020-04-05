@@ -40,17 +40,25 @@ namespace SimpleStack.Orm.Expressions
         protected override StatementPart VisitMethodCall(MethodCallExpression m)
         {
             if (m.Method.DeclaringType == typeof(Sql))
+            {
                 return VisitSqlMethodCall(m);
+            }
 
             if (IsIEnumerableContainsMethod(m))
+            {
                 return VisitArrayMethodCall(m);
+            }
 
             if (IsColumnAccess(m))
+            {
                 return VisitColumnAccessMethod(m);
+            }
 
             var value = Expression.Lambda(m).Compile().DynamicInvoke();
             if (value == null)
+            {
                 return null;
+            }
 
             return AddParameter(value);
         }
@@ -58,7 +66,9 @@ namespace SimpleStack.Orm.Expressions
         protected override StatementPart VisitMemberAccess(MemberExpression m)
         {
             if (m.Member.DeclaringType == typeof(DateTime))
+            {
                 return VisitDateTimeMemberAccess(m);
+            }
 
             if (m.Expression != null && (m.Expression.NodeType == ExpressionType.Parameter ||
                                          m.Expression.NodeType == ExpressionType.Convert))
@@ -70,7 +80,9 @@ namespace SimpleStack.Orm.Expressions
 
             var r = Expression.Lambda(m).Compile().DynamicInvoke();
             if (r != null)
+            {
                 return AddParameter(r);
+            }
 
             return null;
         }
@@ -105,7 +117,9 @@ namespace SimpleStack.Orm.Expressions
         protected override bool IsColumnAccess(MethodCallExpression m)
         {
             if (m.Object is MethodCallExpression)
+            {
                 return IsColumnAccess((MethodCallExpression) m.Object);
+            }
 
             var exp = m.Object as MemberExpression;
             return exp?.Expression != null && exp.Expression.Type == typeof(T) &&
@@ -116,11 +130,15 @@ namespace SimpleStack.Orm.Expressions
         {
             var list = new Queue<StatementPart>();
             foreach (var e in parameters)
+            {
                 switch (e.NodeType)
                 {
                     case ExpressionType.NewArrayInit:
                     case ExpressionType.NewArrayBounds:
-                        foreach (var p in VisitNewArrayFromExpressionList(e as NewArrayExpression)) list.Enqueue(p);
+                        foreach (var p in VisitNewArrayFromExpressionList(e as NewArrayExpression))
+                        {
+                            list.Enqueue(p);
+                        }
 
                         break;
                     case ExpressionType.MemberAccess:
@@ -131,6 +149,7 @@ namespace SimpleStack.Orm.Expressions
                         list.Enqueue(Visit(e));
                         break;
                 }
+            }
 
             return list;
         }
@@ -142,8 +161,10 @@ namespace SimpleStack.Orm.Expressions
 
             var operand = fd.IsComputed ? fd.ComputeExpression : DialectProvider.GetQuotedColumnName(fn);
 
-            if (_addAliasSpecification && fn != fd.Name) 
+            if (_addAliasSpecification && fn != fd.Name)
+            {
                 return operand + " AS " + fd.Name;
+            }
 
             return operand;
         }
@@ -163,7 +184,7 @@ namespace SimpleStack.Orm.Expressions
         {
             var exprs = VisitExpressionList(memberInitExpression.Bindings
                 .Where(x => x.BindingType == MemberBindingType.Assignment)
-                .Select(x => ((MemberAssignment)x).Expression));
+                .Select(x => ((MemberAssignment) x).Expression));
             return new StatementPart(exprs.Select(x => x.Text).Aggregate((x, y) => x + "," + y));
         }
     }

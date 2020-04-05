@@ -1,226 +1,222 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Data;
-using System.Dynamic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Dapper;
 using Microsoft.Data.Sqlite;
-#if NET45 || NET451
-using SimpleStack.Orm.MySQL;
-#endif
-using SimpleStack.Orm.PostgreSQL;
-using SimpleStack.Orm.Sqlite;
-using SimpleStack.Orm.SqlServer;
-using SimpleStack.Orm.MySQLConnector;
-using Microsoft.SqlServer.Server;
 using Newtonsoft.Json;
 using NUnit.Framework;
 using SimpleStack.Orm.MySQL;
+using SimpleStack.Orm.MySQLConnector;
+using SimpleStack.Orm.PostgreSQL;
+using SimpleStack.Orm.Sqlite;
+using SimpleStack.Orm.SqlServer;
+#if NET45 || NET451
+using SimpleStack.Orm.MySQL;
+#endif
 
 namespace SimpleStack.Orm.Tests
 {
-	//TODO: vdaron : Multiple Primarykey create table
-	//TODO: vdaron => DateTimeOffset column types
+    //TODO: vdaron : Multiple Primarykey create table
+    //TODO: vdaron => DateTimeOffset column types
 
-	[TestFixture]
+    [TestFixture]
     public abstract partial class ExpressionTests
-	{
-		private readonly IDialectProvider _dialectProvider;
+    {
+        [SetUp]
+        public virtual void Setup()
+        {
+            if (_conn != null)
+            {
+                _conn.Dispose();
+                _conn = null;
+            }
 
-		public class GuidAsByteArray : ITypeHandlerColumnType
-		{
-			public void SetValue(IDbDataParameter parameter, object value)
-			{
-				parameter.DbType = DbType.Binary;
-				parameter.Value = ((Guid)value).ToByteArray();
-			}
+            SqlMapper.ResetTypeHandlers();
 
-			public object Parse(Type destinationType, object value)
-			{
-				return new Guid((byte[])value);
-			}
+            SqlMapper.AddTypeHandler(typeof(TestEnum), new EnumAsIntTypeHandler<TestEnum>());
 
-			public int? Length => (Guid.Empty.ToByteArray().Length);
+            OpenDbConnection().CreateTable<TestType>(true);
+            OpenDbConnection().CreateTable<Person>(true);
+            OpenDbConnection().CreateTable<TestType2>(true);
+        }
 
-			public DbType ColumnType => DbType.Binary;
-		}
+        private readonly IDialectProvider _dialectProvider;
 
-		public class EnumAsStringTypeHandler<T> : ITypeHandlerColumnType
-		{
-			public void SetValue(IDbDataParameter parameter, object value)
-			{
-				parameter.DbType = DbType.String;
-				parameter.Value = value.ToString();
-			}
+        public class GuidAsByteArray : ITypeHandlerColumnType
+        {
+            public void SetValue(IDbDataParameter parameter, object value)
+            {
+                parameter.DbType = DbType.Binary;
+                parameter.Value = ((Guid) value).ToByteArray();
+            }
 
-			public object Parse(Type destinationType, object value)
-			{
-				return Enum.Parse(typeof (TestEnum), (string)value);
-			}
+            public object Parse(Type destinationType, object value)
+            {
+                return new Guid((byte[]) value);
+            }
 
-			public int? Length => (from object v in Enum.GetValues(typeof (T)) select v.ToString() into str select str.Length).Max();
+            public int? Length => Guid.Empty.ToByteArray().Length;
 
-			public DbType ColumnType => DbType.AnsiString;
-		}
+            public DbType ColumnType => DbType.Binary;
+        }
 
-		private class EnumAsIntTypeHandler<T> : ITypeHandlerColumnType
-		{
-			public void SetValue(IDbDataParameter parameter, object value)
-			{
-				parameter.DbType = DbType.Int32;
-				parameter.Value = (int)value;
-			}
+        public class EnumAsStringTypeHandler<T> : ITypeHandlerColumnType
+        {
+            public void SetValue(IDbDataParameter parameter, object value)
+            {
+                parameter.DbType = DbType.String;
+                parameter.Value = value.ToString();
+            }
 
-			public object Parse(Type destinationType, object value)
-			{
-				return (T)value;
-			}
+            public object Parse(Type destinationType, object value)
+            {
+                return Enum.Parse(typeof(TestEnum), (string) value);
+            }
 
-			public int? Length => null;
-			public DbType ColumnType => DbType.Int32;
-		}
+            public int? Length =>
+                (from object v in Enum.GetValues(typeof(T)) select v.ToString() into str select str.Length).Max();
 
-		public class JsonTypeHandler : SqlMapper.ITypeHandler, ITypeHandlerColumnType
-		{
-			private JsonSerializer s = new JsonSerializer();
+            public DbType ColumnType => DbType.AnsiString;
+        }
 
-			public void SetValue(IDbDataParameter parameter, object value)
-			{
-				parameter.DbType = DbType.String;
-				using (var writer = new StringWriter())
-				using (var rr = new JsonTextWriter(writer))
-				{
-					s.Serialize(rr,value);
-					parameter.Value = rr.ToString();
-				}
-			}
+        private class EnumAsIntTypeHandler<T> : ITypeHandlerColumnType
+        {
+            public void SetValue(IDbDataParameter parameter, object value)
+            {
+                parameter.DbType = DbType.Int32;
+                parameter.Value = (int) value;
+            }
 
-			public object Parse(Type destinationType, object value)
-			{
-				using (var reader = new StringReader(value.ToString()))
-				using (var rr = new JsonTextReader(reader))
-				{
-					return s.Deserialize(rr, destinationType);
-				}
-			}
+            public object Parse(Type destinationType, object value)
+            {
+                return (T) value;
+            }
 
-			public int? Length
-			{
-				get => null;
-			}
-			public DbType ColumnType
-			{
-				get => DbType.String;
-			}
-		}
+            public int? Length => null;
+            public DbType ColumnType => DbType.Int32;
+        }
 
-		private OrmConnection _conn;
+        public class JsonTypeHandler : SqlMapper.ITypeHandler, ITypeHandlerColumnType
+        {
+            private readonly JsonSerializer s = new JsonSerializer();
 
-		protected ExpressionTests(IDialectProvider dialectProvider)
-		{
-			_dialectProvider = dialectProvider;
-			//BasicConfigurator.Configure(new DebugAppender{Layout =  new SimpleLayout()});
-		}
+            public void SetValue(IDbDataParameter parameter, object value)
+            {
+                parameter.DbType = DbType.String;
+                using (var writer = new StringWriter())
+                using (var rr = new JsonTextWriter(writer))
+                {
+                    s.Serialize(rr, value);
+                    parameter.Value = rr.ToString();
+                }
+            }
 
-		[SetUp]
-		public virtual void Setup()
-		{	
-			if (_conn != null)
-			{
-				_conn.Dispose();
-				_conn = null;
-			}
+            public object Parse(Type destinationType, object value)
+            {
+                using (var reader = new StringReader(value.ToString()))
+                using (var rr = new JsonTextReader(reader))
+                {
+                    return s.Deserialize(rr, destinationType);
+                }
+            }
 
-			SqlMapper.ResetTypeHandlers();
-			
-			SqlMapper.AddTypeHandler(typeof(TestEnum), new EnumAsIntTypeHandler<TestEnum>());
-			
-			OpenDbConnection().CreateTable<TestType>(true);
-			OpenDbConnection().CreateTable<Person>(true);
-			OpenDbConnection().CreateTable<TestType2>(true);
+            public int? Length => null;
 
-		}
+            public DbType ColumnType => DbType.String;
+        }
 
-		protected abstract string ConnectionString { get; }
+        private OrmConnection _conn;
 
-		protected OrmConnection OpenDbConnection()
-		{
-			if (_conn?.DbConnection == null)
-			{
-				_conn = _dialectProvider.CreateConnection(ConnectionString);
-				_conn.Open();
-			}
-			return _conn;
-		}
+        protected ExpressionTests(IDialectProvider dialectProvider)
+        {
+            _dialectProvider = dialectProvider;
+            //BasicConfigurator.Configure(new DebugAppender{Layout =  new SimpleLayout()});
+        }
 
-		/// <summary>Establish context.</summary>
-		/// <param name="numberOfRandomObjects">Number of random objects.</param>
-		protected void EstablishContext(int numberOfRandomObjects)
-		{
-			EstablishContext(numberOfRandomObjects, null);
-		}
+        protected abstract string ConnectionString { get; }
 
-		/// <summary>Establish context.</summary>
-		/// <param name="numberOfRandomObjects">Number of random objects.</param>
-		/// <param name="obj">                  A variable-length parameters list containing object.</param>
-		protected void EstablishContext(int numberOfRandomObjects, params TestType[] obj)
-		{
-			if (obj == null)
-				obj = new TestType[0];
+        protected OrmConnection OpenDbConnection()
+        {
+            if (_conn?.DbConnection == null)
+            {
+                _conn = _dialectProvider.CreateConnection(ConnectionString);
+                _conn.Open();
+            }
 
-			using (var con = OpenDbConnection())
-			{
-				foreach (var t in obj)
-				{
-					con.Insert(t);
-				}
+            return _conn;
+        }
 
-				var random = new Random((int)(DateTime.UtcNow.Ticks ^ (DateTime.UtcNow.Ticks >> 4)));
-				for (var i = 0; i < numberOfRandomObjects; i++)
-				{
-					TestType o = null;
+        /// <summary>Establish context.</summary>
+        /// <param name="numberOfRandomObjects">Number of random objects.</param>
+        protected void EstablishContext(int numberOfRandomObjects)
+        {
+            EstablishContext(numberOfRandomObjects, null);
+        }
 
-					while (o == null)
-					{
-						int intVal = random.Next();
+        /// <summary>Establish context.</summary>
+        /// <param name="numberOfRandomObjects">Number of random objects.</param>
+        /// <param name="obj">                  A variable-length parameters list containing object.</param>
+        protected void EstablishContext(int numberOfRandomObjects, params TestType[] obj)
+        {
+            if (obj == null)
+            {
+                obj = new TestType[0];
+            }
 
-						o = new TestType
-						{
-							BoolColumn = random.Next() % 2 == 0,
-							IntColumn = intVal,
-							StringColumn = Guid.NewGuid().ToString()
-						};
+            using (var con = OpenDbConnection())
+            {
+                foreach (var t in obj)
+                {
+                    con.Insert(t);
+                }
 
-						if (obj.Any(x => x.IntColumn == intVal))
-							o = null;
-					}
+                var random = new Random((int) (DateTime.UtcNow.Ticks ^ (DateTime.UtcNow.Ticks >> 4)));
+                for (var i = 0; i < numberOfRandomObjects; i++)
+                {
+                    TestType o = null;
 
-					con.Insert(o);
-				}
-			}
-		}
+                    while (o == null)
+                    {
+                        var intVal = random.Next();
 
-		/// <summary>Gets a value.</summary>
-		/// <typeparam name="T">Generic type parameter.</typeparam>
-		/// <param name="item">The item.</param>
-		/// <returns>The value.</returns>
-		public T GetValue<T>(T item)
-		{
-			return item;
-		}
-	}
+                        o = new TestType
+                        {
+                            BoolColumn = random.Next() % 2 == 0,
+                            IntColumn = intVal,
+                            StringColumn = Guid.NewGuid().ToString()
+                        };
 
-	public class PostgreSQLTests : ExpressionTests
-	{
-		public PostgreSQLTests() : base(new PostgreSQLDialectProvider())
-		{
-		}
+                        if (obj.Any(x => x.IntColumn == intVal))
+                        {
+                            o = null;
+                        }
+                    }
 
-		protected override string ConnectionString => "server=localhost;user id=postgres;password=depfac$2000;database=test;Enlist=true";
-	}
+                    con.Insert(o);
+                }
+            }
+        }
+
+        /// <summary>Gets a value.</summary>
+        /// <typeparam name="T">Generic type parameter.</typeparam>
+        /// <param name="item">The item.</param>
+        /// <returns>The value.</returns>
+        public T GetValue<T>(T item)
+        {
+            return item;
+        }
+    }
+
+    public class PostgreSQLTests : ExpressionTests
+    {
+        public PostgreSQLTests() : base(new PostgreSQLDialectProvider())
+        {
+        }
+
+        protected override string ConnectionString =>
+            "server=localhost;user id=postgres;password=depfac$2000;database=test;Enlist=true";
+    }
 #if NET45 || NET451
 	public class MySQLTests : ExpressionTests
 	{
@@ -231,14 +227,14 @@ namespace SimpleStack.Orm.Tests
 		}
 	}
 #endif
-	public class MySQLConnectorTests : ExpressionTests
-	{
-		protected override string ConnectionString => "server=localhost;user=root;password=depfac$2000;database=test";
+    public class MySQLConnectorTests : ExpressionTests
+    {
+        protected override string ConnectionString => "server=localhost;user=root;password=depfac$2000;database=test";
 
-		public MySQLConnectorTests() : base(new MySqlConnectorDialectProvider())
-		{
-		}
-	}
+        public MySQLConnectorTests() : base(new MySqlConnectorDialectProvider())
+        {
+        }
+    }
 
     public class MySQLTests : ExpressionTests
     {
@@ -250,40 +246,43 @@ namespace SimpleStack.Orm.Tests
     }
 
     public class SQLServerTests : ExpressionTests
-	{
-		public SQLServerTests() : base(new SqlServerDialectProvider())
-		{
-		}
+    {
+        public SQLServerTests() : base(new SqlServerDialectProvider())
+        {
+        }
 
-		protected override string ConnectionString => @"server=localhost;User id=sa;Password=depfac$2000;database=test";
-	}
-	public class SQLLiteTests : ExpressionTests
-	{
-		private Microsoft.Data.Sqlite.SqliteConnectionStringBuilder builder;
-		public SQLLiteTests() : base(new SqliteDialectProvider())
-		{
-			builder = new SqliteConnectionStringBuilder();
-			builder.DataSource = Path.Combine(Path.GetTempPath(),"test.db");
-			builder.Mode = SqliteOpenMode.ReadWriteCreate;
-			builder.Cache = SqliteCacheMode.Shared;
-		}
+        protected override string ConnectionString => @"server=localhost;User id=sa;Password=depfac$2000;database=test";
+    }
 
-		public override void Setup()
-		{
-			base.Setup();
+    public class SQLLiteTests : ExpressionTests
+    {
+        public override void Setup()
+        {
+            base.Setup();
 
-			SqlMapper.AddTypeHandler(typeof(Guid), new GuidAsByteArray());
-		}
+            SqlMapper.AddTypeHandler(typeof(Guid), new GuidAsByteArray());
+        }
 
-		protected override string ConnectionString => builder.ToString();
-	}
-	
-	public class SDQLiteTests : ExpressionTests
-	{
-		public SDQLiteTests() : base(new SimpleStack.Orm.SDSQLite.SqliteDialectProvider())
-		{
-		}
+        private readonly SqliteConnectionStringBuilder builder;
 
-		protected override string ConnectionString => $"Data Source={Path.Combine(Path.GetTempPath(),"test.db")};Version=3;New=True;BinaryGUID=False";
-	}
+        public SQLLiteTests() : base(new SqliteDialectProvider())
+        {
+            builder = new SqliteConnectionStringBuilder();
+            builder.DataSource = Path.Combine(Path.GetTempPath(), "test.db");
+            builder.Mode = SqliteOpenMode.ReadWriteCreate;
+            builder.Cache = SqliteCacheMode.Shared;
+        }
+
+        protected override string ConnectionString => builder.ToString();
+    }
+
+    public class SDQLiteTests : ExpressionTests
+    {
+        public SDQLiteTests() : base(new SDSQLite.SqliteDialectProvider())
+        {
+        }
+
+        protected override string ConnectionString =>
+            $"Data Source={Path.Combine(Path.GetTempPath(), "test.db")};Version=3;New=True;BinaryGUID=False";
+    }
 }

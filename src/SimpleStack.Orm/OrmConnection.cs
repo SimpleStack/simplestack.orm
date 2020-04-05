@@ -1,110 +1,112 @@
 ﻿using System.Data;
 using System.Data.Common;
-using System.Data.SqlClient;
+
 //using SimpleStack.Orm.Logging;
 
 namespace SimpleStack.Orm
 {
-	public partial class OrmConnection : DbConnection
-	{
-		//private static readonly ILog Logger = LogProvider.For<OrmConnection>();
+    public partial class OrmConnection : DbConnection
+    {
+        ///// <summary>true if this object is open.</summary>
+        private bool _isOpen;
 
-		public IDialectProvider DialectProvider { get; }
+        ///// <summary>
+        ///// Initializes a new instance of the OrmLiteConnection class.
+        ///// </summary>
+        ///// <param name="connection"></param>
+        ///// <param name="dialectProvider"></param>
+        internal OrmConnection(DbConnection connection, IDialectProvider dialectProvider)
+        {
+            DialectProvider = dialectProvider;
+            DbConnection = connection;
+        }
+        //private static readonly ILog Logger = LogProvider.For<OrmConnection>();
 
-		public int CommandTimeout { get; set; }
+        public IDialectProvider DialectProvider { get; }
 
-		///// <summary>Gets the transaction.</summary>
-		///// <value>The transaction.</value>
-		public OrmTransaction Transaction { get; internal set; }
+        public int CommandTimeout { get; set; }
 
-		///// <summary>true if this object is open.</summary>
-		private bool _isOpen;
+        ///// <summary>Gets the transaction.</summary>
+        ///// <value>The transaction.</value>
+        public OrmTransaction Transaction { get; internal set; }
 
-		///// <summary>
-		///// Initializes a new instance of the OrmLiteConnection class.
-		///// </summary>
-		///// <param name="connection"></param>
-		///// <param name="dialectProvider"></param>
-		internal OrmConnection(DbConnection connection, IDialectProvider dialectProvider)
-		{
-			DialectProvider = dialectProvider;
-			DbConnection = connection;
-		}
+        ///// <summary>Gets the database connection.</summary>
+        ///// <value>The database connection.</value>
+        public DbConnection DbConnection { get; private set; }
 
-		///// <summary>Gets the database connection.</summary>
-		///// <value>The database connection.</value>
-		public DbConnection DbConnection { get; private set; }
+        public override string ConnectionString
+        {
+            get => DbConnection.ConnectionString;
+            set => DbConnection.ConnectionString = value;
+        }
 
-		protected override void Dispose(bool disposing)
-		{
-			if (disposing)
-			{
-				if (DbConnection != null)
-				{
-					Close();
+        public override string Database => DbConnection.Database;
 
-					DbConnection.Dispose();
-					DbConnection = null;
-				}
-				_isOpen = false;
-			}
-			base.Dispose(disposing);
-		}
+        public override ConnectionState State => DbConnection.State;
+        public override string DataSource => DbConnection.DataSource;
+        public override string ServerVersion => DbConnection.ServerVersion;
 
-		internal void ClearCurrrentTransaction()
-		{
-			Transaction = null;
-		}
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (DbConnection != null)
+                {
+                    Close();
 
-		protected override DbTransaction BeginDbTransaction(IsolationLevel isolationLevel)
-		{
-			Transaction = new OrmTransaction(this, DbConnection.BeginTransaction());
-			return Transaction;
-		}
+                    DbConnection.Dispose();
+                    DbConnection = null;
+                }
 
-		public override void Close()
-		{
-			if (_isOpen)
-			{
-				//Logger.DebugFormat("Closing Connection");
-				DbConnection.Close();
-				_isOpen = false;
-			}
-		}
+                _isOpen = false;
+            }
 
-		public override void ChangeDatabase(string databaseName)
-		{
-			DbConnection.ChangeDatabase(databaseName);
-		}
+            base.Dispose(disposing);
+        }
 
-		public override void Open()
-		{
-			//Logger.DebugFormat("Opening Connection");
-			DbConnection.Open();
-			_isOpen = true;
-		}
+        internal void ClearCurrrentTransaction()
+        {
+            Transaction = null;
+        }
 
-		public override string ConnectionString
-		{
-			get { return DbConnection.ConnectionString; }
-			set { DbConnection.ConnectionString = value; }
-		}
+        protected override DbTransaction BeginDbTransaction(IsolationLevel isolationLevel)
+        {
+            Transaction = new OrmTransaction(this, DbConnection.BeginTransaction());
+            return Transaction;
+        }
 
-		public override string Database => DbConnection.Database;
+        public override void Close()
+        {
+            if (_isOpen)
+            {
+                //Logger.DebugFormat("Closing Connection");
+                DbConnection.Close();
+                _isOpen = false;
+            }
+        }
 
-		public override ConnectionState State => DbConnection.State;
-		public override string DataSource => DbConnection.DataSource;
-		public override string ServerVersion => DbConnection.ServerVersion;
+        public override void ChangeDatabase(string databaseName)
+        {
+            DbConnection.ChangeDatabase(databaseName);
+        }
 
-		protected override DbCommand CreateDbCommand()
-		{
-			var cmd = new OrmCommand(DbConnection.CreateCommand());
-			if (Transaction != null)
-			{
-				cmd.Transaction = Transaction.trans;
-			}
-			cmd.CommandTimeout = CommandTimeout;
-			return cmd;
-		}
-	}
+        public override void Open()
+        {
+            //Logger.DebugFormat("Opening Connection");
+            DbConnection.Open();
+            _isOpen = true;
+        }
+
+        protected override DbCommand CreateDbCommand()
+        {
+            var cmd = new OrmCommand(DbConnection.CreateCommand());
+            if (Transaction != null)
+            {
+                cmd.Transaction = Transaction.trans;
+            }
+
+            cmd.CommandTimeout = CommandTimeout;
+            return cmd;
+        }
+    }
 }

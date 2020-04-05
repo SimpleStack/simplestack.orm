@@ -1,6 +1,4 @@
-﻿using SimpleStack.Orm;
-
-namespace SimpleStack.Orm.PostgreSQL
+﻿namespace SimpleStack.Orm.PostgreSQL
 {
     /// <summary>A postgre SQL naming strategy.</summary>
     public class PostgreSqlNamingStrategy : INamingStrategy
@@ -10,7 +8,7 @@ namespace SimpleStack.Orm.PostgreSQL
         /// <returns>The table name.</returns>
         public string GetTableName(string name)
         {
-            return name.ToLower().Replace(" ","_");
+            return name.ToLower().Replace(" ", "_");
         }
 
         /// <summary>Gets column name.</summary>
@@ -18,7 +16,7 @@ namespace SimpleStack.Orm.PostgreSQL
         /// <returns>The column name.</returns>
         public string GetColumnName(string name)
         {
-			return name.ToLower().Replace(" ", "_");
+            return name.ToLower().Replace(" ", "_");
         }
     }
 }

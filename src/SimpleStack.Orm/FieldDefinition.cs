@@ -27,10 +27,7 @@ namespace SimpleStack.Orm
 
         /// <summary>Gets the name of the field.</summary>
         /// <value>The name of the field.</value>
-        public string FieldName
-        {
-            get { return this.Alias ?? this.Name; }
-        }
+        public string FieldName => Alias ?? Name;
 
         /// <summary>Gets or sets the type of the field.</summary>
         /// <value>The type of the field.</value>
@@ -62,11 +59,11 @@ namespace SimpleStack.Orm
 
         /// <summary>Gets or sets the length of the field.</summary>
         /// <value>The length of the field.</value>
-        public int? FieldLength { get; set; }  // Precision for Decimal Type
+        public int? FieldLength { get; set; } // Precision for Decimal Type
 
         /// <summary>Gets or sets the scale.</summary>
         /// <value>The scale.</value>
-        public int? Scale { get; set; }  //  for decimal type
+        public int? Scale { get; set; } //  for decimal type
 
         /// <summary>Gets or sets the default value.</summary>
         /// <value>The default value.</value>
@@ -84,14 +81,6 @@ namespace SimpleStack.Orm
         /// <value>The set value function.</value>
         public PropertySetterDelegate SetValueFn { get; set; }
 
-        /// <summary>Gets a value.</summary>
-        /// <param name="onInstance">The on instance.</param>
-        /// <returns>The value.</returns>
-        public object GetValue(object onInstance)
-        {
-            return this.GetValueFn == null ? null : this.GetValueFn(onInstance);
-        }
-
         /// <summary>Gets or sets the sequence.</summary>
         /// <value>The sequence.</value>
         public string Sequence { get; set; }
@@ -107,19 +96,28 @@ namespace SimpleStack.Orm
         /// <summary>Gets or sets the name of the belong to model.</summary>
         /// <value>The name of the belong to model.</value>
         public string BelongToModelName { get; set; }
+
+        /// <summary>Gets a value.</summary>
+        /// <param name="onInstance">The on instance.</param>
+        /// <returns>The value.</returns>
+        public object GetValue(object onInstance)
+        {
+            return GetValueFn == null ? null : GetValueFn(onInstance);
+        }
     }
 
     /// <summary>A foreign key constraint.</summary>
     public class ForeignKeyConstraint
     {
         /// <summary>
-        /// Initializes a new instance of the NServiceKit.OrmLite.ForeignKeyConstraint class.
+        ///     Initializes a new instance of the NServiceKit.OrmLite.ForeignKeyConstraint class.
         /// </summary>
         /// <param name="type">          The type.</param>
         /// <param name="onDelete">      The on delete.</param>
         /// <param name="onUpdate">      The on update.</param>
         /// <param name="foreignKeyName">The name of the foreign key.</param>
-        public ForeignKeyConstraint(Type type, string onDelete = null, string onUpdate = null, string foreignKeyName = null)
+        public ForeignKeyConstraint(Type type, string onDelete = null, string onUpdate = null,
+            string foreignKeyName = null)
         {
             ReferenceType = type;
             OnDelete = onDelete;
@@ -129,19 +127,19 @@ namespace SimpleStack.Orm
 
         /// <summary>Gets the type of the reference.</summary>
         /// <value>The type of the reference.</value>
-        public Type ReferenceType { get; private set; }
+        public Type ReferenceType { get; }
 
         /// <summary>Gets the on delete.</summary>
         /// <value>The on delete.</value>
-        public string OnDelete { get; private set; }
+        public string OnDelete { get; }
 
         /// <summary>Gets the on update.</summary>
         /// <value>The on update.</value>
-        public string OnUpdate { get; private set; }
+        public string OnUpdate { get; }
 
         /// <summary>Gets the name of the foreign key.</summary>
         /// <value>The name of the foreign key.</value>
-        public string ForeignKeyName { get; private set; }
+        public string ForeignKeyName { get; }
 
         /// <summary>Gets foreign key name.</summary>
         /// <param name="modelDef">      The model definition.</param>
@@ -149,17 +147,22 @@ namespace SimpleStack.Orm
         /// <param name="NamingStrategy">The naming strategy.</param>
         /// <param name="fieldDef">      The field definition.</param>
         /// <returns>The foreign key name.</returns>
-        public string GetForeignKeyName(ModelDefinition modelDef, ModelDefinition refModelDef, INamingStrategy NamingStrategy, FieldDefinition fieldDef)
+        public string GetForeignKeyName(ModelDefinition modelDef, ModelDefinition refModelDef,
+            INamingStrategy NamingStrategy, FieldDefinition fieldDef)
         {
-	        if (!String.IsNullOrEmpty(ForeignKeyName)) return ForeignKeyName;
-	        var modelName = modelDef.IsInSchema
-		        ? modelDef.Schema + "_" + NamingStrategy.GetTableName(modelDef.ModelName)
-		        : NamingStrategy.GetTableName(modelDef.ModelName);
+            if (!string.IsNullOrEmpty(ForeignKeyName))
+            {
+                return ForeignKeyName;
+            }
 
-	        var refModelName = refModelDef.IsInSchema
-		        ? refModelDef.Schema + "_" + NamingStrategy.GetTableName(refModelDef.ModelName)
-		        : NamingStrategy.GetTableName(refModelDef.ModelName);
-	        return string.Format("FK_{0}_{1}_{2}", modelName, refModelName, fieldDef.FieldName);
+            var modelName = modelDef.IsInSchema
+                ? modelDef.Schema + "_" + NamingStrategy.GetTableName(modelDef.ModelName)
+                : NamingStrategy.GetTableName(modelDef.ModelName);
+
+            var refModelName = refModelDef.IsInSchema
+                ? refModelDef.Schema + "_" + NamingStrategy.GetTableName(refModelDef.ModelName)
+                : NamingStrategy.GetTableName(refModelDef.ModelName);
+            return string.Format("FK_{0}_{1}_{2}", modelName, refModelName, fieldDef.FieldName);
         }
     }
 }

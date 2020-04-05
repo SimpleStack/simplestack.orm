@@ -40,6 +40,7 @@ namespace SimpleStack.Orm.Expressions.Statements.Dynamic
             {
                 Statement.GroupByExpression.Append(",");
             }
+
             Statement.GroupByExpression.Append(GetExpressionVisitor<T>(columnName).VisitExpression(keySelector));
             return this;
         }
@@ -62,19 +63,25 @@ namespace SimpleStack.Orm.Expressions.Statements.Dynamic
         public DynamicCountStatement Having<T>(string columnName, Expression<Func<T, bool>> predicate)
         {
             if (predicate != null)
+            {
                 Statement.HavingExpression.Append(
-                    new ColumnWhereExpresionVisitor<T>(_dialectProvider, Statement.Parameters, _dialectProvider.GetQuotedColumnName(columnName))
+                    new ColumnWhereExpresionVisitor<T>(_dialectProvider, Statement.Parameters,
+                            _dialectProvider.GetQuotedColumnName(columnName))
                         .VisitExpression(predicate));
+            }
             else
+            {
                 Statement.HavingExpression.Clear();
+            }
 
             return this;
         }
-        
+
         public DynamicCountStatement AndRaw(string condition)
         {
-            return Where(condition, "AND");
+            return Where(condition);
         }
+
         public DynamicCountStatement OrRaw(string condition)
         {
             return Where(condition, "OR");
@@ -99,7 +106,7 @@ namespace SimpleStack.Orm.Expressions.Statements.Dynamic
                 Statement.WhereExpression.Append(op);
                 Statement.WhereExpression.Append(" ");
             }
-            
+
             Statement.WhereExpression.Append('(');
             Statement.WhereExpression.Append(condition);
             Statement.WhereExpression.Append(')');

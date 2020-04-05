@@ -18,25 +18,34 @@ using SimpleStack.Orm.Attributes;
 namespace SimpleStack.Orm
 {
     /// <summary>A model definition.</summary>
-	public class ModelDefinition
-	{
+    public class ModelDefinition
+    {
+        /// <summary>Array of field definitions.</summary>
+        private FieldDefinition[] _fieldDefinitionsArray;
+
+        /// <summary>Array of all field definitions.</summary>
+        private FieldDefinition[] allFieldDefinitionsArray;
+
+        /// <summary>Array of ignored field definitions.</summary>
+        private FieldDefinition[] ignoredFieldDefinitionsArray;
+
         /// <summary>
-        /// Initializes a new instance of the NServiceKit.OrmLite.ModelDefinition class.
+        ///     Initializes a new instance of the NServiceKit.OrmLite.ModelDefinition class.
         /// </summary>
-		public ModelDefinition()
-		{
-			FieldDefinitions = new List<FieldDefinition>();
-			IgnoredFieldDefinitions = new List<FieldDefinition>();
-			CompositeIndexes = new List<CompositeIndexAttribute>();
-		}
+        public ModelDefinition()
+        {
+            FieldDefinitions = new List<FieldDefinition>();
+            IgnoredFieldDefinitions = new List<FieldDefinition>();
+            CompositeIndexes = new List<CompositeIndexAttribute>();
+        }
 
         /// <summary>Gets or sets the name.</summary>
         /// <value>The name.</value>
-		public string Name { get; set; }
+        public string Name { get; set; }
 
         /// <summary>Gets or sets the alias.</summary>
         /// <value>The alias.</value>
-		public string Alias { get; set; }
+        public string Alias { get; set; }
 
         /// <summary>Gets or sets the schema.</summary>
         /// <value>The schema.</value>
@@ -48,14 +57,11 @@ namespace SimpleStack.Orm
 
         /// <summary>Gets the name of the model.</summary>
         /// <value>The name of the model.</value>
-		public string ModelName
-		{
-			get { return this.Alias ?? this.Name; }
-		}
+        public string ModelName => Alias ?? Name;
 
         /// <summary>Gets or sets the type of the model.</summary>
         /// <value>The type of the model.</value>
-		public Type ModelType { get; set; }
+        public Type ModelType { get; set; }
 
         /// <summary>Gets or sets the SQL select all from table.</summary>
         /// <value>The SQL select all from table.</value>
@@ -63,109 +69,97 @@ namespace SimpleStack.Orm
 
         /// <summary>Gets the primary key.</summary>
         /// <value>The primary key.</value>
-		public FieldDefinition PrimaryKey
-		{
-			get
-			{
-				return this.FieldDefinitions.First(x => x.IsPrimaryKey);
-			}
-		}
+        public FieldDefinition PrimaryKey
+        {
+            get { return FieldDefinitions.First(x => x.IsPrimaryKey); }
+        }
 
         /// <summary>Gets or sets the field definitions.</summary>
         /// <value>The field definitions.</value>
-		public List<FieldDefinition> FieldDefinitions { get; set; }
-
-        /// <summary>Array of field definitions.</summary>
-		private FieldDefinition[] _fieldDefinitionsArray;
+        public List<FieldDefinition> FieldDefinitions { get; set; }
 
         /// <summary>Gets an array of field definitions.</summary>
         /// <value>An Array of field definitions.</value>
-		public FieldDefinition[] FieldDefinitionsArray
-		{
-			get
-			{
-				if (_fieldDefinitionsArray == null)
-				{
-					_fieldDefinitionsArray = FieldDefinitions.ToArray();
-				}
-				return _fieldDefinitionsArray;
-			}
-		}
+        public FieldDefinition[] FieldDefinitionsArray
+        {
+            get
+            {
+                if (_fieldDefinitionsArray == null)
+                {
+                    _fieldDefinitionsArray = FieldDefinitions.ToArray();
+                }
+
+                return _fieldDefinitionsArray;
+            }
+        }
 
         /// <summary>Gets or sets the ignored field definitions.</summary>
         /// <value>The ignored field definitions.</value>
-		public List<FieldDefinition> IgnoredFieldDefinitions { get; set; }
-
-        /// <summary>Array of ignored field definitions.</summary>
-		private FieldDefinition[] ignoredFieldDefinitionsArray;
+        public List<FieldDefinition> IgnoredFieldDefinitions { get; set; }
 
         /// <summary>Gets an array of ignored field definitions.</summary>
         /// <value>An Array of ignored field definitions.</value>
-		public FieldDefinition[] IgnoredFieldDefinitionsArray
-		{
-			get
-			{
-				if (ignoredFieldDefinitionsArray == null)
-				{
-					ignoredFieldDefinitionsArray = IgnoredFieldDefinitions.ToArray();
-				}
-				return ignoredFieldDefinitionsArray;
-			}
-		}
+        public FieldDefinition[] IgnoredFieldDefinitionsArray
+        {
+            get
+            {
+                if (ignoredFieldDefinitionsArray == null)
+                {
+                    ignoredFieldDefinitionsArray = IgnoredFieldDefinitions.ToArray();
+                }
 
-        /// <summary>Array of all field definitions.</summary>
-		private FieldDefinition[] allFieldDefinitionsArray;
+                return ignoredFieldDefinitionsArray;
+            }
+        }
 
         /// <summary>Gets an array of all field definitions.</summary>
         /// <value>An Array of all field definitions.</value>
-		public FieldDefinition[] AllFieldDefinitionsArray
-		{
-			get
-			{
-				if (allFieldDefinitionsArray == null)
-				{
-					List<FieldDefinition> allItems = new List<FieldDefinition>(FieldDefinitions);
-					allItems.AddRange(IgnoredFieldDefinitions);
-					allFieldDefinitionsArray = allItems.ToArray(); 
-				}
-				return allFieldDefinitionsArray;
-			}
-		}
+        public FieldDefinition[] AllFieldDefinitionsArray
+        {
+            get
+            {
+                if (allFieldDefinitionsArray == null)
+                {
+                    var allItems = new List<FieldDefinition>(FieldDefinitions);
+                    allItems.AddRange(IgnoredFieldDefinitions);
+                    allFieldDefinitionsArray = allItems.ToArray();
+                }
+
+                return allFieldDefinitionsArray;
+            }
+        }
 
         /// <summary>Gets or sets the composite indexes.</summary>
         /// <value>The composite indexes.</value>
-		public List<CompositeIndexAttribute> CompositeIndexes { get; set; }
+        public List<CompositeIndexAttribute> CompositeIndexes { get; set; }
 
         /// <summary>Gets field definition.</summary>
         /// <typeparam name="T">Generic type parameter.</typeparam>
         /// <param name="field">The field.</param>
         /// <returns>The field definition.</returns>
-		public FieldDefinition GetFieldDefinition<T>(Expression<Func<T,object>> field)
-		{
-			var fn = GetFieldName (field);
-			return  FieldDefinitions.First(f=>f.Name==fn );
-		}
+        public FieldDefinition GetFieldDefinition<T>(Expression<Func<T, object>> field)
+        {
+            var fn = GetFieldName(field);
+            return FieldDefinitions.First(f => f.Name == fn);
+        }
 
         /// <summary>Gets field name.</summary>
         /// <typeparam name="T">Generic type parameter.</typeparam>
         /// <param name="field">The field.</param>
         /// <returns>The field name.</returns>
-		string GetFieldName<T>(Expression<Func<T,object>> field){
-			
-			var lambda = (field as LambdaExpression);
-			if( lambda.Body.NodeType==ExpressionType.MemberAccess)
-			{
-				var me = lambda.Body as MemberExpression;
-				return me.Member.Name;
-			}
-			else
-			{
-				var operand = (lambda.Body as UnaryExpression).Operand ;
-				return (operand as MemberExpression).Member.Name;
-			}
-		}
+        private string GetFieldName<T>(Expression<Func<T, object>> field)
+        {
+            var lambda = field as LambdaExpression;
+            if (lambda.Body.NodeType == ExpressionType.MemberAccess)
+            {
+                var me = lambda.Body as MemberExpression;
+                return me.Member.Name;
+            }
 
-	}
+            var operand = (lambda.Body as UnaryExpression).Operand;
+            return (operand as MemberExpression).Member.Name;
+        }
+    }
 
     /// <summary>A model definition.</summary>
     /// <typeparam name="T">Generic type parameter.</typeparam>
@@ -176,20 +170,16 @@ namespace SimpleStack.Orm
 
         /// <summary>Gets the definition.</summary>
         /// <value>The definition.</value>
-		public static ModelDefinition Definition
-		{
-			get { return definition ?? (definition = typeof(T).GetModelDefinition()); }
-		}
+        public static ModelDefinition Definition => definition ?? (definition = typeof(T).GetModelDefinition());
 
-		///// <summary>Name of the primary key.</summary>
-		//private static string primaryKeyName;
+        ///// <summary>Name of the primary key.</summary>
+        //private static string primaryKeyName;
 
-		///// <summary>Gets the name of the primary key.</summary>
-		///// <value>The name of the primary key.</value>
-		//public static string PrimaryKeyName
-		//{
-		//	get { return primaryKeyName ?? (primaryKeyName = Definition.PrimaryKey.FieldName); }
-		//}
-
-	}
+        ///// <summary>Gets the name of the primary key.</summary>
+        ///// <value>The name of the primary key.</value>
+        //public static string PrimaryKeyName
+        //{
+        //	get { return primaryKeyName ?? (primaryKeyName = Definition.PrimaryKey.FieldName); }
+        //}
+    }
 }

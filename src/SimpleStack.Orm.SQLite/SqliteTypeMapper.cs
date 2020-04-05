@@ -5,7 +5,8 @@ namespace SimpleStack.Orm.SQLite
 {
     public class SqliteTypeMapper : DbTypeMapperBase
     {
-        public override string GetFieldDefinition(DbType type, int? length = null, int? scale = null, int? precision = null)
+        public override string GetFieldDefinition(DbType type, int? length = null, int? scale = null,
+            int? precision = null)
         {
             switch (type)
             {

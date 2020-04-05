@@ -26,7 +26,7 @@ namespace SimpleStack.Orm.Expressions.Statements.Typed
         /// <returns></returns>
         public TypedUpdateStatement<T> Table(string tableName, string schemaName = null)
         {
-            Statement.TableName = _dialectProvider.GetQuotedTableName(tableName,schemaName);
+            Statement.TableName = _dialectProvider.GetQuotedTableName(tableName, schemaName);
             return this;
         }
 
@@ -94,7 +94,10 @@ namespace SimpleStack.Orm.Expressions.Statements.Typed
                 var pks = _modelDefinition.FieldDefinitions.Where(x => x.IsPrimaryKey).ToArray();
                 foreach (var pk in pks)
                 {
-                    if (Statement.WhereExpression.Length > 0) Statement.WhereExpression.Append(" AND ");
+                    if (Statement.WhereExpression.Length > 0)
+                    {
+                        Statement.WhereExpression.Append(" AND ");
+                    }
 
                     var pname = _dialectProvider.GetParameterName(Statement.Parameters.Count);
                     Statement.WhereExpression.Append(_dialectProvider.GetQuotedColumnName(pk.FieldName));

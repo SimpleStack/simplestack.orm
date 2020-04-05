@@ -20,24 +20,35 @@ namespace SimpleStack.Orm.Expressions
         protected override StatementPart VisitMethodCall(MethodCallExpression methodCallExpression)
         {
             if (methodCallExpression.Method.DeclaringType == typeof(Sql))
+            {
                 return VisitSqlMethodCall(methodCallExpression);
+            }
 
             if (IsColumnAccess(methodCallExpression))
+            {
                 return VisitColumnMethodCall(methodCallExpression);
+            }
 
             if (IsIEnumerableContainsMethod(methodCallExpression))
+            {
                 return VisitArrayMethodCall(methodCallExpression);
+            }
 
             var value = Expression.Lambda(methodCallExpression).Compile().DynamicInvoke();
             if (value != null)
+            {
                 return AddParameter(value);
+            }
+
             return null;
         }
 
         protected override bool IsColumnAccess(MethodCallExpression m)
         {
             if (m.Object is MethodCallExpression)
+            {
                 return IsColumnAccess((MethodCallExpression) m.Object);
+            }
 
             return m.Object?.NodeType == ExpressionType.Parameter;
         }
@@ -49,7 +60,9 @@ namespace SimpleStack.Orm.Expressions
                 case "Contains":
                     var memberExpr = m.Arguments[0];
                     if (memberExpr.NodeType == ExpressionType.MemberAccess)
+                    {
                         memberExpr = m.Arguments[0] as MemberExpression;
+                    }
 
                     if (memberExpr != null)
                     {
@@ -61,7 +74,9 @@ namespace SimpleStack.Orm.Expressions
                         if (sIn.Length == 0)
                             // The collection is empty, so avoid generating invalid SQL syntax of "ColumnName IN ()".
                             // Instead, just select from the null set via "ColumnName IN (NULL)"
+                        {
                             sIn = "NULL";
+                        }
 
                         return new StatementPart($"{_statement} IN ({sIn})");
                     }
@@ -76,13 +91,16 @@ namespace SimpleStack.Orm.Expressions
         {
             if (memberExpression.Member.DeclaringType == typeof(string) &&
                 memberExpression.Member.Name == "Length")
+            {
                 return new StatementPart(
                     DialectProvider.GetStringFunction("length",
                         _statement,
                         null,
                         null));
+            }
 
             if (memberExpression.Member.DeclaringType == typeof(DateTime))
+            {
                 switch (memberExpression.Member.Name)
                 {
                     case "Year":
@@ -96,6 +114,7 @@ namespace SimpleStack.Orm.Expressions
                     default:
                         throw new NotSupportedException();
                 }
+            }
 
             return null;
         }
@@ -127,9 +146,13 @@ namespace SimpleStack.Orm.Expressions
             var args = new List<StatementPart>();
             if (methodCallExpression.Arguments.Count == 1 &&
                 methodCallExpression.Arguments[0].NodeType == ExpressionType.Constant)
+            {
                 args.Add(VisitConstant((ConstantExpression) methodCallExpression.Arguments[0]));
+            }
             else
+            {
                 args.AddRange(VisitExpressionList(methodCallExpression.Arguments));
+            }
 
             var quotedColName = Visit(methodCallExpression.Object).ToString();
 
@@ -149,18 +172,26 @@ namespace SimpleStack.Orm.Expressions
 
         protected override StatementPart VisitConstant(ConstantExpression constantExpression)
         {
-            if (constantExpression.Value != null) return AddParameter(constantExpression.Value);
+            if (constantExpression.Value != null)
+            {
+                return AddParameter(constantExpression.Value);
+            }
+
             return null;
         }
 
         protected override StatementPart VisitMemberAccess(MemberExpression memberExpression)
         {
             if (memberExpression.Expression?.NodeType == ExpressionType.Parameter)
+            {
                 return VisitColumnMemberAccess(memberExpression);
+            }
 
             var r = Expression.Lambda(memberExpression).Compile().DynamicInvoke();
             if (r != null)
+            {
                 return AddParameter(r);
+            }
 
             return null;
         }

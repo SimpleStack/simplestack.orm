@@ -25,7 +25,7 @@ namespace SimpleStack.Orm.Expressions.Statements.Typed
         /// <returns></returns>
         public TypedInsertStatement<T> Into(string tableName, string schema = null)
         {
-            Statement.TableName = _dialectProvider.GetQuotedTableName(tableName,schema);
+            Statement.TableName = _dialectProvider.GetQuotedTableName(tableName, schema);
             return this;
         }
 
@@ -53,7 +53,7 @@ namespace SimpleStack.Orm.Expressions.Statements.Typed
                 if (fieldDef.DefaultValue == null || v != null)
                 {
                     var pname = _dialectProvider.GetParameterName(Statement.Parameters.Count);
-                    Statement.Parameters.Add(pname,v);
+                    Statement.Parameters.Add(pname, v);
                     Statement.InsertFields.Add(_dialectProvider.GetQuotedColumnName(fieldDef.FieldName));
                 }
             }

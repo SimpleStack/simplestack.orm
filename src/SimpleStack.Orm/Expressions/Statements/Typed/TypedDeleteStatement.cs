@@ -20,11 +20,17 @@ namespace SimpleStack.Orm.Expressions.Statements.Typed
         {
             var pks = _modelDefinition.FieldDefinitions.Where(x => x.IsPrimaryKey).ToArray();
 
-            if (pks.Length == 0) pks = _modelDefinition.FieldDefinitions.ToArray();
+            if (pks.Length == 0)
+            {
+                pks = _modelDefinition.FieldDefinitions.ToArray();
+            }
 
             foreach (var pk in pks)
             {
-                if (Statement.WhereExpression.Length > 0) Statement.WhereExpression.Append(" AND ");
+                if (Statement.WhereExpression.Length > 0)
+                {
+                    Statement.WhereExpression.Append(" AND ");
+                }
 
                 var pname = _dialectProvider.GetParameterName(Statement.Parameters.Count);
                 Statement.WhereExpression.Append(_dialectProvider.GetQuotedColumnName(pk.FieldName));

@@ -17,7 +17,10 @@ namespace SimpleStack.Orm.MySQLConnector
                 case DbType.String:
                 case DbType.Xml:
                     if (l < 10000)
+                    {
                         return $"VARCHAR({l})";
+                    }
+
                     return l < 65535 ? "TEXT" : "LONGTEXT";
                 case DbType.Binary:
                 case DbType.Object:
