@@ -20,7 +20,15 @@ namespace SimpleStack.Orm.Expressions
 
         protected override StatementPart VisitMemberAccess(MemberExpression m)
         {
-            if (m.Member.DeclaringType == typeof(DateTime))
+            //Nullable support HasValue
+            if (m.Member.DeclaringType != null && 
+                Nullable.GetUnderlyingType(m.Member.DeclaringType) != null &&
+                m.Member.Name == "HasValue")
+            {
+                return new StatementPart(Visit(m.Expression) + " IS NOT NULL");
+            }
+            
+            if (m.Member.DeclaringType == typeof(DateTime) || m.Member.DeclaringType == typeof(DateTime?))
             {
                 return VisitDateTimeMemberAccess(m);
             }

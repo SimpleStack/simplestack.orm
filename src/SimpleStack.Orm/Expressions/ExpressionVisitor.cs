@@ -396,10 +396,18 @@ namespace SimpleStack.Orm.Expressions
 
         protected virtual StatementPart VisitDateTimeMemberAccess(MemberExpression m)
         {
-            var quotedColName = Visit(m.Expression);
-
+            StatementPart quotedColName;
+            
+            if (m.Expression is MemberExpression me && me.Member.Name == "Value")
+            {
+                quotedColName = Visit(me.Expression);
+            }
+            else
+            {
+                quotedColName = Visit(m.Expression);
+            }
+            
             string statement;
-
             switch (m.Member.Name)
             {
                 case "Year":

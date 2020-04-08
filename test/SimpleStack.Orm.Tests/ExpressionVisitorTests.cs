@@ -22,7 +22,8 @@ namespace SimpleStack.Orm.Tests
                 c.Insert(new TestType2
                 {
                     Id = 2, BoolCol = true, DateCol = new DateTime(2012, 2, 1), TextCol = "asdf123",
-                    EnumCol = TestEnum.Val1, GuidCol = Guid.NewGuid()
+                    EnumCol = TestEnum.Val1, GuidCol = Guid.NewGuid(),
+                    NullableDateCol = new DateTime(2014,1,25)
                 });
                 c.Insert(new TestType2
                 {
@@ -32,7 +33,8 @@ namespace SimpleStack.Orm.Tests
                 c.Insert(new TestType2
                 {
                     Id = 4, BoolCol = false, DateCol = new DateTime(2012, 4, 1), TextCol = "qwer123",
-                    EnumCol = TestEnum.Val3, GuidCol = Guid.NewGuid()
+                    EnumCol = TestEnum.Val3, GuidCol = Guid.NewGuid(),
+                    NullableDateCol = new DateTime(2014,1,25)
                 });
             }
         }
@@ -205,14 +207,6 @@ namespace SimpleStack.Orm.Tests
 
             using (var conn = OpenDbConnection())
             {
-//				Assert.AreEqual(2012, conn.GetScalar<TestType2, int>(x => Sql.Year(x.DateCol)));
-//				Assert.AreEqual(11, conn.GetScalar<TestType2, int>(x => Sql.Month(x.DateCol)));
-//				Assert.AreEqual(4, conn.GetScalar<TestType2, int>(x => Sql.Quarter(x.DateCol)));
-//				Assert.AreEqual(2, conn.GetScalar<TestType2, int>(x => Sql.Day(x.DateCol)));
-//				Assert.AreEqual(3, conn.GetScalar<TestType2, int>(x => Sql.Hour(x.DateCol)));
-//				Assert.AreEqual(4, conn.GetScalar<TestType2, int>(x => Sql.Minute(x.DateCol)));
-//				Assert.AreEqual(5, conn.GetScalar<TestType2, int>(x => Sql.Second(x.DateCol)));
-
                 Assert.AreEqual(2012, conn.GetScalar<TestType2, int>(x => x.DateCol.Year));
                 Assert.AreEqual(11, conn.GetScalar<TestType2, int>(x => x.DateCol.Month));
                 Assert.AreEqual(2, conn.GetScalar<TestType2, int>(x => x.DateCol.Day));
@@ -221,6 +215,9 @@ namespace SimpleStack.Orm.Tests
                 Assert.AreEqual(5, conn.GetScalar<TestType2, int>(x => x.DateCol.Second));
 
                 Assert.AreEqual(3, conn.Select<TestType2>(x => x.DateCol.Hour == 3).First().DateCol.Hour);
+                
+                //Check nullable
+                Assert.AreEqual(2014,conn.GetScalar<TestType2,int>(x => x.NullableDateCol.Value.Year, x => x.NullableDateCol.HasValue));
             }
         }
 
@@ -484,6 +481,29 @@ namespace SimpleStack.Orm.Tests
                 Assert.AreEqual(2, target.Count());
             }
         }
+
+        [Test]
+        public void Can_Select_Using_Nullable_HasValue()
+        {
+            SetupContext();
+            using (var conn = OpenDbConnection())
+            {
+                var target = conn.Select<TestType2>(q => q.NullableDateCol.HasValue);
+                Assert.AreEqual(2, target.Count());
+            }
+        }
+        
+        
+        [Test]
+        public void Can_Select_Using_Null_comparison()
+        {
+            SetupContext();
+            using (var conn = OpenDbConnection())
+            {
+                var target = conn.Select<TestType2>(q => q.NullableDateCol == null);
+                Assert.AreEqual(2, target.Count());
+            }
+        }
     }
 
     /// <summary>Values that represent TestEnum.</summary>
@@ -525,6 +545,10 @@ namespace SimpleStack.Orm.Tests
         /// <summary>Gets or sets the Date/Time of the date col.</summary>
         /// <value>The date col.</value>
         public DateTime DateCol { get; set; }
+        
+        /// <summary>Gets or sets the Date/Time of the date col.</summary>
+        /// <value>The date col.</value>
+        public DateTime? NullableDateCol { get; set; }
 
         /// <summary>Gets or sets the enum col.</summary>
         /// <value>The enum col.</value>
