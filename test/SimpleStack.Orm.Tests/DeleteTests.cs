@@ -19,7 +19,7 @@ namespace SimpleStack.Orm.Tests
         }
 
         [Test]
-        public void CanDedleteWithoutPrimaryKey()
+        public void CanDeleteWithoutPrimaryKey()
         {
             using (var db = OpenDbConnection())
             {
