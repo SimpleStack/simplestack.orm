@@ -41,7 +41,7 @@ namespace SimpleStack.Orm.Tests
             OpenDbConnection().CreateTable<TestType2>(true);
         }
 
-        private readonly IDialectProvider _dialectProvider;
+        private readonly OrmConnectionFactory _connectionFactory;
 
         public class GuidAsByteArray : ITypeHandlerColumnType
         {
@@ -128,20 +128,16 @@ namespace SimpleStack.Orm.Tests
 
         private OrmConnection _conn;
 
-        protected ExpressionTests(IDialectProvider dialectProvider)
+        protected ExpressionTests(IDialectProvider dialectProvider, string connectionString)
         {
-            _dialectProvider = dialectProvider;
-            //BasicConfigurator.Configure(new DebugAppender{Layout =  new SimpleLayout()});
+            _connectionFactory = new OrmConnectionFactory(dialectProvider,connectionString);
         }
-
-        protected abstract string ConnectionString { get; }
 
         protected OrmConnection OpenDbConnection()
         {
             if (_conn?.DbConnection == null)
             {
-                _conn = _dialectProvider.CreateConnection(ConnectionString);
-                _conn.Open();
+                _conn = _connectionFactory.OpenConnection();
             }
 
             return _conn;
@@ -210,12 +206,9 @@ namespace SimpleStack.Orm.Tests
 
     public class PostgreSQLTests : ExpressionTests
     {
-        public PostgreSQLTests() : base(new PostgreSQLDialectProvider())
+        public PostgreSQLTests() : base(new PostgreSQLDialectProvider(),"server=localhost;user id=postgres;password=depfac$2000;database=test;Enlist=true")
         {
         }
-
-        protected override string ConnectionString =>
-            "server=localhost;user id=postgres;password=depfac$2000;database=test;Enlist=true";
     }
 #if NET45 || NET451
 	public class MySQLTests : ExpressionTests
@@ -229,29 +222,23 @@ namespace SimpleStack.Orm.Tests
 #endif
     public class MySQLConnectorTests : ExpressionTests
     {
-        protected override string ConnectionString => "server=localhost;user=root;password=depfac$2000;database=test";
-
-        public MySQLConnectorTests() : base(new MySqlConnectorDialectProvider())
+        public MySQLConnectorTests() : base(new MySqlConnectorDialectProvider(),"server=localhost;user=root;password=depfac$2000;database=test")
         {
         }
     }
 
     public class MySQLTests : ExpressionTests
     {
-        protected override string ConnectionString => "server=localhost;user=root;password=depfac$2000;database=test";
-
-        public MySQLTests() : base(new MySqlDialectProvider())
+        public MySQLTests() : base(new MySqlDialectProvider(), "server=localhost;user=root;password=depfac$2000;database=test")
         {
         }
     }
 
     public class SQLServerTests : ExpressionTests
     {
-        public SQLServerTests() : base(new SqlServerDialectProvider())
+        public SQLServerTests() : base(new SqlServerDialectProvider(),@"server=localhost;User id=sa;Password=depfac$2000;database=test")
         {
         }
-
-        protected override string ConnectionString => @"server=localhost;User id=sa;Password=depfac$2000;database=test";
     }
 
     public class SQLLiteTests : ExpressionTests
@@ -262,27 +249,25 @@ namespace SimpleStack.Orm.Tests
 
             SqlMapper.AddTypeHandler(typeof(Guid), new GuidAsByteArray());
         }
-
-        private readonly SqliteConnectionStringBuilder builder;
-
-        public SQLLiteTests() : base(new SqliteDialectProvider())
+        public SQLLiteTests() : base(new SqliteDialectProvider(), GetConnectionString())
         {
-            builder = new SqliteConnectionStringBuilder();
+
+        }
+
+        private static string GetConnectionString()
+        {
+            var builder = new SqliteConnectionStringBuilder();
             builder.DataSource = Path.Combine(Path.GetTempPath(), "test.db");
             builder.Mode = SqliteOpenMode.ReadWriteCreate;
             builder.Cache = SqliteCacheMode.Shared;
+            return builder.ToString();
         }
-
-        protected override string ConnectionString => builder.ToString();
     }
 
     public class SDQLiteTests : ExpressionTests
     {
-        public SDQLiteTests() : base(new SDSQLite.SqliteDialectProvider())
+        public SDQLiteTests() : base(new SDSQLite.SqliteDialectProvider(),$"Data Source={Path.Combine(Path.GetTempPath(), "test.db")};Version=3;New=True;BinaryGUID=False")
         {
         }
-
-        protected override string ConnectionString =>
-            $"Data Source={Path.Combine(Path.GetTempPath(), "test.db")};Version=3;New=True;BinaryGUID=False";
     }
 }

@@ -63,10 +63,10 @@ namespace SimpleStack.Orm.Tests
             CreateModelWithFieldsOfDifferentTypes();
             using (var conn = OpenDbConnection())
             {
-                var v = new TypedSelectStatement<ModelWithFieldsOfDifferentTypes>(_dialectProvider);
+                var v = new TypedSelectStatement<ModelWithFieldsOfDifferentTypes>(_connectionFactory.DialectProvider);
                 v.Where(x => x.Bool);
 
-                var select = _dialectProvider.ToSelectStatement(v.Statement, CommandFlags.None);
+                var select = _connectionFactory.DialectProvider.ToSelectStatement(v.Statement, CommandFlags.None);
 
                 Assert.AreEqual(5, conn.Count<ModelWithFieldsOfDifferentTypes>(x => { x.Where(q => q.Bool); }));
             }
