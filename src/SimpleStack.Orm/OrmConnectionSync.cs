@@ -238,29 +238,13 @@ namespace SimpleStack.Orm
             return DeleteAllAsync(where).Result;
         }
 
-//		/// <summary>An OrmConnection method that deletes this object.</summary>
-//		/// <typeparam name="T">Generic type parameter.</typeparam>
-//		/// <param name="where"> The where.</param>
-//		/// <returns>An int.</returns>
-//		public int DeleteAll<T>(Func<SqlExpressionVisitor<T>, SqlExpressionVisitor<T>> where)
-//		{
-//			return DeleteAllAsync(where).Result;
-//		}
-//
-//		/// <param name="where"> The where.</param>
-//		/// <returns>An int.</returns>
-//		public int DeleteAll<T>(SqlExpressionVisitor<T> where)
-//		{
-//			return DeleteAllAsync(where).Result;
-//		}
-
-/// <summary>
-///     Delete a single item based on primary key values
-/// </summary>
-/// <typeparam name="T"></typeparam>
-/// <param name="obj"></param>
-/// <returns></returns>
-public int Delete<T>(T obj)
+        /// <summary>
+        ///     Delete a single item based on primary key values
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        public int Delete<T>(T obj)
         {
             return DeleteAsync(obj).Result;
         }
