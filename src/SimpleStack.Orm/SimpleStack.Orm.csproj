@@ -4,7 +4,6 @@
     <Description>Lite ORM framework based on Dapper and SQL Query Generation from ServiceStack/NServicekit</Description>
     <VersionPrefix>1.0.2</VersionPrefix>
     <Authors>SimpleStack Team;NServiceKit;ServiceStack</Authors>
-    <TargetFrameworks>netstandard1.5</TargetFrameworks>
     <AssemblyName>SimpleStack.Orm</AssemblyName>
     <PackageId>SimpleStack.Orm</PackageId>
     <PackageTags>Orm;Dapper;SQL Generator</PackageTags>
@@ -16,6 +15,7 @@
     <AssemblyVersion>1.2.0.0</AssemblyVersion>
     <FileVersion>1.2.0.0</FileVersion>
     <PackageVersion>1.2.0-beta98</PackageVersion>
+    <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>

@@ -97,6 +97,21 @@ namespace SimpleStack.Orm
             _isOpen = true;
         }
 
+        public override DataTable GetSchema()
+        {
+            return DbConnection.GetSchema();
+        }
+
+        public override DataTable GetSchema(string collectionName)
+        {
+            return DbConnection.GetSchema(collectionName);
+        }
+
+        public override DataTable GetSchema(string collectionName, string[] restrictionValues)
+        {
+            return DbConnection.GetSchema(collectionName, restrictionValues);
+        }
+
         protected override DbCommand CreateDbCommand()
         {
             var cmd = new OrmCommand(DbConnection.CreateCommand());
