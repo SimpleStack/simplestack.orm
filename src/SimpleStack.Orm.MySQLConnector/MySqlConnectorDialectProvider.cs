@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using Dapper;
-using MySql.Data.MySqlClient;
+using MySqlConnector;
 using SimpleStack.Orm.MySQL;
 
 namespace SimpleStack.Orm.MySQLConnector
