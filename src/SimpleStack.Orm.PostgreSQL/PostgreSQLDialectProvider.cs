@@ -193,11 +193,13 @@ internal static string ToBinary(object NativeData)
                 sqlQuery += " AND table_schema = @SchemaName";
             }
 
+            var table = string.IsNullOrEmpty(schemaName) ? tableName : $"{schemaName}.{tableName}"; 
+
             var pks = connection.Query($@"SELECT a.attname
                 FROM   pg_index i
                 JOIN   pg_attribute a ON a.attrelid = i.indrelid
                                      AND a.attnum = ANY(i.indkey)
-                WHERE  i.indrelid = '{tableName}'::regclass
+                WHERE  i.indrelid = '{table}'::regclass
                 AND    i.indisprimary;").ToArray();
 
             foreach (var c in connection.Query<ColumnInformationSchema>(sqlQuery, new
