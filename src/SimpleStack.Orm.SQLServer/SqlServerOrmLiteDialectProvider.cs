@@ -22,7 +22,10 @@ namespace SimpleStack.Orm.SqlServer
             AutoIncrementDefinition = "IDENTITY(1,1)";
             base.SelectIdentitySql = "SELECT SCOPE_IDENTITY()";
         }
-
+        public override string GetQuotedColumnName(string columnName)
+        {
+            return $"[{NamingStrategy.GetColumnName(columnName)}]";
+        }
 
         /// <summary>Creates a connection.</summary>
         /// <param name="connectionString">The connection string.</param>
