@@ -75,7 +75,7 @@ namespace SimpleStack.Orm.Tests
         }
 
         [Test]
-        public void Can_Select_Logical_Bitwise_leftshift_int_expression()
+        public virtual void Can_Select_Logical_Bitwise_leftshift_int_expression()
         {
             var p = 3;
 
@@ -112,7 +112,7 @@ namespace SimpleStack.Orm.Tests
         }
 
         [Test]
-        public void Can_Select_Logical_Bitwise_rightshift_int_expression()
+        public virtual void Can_Select_Logical_Bitwise_rightshift_int_expression()
         {
             var p = 3;
 
@@ -130,7 +130,7 @@ namespace SimpleStack.Orm.Tests
         }
 
         [Test]
-        public void Can_Select_Logical_Bitwise_xor_int_expression()
+        public virtual void Can_Select_Logical_Bitwise_xor_int_expression()
         {
             var p = 3;
 
