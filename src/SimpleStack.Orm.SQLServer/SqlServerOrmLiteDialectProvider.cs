@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
-using System.Data.SqlClient;
 using System.IO;
 using System.Text;
 using Dapper;
+using Microsoft.Data.SqlClient;
 using SimpleStack.Orm.Expressions.Statements;
 
 namespace SimpleStack.Orm.SqlServer
