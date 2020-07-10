@@ -209,26 +209,26 @@ namespace SimpleStack.Orm
             return UpdateAllAsync(obj, onlyField, where).Result;
         }
 
-        public void Insert<T>(T obj)
+        public int Insert<T>(T obj)
         {
-            InsertAsync(obj).Wait();
+            return InsertAsync(obj).Result;
         }
 
         /// <summary>An OrmConnection method that inserts all.</summary>
         /// <typeparam name="T">Generic type parameter.</typeparam>
         /// <param name="objs">  The objects.</param>
-        public void Insert<T>(IEnumerable<T> objs)
+        public IEnumerable<int> Insert<T>(IEnumerable<T> objs)
         {
-            InsertAsync(objs).Wait();
+            return InsertAsync(objs).Result;
         }
 
         /// <summary>An OrmConnection method that inserts an only.</summary>
         /// <typeparam name="T">Generic type parameter.</typeparam>
         /// <param name="obj">       The object.</param>
         /// <param name="onlyFields">The only fields.</param>
-        public void InsertOnly<T>(T obj, Expression<Func<T, object>> onlyField = null) where T : new()
+        public int InsertOnly<T>(T obj, Expression<Func<T, object>> onlyField = null) where T : new()
         {
-            InsertOnlyAsync(obj, onlyField).Wait();
+            return InsertOnlyAsync(obj, onlyField).Result;
         }
 
         /// <param name="where"> The where.</param>

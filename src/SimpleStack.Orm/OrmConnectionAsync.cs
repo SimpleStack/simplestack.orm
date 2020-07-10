@@ -243,9 +243,8 @@ namespace SimpleStack.Orm
                 var insertStatement = new TypedInsertStatement<T>(DialectProvider);
                 insertStatement.Values(obj, new List<string>());
 
-                await this.ExecuteScalarAsync<int>(
+                return await this.ExecuteScalarAsync<int>(
                     DialectProvider.ToInsertStatement(insertStatement.Statement, CommandFlags.None));
-                return 1;
             }
             catch (Exception e)
             {
@@ -256,21 +255,20 @@ namespace SimpleStack.Orm
         /// <summary>An OrmConnection method that inserts all.</summary>
         /// <typeparam name="T">Generic type parameter.</typeparam>
         /// <param name="objs">  The objects.</param>
-        public async Task<int> InsertAsync<T>(IEnumerable<T> objs)
+        public async Task<IEnumerable<int>> InsertAsync<T>(IEnumerable<T> objs)
         {
-            var count = 0;
+            List<int> result = new List<int>();
             foreach (var t in objs)
             {
                 //TODO: Optimize this only generating query once and use different parameters
                 var insertStatement = new TypedInsertStatement<T>(DialectProvider);
                 insertStatement.Values(t, new List<string>());
 
-                await this.ExecuteScalarAsync<int>(
-                    DialectProvider.ToInsertStatement(insertStatement.Statement, CommandFlags.None));
-                count++;
+                result.Add(await this.ExecuteScalarAsync<int>(
+                    DialectProvider.ToInsertStatement(insertStatement.Statement, CommandFlags.None)));
             }
 
-            return count;
+            return result;
         }
 
         /// <summary>An OrmConnection method that inserts an only.</summary>
