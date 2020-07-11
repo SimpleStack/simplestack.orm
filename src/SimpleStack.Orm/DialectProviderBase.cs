@@ -369,11 +369,11 @@ namespace SimpleStack.Orm
             {
                 if (fd.IsComputed)
                 {
-                    yield return $"{fd.ComputeExpression} AS {fd.Name}";
+                    yield return $"{fd.ComputeExpression} AS {GetQuotedColumnName(fd.Name)}";
                 }
                 else if (fd.FieldName != fd.Name)
                 {
-                    yield return $"{GetQuotedColumnName(fd.FieldName)} AS {fd.Name}";
+                    yield return $"{GetQuotedColumnName(fd.FieldName)} AS {GetQuotedColumnName(fd.Name)}";
                 }
                 else
                 {
