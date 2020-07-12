@@ -4,7 +4,7 @@ using System.Data;
 using System.Data.Common;
 using System.Linq;
 using Dapper;
-using MySql.Data.MySqlClient;
+using MySqlConnector;
 using SimpleStack.Orm.MySQL;
 
 namespace SimpleStack.Orm.MySQLConnector
