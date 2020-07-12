@@ -12,6 +12,7 @@ namespace SimpleStack.Orm
         string Definition { get; }
         DbType DbType { get; }
         bool PrimaryKey { get; }
+        bool Unique { get; }
         string DefaultValue { get; }
     }
 
@@ -38,6 +39,8 @@ namespace SimpleStack.Orm
 
         /// <inheritdoc />
         public bool PrimaryKey { get; set; }
+
+        public bool Unique { get; set; }
 
         /// <inheritdoc />
         public string DefaultValue { get; set; }

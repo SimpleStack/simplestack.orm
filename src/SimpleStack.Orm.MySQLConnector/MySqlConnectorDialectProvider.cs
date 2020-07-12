@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Linq;
 using Dapper;
 using MySql.Data.MySqlClient;
 using SimpleStack.Orm.MySQL;
@@ -96,13 +97,24 @@ namespace SimpleStack.Orm.MySQLConnector
         public override IEnumerable<IColumnDefinition> GetTableColumnDefinitions(IDbConnection connection,
             string tableName, string schemaName = null)
         {
-            var sqlQuery = "select * from INFORMATION_SCHEMA.COLUMNS where TABLE_NAME = @TableName";
+            var whereClause = " TABLE_NAME = @TableName";
             if (!string.IsNullOrWhiteSpace(schemaName))
             {
-                sqlQuery += " AND TABLE_SCHEMA = @SchemaName";
-            }
+                whereClause += " AND TABLE_SCHEMA = @SchemaName";
+            }  
+            
+            //Select Index with only one column to detect Unique columns
+            var indexQuery = @"SELECT COLUMN_NAME, NON_UNIQUE 
+                            FROM INFORMATION_SCHEMA.STATISTICS 
+                            WHERE INDEX_NAME NOT IN (SELECT INDEX_NAME FROM INFORMATION_SCHEMA.STATISTICS WHERE SEQ_IN_INDEX = 2 AND "+ whereClause + ") AND "+whereClause;
+            
+            var columnQuery = "SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE " + whereClause;
 
-            foreach (var c in connection.Query<InformationSchema>(sqlQuery,
+            var indexedColumns = connection.Query(indexQuery, new {TableName = tableName, SchemaName = schemaName})
+                .ToDictionary(x => (string)x.COLUMN_NAME, x => (bool) (x.NON_UNIQUE == 0));
+            
+
+            foreach (var c in connection.Query<InformationSchema>(columnQuery,
                 new {TableName = tableName, SchemaName = schemaName}))
             {
                 var ci = GetDbType(c.DATA_TYPE, c.CHARACTER_MAXIMUM_LENGTH, c.COLUMN_TYPE);
@@ -114,12 +126,14 @@ namespace SimpleStack.Orm.MySQLConnector
                     DefaultValue = c.COLUMN_DEFAULT,
                     Nullable = c.IS_NULLABLE == "YES",
                     PrimaryKey = c.COLUMN_KEY == "PRI",
+                    Unique = indexedColumns.ContainsKey(c.COLUMN_NAME) && indexedColumns[c.COLUMN_NAME],
                     Length = c.CHARACTER_MAXIMUM_LENGTH,
                     DbType = c.COLUMN_TYPE == "tinyint(1)" ? DbType.Boolean : ci,
                     Precision = c.NUMERIC_PRECISION,
                     Scale = c.NUMERIC_SCALE
                 };
             }
+
         }
 
         protected virtual DbType GetDbType(string dataType, int? length, string columnType)
