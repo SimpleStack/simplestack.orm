@@ -447,13 +447,13 @@ namespace SimpleStack.Orm
             await this.ExecuteAsync(DialectProvider.GetDropTableStatement(modelDef));
         }
 
-        public async Task<IEnumerable<ITableDefinition>> GetTablesInformationAsync(string schemaName = null,
+        public async Task<IEnumerable<ITableDefinition>> GetTablesAsync(string schemaName = null,
             bool includeViews = false)
         {
             return await DialectProvider.GetTableDefinitions(DbConnection, schemaName, includeViews);
         }
 
-        public async Task<IEnumerable<IColumnDefinition>> GetTableColumnsInformationAsync(string tableName,
+        public async Task<IEnumerable<IColumnDefinition>> GetTableColumnsAsync(string tableName,
             string schemaName = null)
         {
             return await Task.Run(() => DialectProvider.GetTableColumnDefinitions(DbConnection, tableName, schemaName));

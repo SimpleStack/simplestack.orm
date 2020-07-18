@@ -260,7 +260,7 @@ namespace SimpleStack.Orm.Tests
             using (var db = OpenDbConnection())
             {
                 db.CreateTable<TestType2>(true);
-                var columns = db.GetTableColumnsInformation("TestType2").ToArray();
+                var columns = db.GetTableColumns("TestType2").ToArray();
                 Assert.AreEqual(9, columns.Length);
 
                 Assert.AreEqual("id", columns[0].Name.ToLower());

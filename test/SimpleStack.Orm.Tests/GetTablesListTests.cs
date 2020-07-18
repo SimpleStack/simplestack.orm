@@ -13,7 +13,7 @@ namespace SimpleStack.Orm.Tests
                 db.CreateTable<CompositeMember>(true);
                 db.CreateTable<TestType2>(true);
 
-                var tables = db.GetTablesInformation().ToArray();
+                var tables = db.GetTables().ToArray();
                 Assert.True(tables.Any(x => x.Name.ToLower() == "testtype2"));
                 Assert.True(tables.All(x => !string.IsNullOrWhiteSpace(x.SchemaName)));
             }

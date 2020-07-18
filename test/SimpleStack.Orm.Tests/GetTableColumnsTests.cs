@@ -16,7 +16,7 @@ namespace SimpleStack.Orm.Tests
             {
                 db.CreateTable<TestType2>(true);
 
-                var columns = db.GetTableColumnsInformation("TestType2").ToArray();
+                var columns = db.GetTableColumns("TestType2").ToArray();
                 Assert.AreEqual(8, columns.Length);
                 
                 Assert.AreEqual("id", columns[0].Name.ToLower());

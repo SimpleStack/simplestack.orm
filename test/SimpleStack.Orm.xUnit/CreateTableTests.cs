@@ -119,7 +119,7 @@ namespace SimpleStack.Orm.xUnit
 
                 Assert.True(await c.TableExistsAsync<WithSchemaAndAlias>());
 
-                Assert.NotEmpty(c.GetTablesInformation("TS")
+                Assert.NotEmpty(c.GetTables("TS")
                     .Select(x => x.SchemaName == "TS" && x.Name == "withaliasansschema"));
 
                 c.Select<WithSchemaAndAlias>(x =>
@@ -238,7 +238,7 @@ namespace SimpleStack.Orm.xUnit
             {
                 conn.CreateTable<WithAttributes>(true);
 
-                var t = conn.GetTableColumnsInformation("WithAttributes").ToList();
+                var t = conn.GetTableColumns("WithAttributes").ToList();
 
                 Assert.NotNull(t);
                 Assert.NotEmpty(t);
