@@ -42,20 +42,6 @@ namespace SimpleStack.Orm
             return false;
         }
 
-        /// <summary>Clears the cache.</summary>
-        internal static void ClearCache()
-        {
-            typeModelDefinitionMap = new Dictionary<Type, ModelDefinition>();
-        }
-
-        /// <summary>A Type extension method that initialises this object.</summary>
-        /// <param name="modelType">The modelType to act on.</param>
-        /// <returns>A ModelDefinition.</returns>
-        public static ModelDefinition Init(this Type modelType)
-        {
-            return modelType.GetModelDefinition();
-        }
-
         /// <summary>A Type extension method that gets model definition.</summary>
         /// <param name="modelType">The modelType to act on.</param>
         /// <returns>The model definition.</returns>

@@ -20,17 +20,8 @@ namespace SimpleStack.Orm
     /// <summary>A model definition.</summary>
     public class ModelDefinition
     {
-        /// <summary>Array of field definitions.</summary>
-        private FieldDefinition[] _fieldDefinitionsArray;
-
-        /// <summary>Array of all field definitions.</summary>
-        private FieldDefinition[] allFieldDefinitionsArray;
-
-        /// <summary>Array of ignored field definitions.</summary>
-        private FieldDefinition[] ignoredFieldDefinitionsArray;
-
         /// <summary>
-        ///     Initializes a new instance of the NServiceKit.OrmLite.ModelDefinition class.
+        ///     Initializes a new instance of the ModelDefinition class.
         /// </summary>
         public ModelDefinition()
         {
@@ -63,10 +54,6 @@ namespace SimpleStack.Orm
         /// <value>The type of the model.</value>
         public Type ModelType { get; set; }
 
-        /// <summary>Gets or sets the SQL select all from table.</summary>
-        /// <value>The SQL select all from table.</value>
-        //public string SqlSelectAllFromTable { get; set; }
-
         /// <summary>Gets the primary key.</summary>
         /// <value>The primary key.</value>
         public FieldDefinition PrimaryKey
@@ -78,56 +65,9 @@ namespace SimpleStack.Orm
         /// <value>The field definitions.</value>
         public List<FieldDefinition> FieldDefinitions { get; set; }
 
-        /// <summary>Gets an array of field definitions.</summary>
-        /// <value>An Array of field definitions.</value>
-        public FieldDefinition[] FieldDefinitionsArray
-        {
-            get
-            {
-                if (_fieldDefinitionsArray == null)
-                {
-                    _fieldDefinitionsArray = FieldDefinitions.ToArray();
-                }
-
-                return _fieldDefinitionsArray;
-            }
-        }
-
         /// <summary>Gets or sets the ignored field definitions.</summary>
         /// <value>The ignored field definitions.</value>
         public List<FieldDefinition> IgnoredFieldDefinitions { get; set; }
-
-        /// <summary>Gets an array of ignored field definitions.</summary>
-        /// <value>An Array of ignored field definitions.</value>
-        public FieldDefinition[] IgnoredFieldDefinitionsArray
-        {
-            get
-            {
-                if (ignoredFieldDefinitionsArray == null)
-                {
-                    ignoredFieldDefinitionsArray = IgnoredFieldDefinitions.ToArray();
-                }
-
-                return ignoredFieldDefinitionsArray;
-            }
-        }
-
-        /// <summary>Gets an array of all field definitions.</summary>
-        /// <value>An Array of all field definitions.</value>
-        public FieldDefinition[] AllFieldDefinitionsArray
-        {
-            get
-            {
-                if (allFieldDefinitionsArray == null)
-                {
-                    var allItems = new List<FieldDefinition>(FieldDefinitions);
-                    allItems.AddRange(IgnoredFieldDefinitions);
-                    allFieldDefinitionsArray = allItems.ToArray();
-                }
-
-                return allFieldDefinitionsArray;
-            }
-        }
 
         /// <summary>Gets or sets the composite indexes.</summary>
         /// <value>The composite indexes.</value>
@@ -147,7 +87,7 @@ namespace SimpleStack.Orm
         /// <typeparam name="T">Generic type parameter.</typeparam>
         /// <param name="field">The field.</param>
         /// <returns>The field name.</returns>
-        private string GetFieldName<T>(Expression<Func<T, object>> field)
+        private static string GetFieldName<T>(Expression<Func<T, object>> field)
         {
             var lambda = field as LambdaExpression;
             if (lambda.Body.NodeType == ExpressionType.MemberAccess)
@@ -156,8 +96,8 @@ namespace SimpleStack.Orm
                 return me.Member.Name;
             }
 
-            var operand = (lambda.Body as UnaryExpression).Operand;
-            return (operand as MemberExpression).Member.Name;
+            var operand = (lambda.Body as UnaryExpression)?.Operand;
+            return (operand as MemberExpression)?.Member.Name;
         }
     }
 
@@ -166,20 +106,11 @@ namespace SimpleStack.Orm
     public static class ModelDefinition<T>
     {
         /// <summary>The definition.</summary>
-        private static ModelDefinition definition;
+        // ReSharper disable once StaticMemberInGenericType
+        private static ModelDefinition _definition;
 
         /// <summary>Gets the definition.</summary>
         /// <value>The definition.</value>
-        public static ModelDefinition Definition => definition ?? (definition = typeof(T).GetModelDefinition());
-
-        ///// <summary>Name of the primary key.</summary>
-        //private static string primaryKeyName;
-
-        ///// <summary>Gets the name of the primary key.</summary>
-        ///// <value>The name of the primary key.</value>
-        //public static string PrimaryKeyName
-        //{
-        //	get { return primaryKeyName ?? (primaryKeyName = Definition.PrimaryKey.FieldName); }
-        //}
+        public static ModelDefinition Definition => _definition ?? (_definition = typeof(T).GetModelDefinition());
     }
 }
