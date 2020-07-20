@@ -10,7 +10,7 @@ namespace SimpleStack.Orm.SqlServer
         public override string GetFieldDefinition(DbType type, int? length = null, int? scale = null,
             int? precision = null)
         {
-            var l = length ?? 4000;
+            var l = length ?? DefaultStringLength;
             switch (type)
             {
                 case DbType.AnsiStringFixedLength:
@@ -42,9 +42,9 @@ namespace SimpleStack.Orm.SqlServer
                 case DbType.Currency:
                     return "money";
                 case DbType.Decimal:
-                    return $"decimal({precision ?? 18},{scale ?? 0})";
+                    return $"decimal({precision ?? DefaultPrecision},{scale ?? DefaultScale})";
                 case DbType.VarNumeric:
-                    return $"numeric({precision ?? 18}, {scale ?? 0})";
+                    return $"numeric({precision ?? DefaultPrecision}, {scale ?? DefaultScale})";
                 case DbType.Date:
                     return "DATE";
                 case DbType.DateTime:

@@ -39,7 +39,7 @@ namespace SimpleStack.Orm.PostgreSQL
                 case DbType.Double:
                     return "double precision";
                 case DbType.Decimal:
-                    return $"decimal({precision ?? 38},{scale ?? 6})";
+                    return $"decimal({precision ?? DefaultPrecision},{scale ?? DefaultScale})";
                 case DbType.Currency:
                     return "money";
                 case DbType.Date:

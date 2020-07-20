@@ -209,17 +209,13 @@ namespace SimpleStack.Orm.Tests
         public PostgreSQLTests() : base(new PostgreSQLDialectProvider(),"server=localhost;user id=postgres;password=depfac$2000;database=test;Enlist=true")
         {
         }
-    }
-#if NET45 || NET451
-	public class MySQLTests : ExpressionTests
-	{
-		protected override string ConnectionString => "server=localhost;user=root;password=depfac$2000;database=test";
 
-		public MySQLTests() : base(new MySqlDialectProvider())
-		{
-		}
-	}
-#endif
+        public override void CanSetDefaultTypeMapperLength()
+        {
+            // Ignored, Postgresql uses Text all the time for performance reason (length is ignored)
+        }
+    }
+
     public class MySQLConnectorTests : ExpressionTests
     {
         public MySQLConnectorTests() : base(new MySqlConnectorDialectProvider(),"server=localhost;user=root;password=depfac$2000;database=test")
