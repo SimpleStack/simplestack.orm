@@ -17,6 +17,8 @@
         <FileVersion>1.2.0.0</FileVersion>
         <PackageVersion>1.2.0-beta98</PackageVersion>
         <RootNamespace>SimpleStack.Orm.SDSQlite</RootNamespace>
+        <PackageProjectUrl>https://simplestack.org/</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/SimpleStack/simplestack.orm</RepositoryUrl>
     </PropertyGroup>
     
     <PropertyGroup>
