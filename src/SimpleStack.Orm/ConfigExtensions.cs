@@ -11,7 +11,7 @@ namespace SimpleStack.Orm
     internal static class OrmLiteConfigExtensions
     {
         /// <summary>The type model definition map.</summary>
-        private static Dictionary<Type, ModelDefinition> typeModelDefinitionMap =
+        private static Dictionary<Type, ModelDefinition> _typeModelDefinitionMap =
             new Dictionary<Type, ModelDefinition>();
 
         /// <summary>Query if 'theType' is nullable type.</summary>
@@ -28,9 +28,7 @@ namespace SimpleStack.Orm
         /// <returns>The model definition.</returns>
         internal static ModelDefinition GetModelDefinition(this Type modelType)
         {
-            ModelDefinition modelDef;
-
-            if (typeModelDefinitionMap.TryGetValue(modelType, out modelDef))
+            if (_typeModelDefinitionMap.TryGetValue(modelType, out var modelDef))
             {
                 return modelDef;
             }
@@ -61,7 +59,6 @@ namespace SimpleStack.Orm
                 var computeAttr = propertyInfo.FirstAttribute<ComputeAttribute>();
                 var pkAttribute = propertyInfo.FirstAttribute<PrimaryKeyAttribute>();
                 var decimalAttribute = propertyInfo.FirstAttribute<DecimalLengthAttribute>();
-                var belongToAttribute = propertyInfo.FirstAttribute<BelongToAttribute>();
 
                 var isPrimaryKey = pkAttribute != null;
 
@@ -101,17 +98,11 @@ namespace SimpleStack.Orm
                     PropertyInfo = propertyInfo,
                     IsNullable = isNullable,
                     IsPrimaryKey = isPrimaryKey,
-                    AutoIncrement =
-                        isPrimaryKey &&
-                        propertyInfo.FirstAttribute<AutoIncrementAttribute>() != null,
+                    AutoIncrement = isPrimaryKey && propertyInfo.FirstAttribute<AutoIncrementAttribute>() != null,
                     IsIndexed = isIndex,
                     IsUnique = isUnique,
-                    FieldLength =
-                        stringLengthAttr != null
-                            ? stringLengthAttr.MaximumLength
-                            : (int?) null,
-                    DefaultValue =
-                        defaultValueAttr != null ? defaultValueAttr.DefaultValue : null,
+                    FieldLength = stringLengthAttr?.MaximumLength,
+                    DefaultValue = defaultValueAttr?.DefaultValue,
                     ForeignKey =
                         foreignKeyAttr == null
                             ? referencesAttr == null
@@ -122,14 +113,10 @@ namespace SimpleStack.Orm
                                 foreignKeyAttr.OnUpdate,
                                 foreignKeyAttr.ForeignKeyName),
                     GetValueFn = propertyInfo.GetPropertyGetterFn(),
-                    SetValueFn = propertyInfo.GetPropertySetterFn(),
                     Sequence = sequenceAttr != null ? sequenceAttr.Name : string.Empty,
                     IsComputed = computeAttr != null,
                     ComputeExpression = computeAttr != null ? computeAttr.Expression : string.Empty,
-                    Scale = decimalAttribute != null ? decimalAttribute.Scale : (int?) null,
-                    BelongToModelName = belongToAttribute != null
-                        ? belongToAttribute.BelongToTableType.GetModelDefinition().ModelName
-                        : null
+                    Scale = decimalAttribute?.Scale
                 };
 
                 if (propertyInfo.FirstAttribute<IgnoreAttribute>() != null)
@@ -142,18 +129,14 @@ namespace SimpleStack.Orm
                 }
             }
 
-            //modelDef.SqlSelectAllFromTable = String.Format("SELECT {0} FROM {1} ",
-            //	Config.DialectProvider.GetColumnNames(modelDef),
-            //	Config.DialectProvider.GetQuotedTableName(modelDef));
-
             Dictionary<Type, ModelDefinition> snapshot, newCache;
             do
             {
-                snapshot = typeModelDefinitionMap;
-                newCache = new Dictionary<Type, ModelDefinition>(typeModelDefinitionMap);
+                snapshot = _typeModelDefinitionMap;
+                newCache = new Dictionary<Type, ModelDefinition>(_typeModelDefinitionMap);
                 newCache[modelType] = modelDef;
             } while (!ReferenceEquals(
-                Interlocked.CompareExchange(ref typeModelDefinitionMap, newCache, snapshot), snapshot));
+                Interlocked.CompareExchange(ref _typeModelDefinitionMap, newCache, snapshot), snapshot));
 
             return modelDef;
         }

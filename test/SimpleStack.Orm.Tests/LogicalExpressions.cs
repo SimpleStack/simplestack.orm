@@ -77,8 +77,6 @@ namespace SimpleStack.Orm.Tests
         [Test]
         public virtual void Can_Select_Logical_Bitwise_leftshift_int_expression()
         {
-            var p = 3;
-
             using (var conn = OpenDbConnection())
             {
                 conn.Insert(new TestType {Id = 1, BoolColumn = false, IntColumn = 1, StringColumn = "test"});
@@ -114,8 +112,6 @@ namespace SimpleStack.Orm.Tests
         [Test]
         public virtual void Can_Select_Logical_Bitwise_rightshift_int_expression()
         {
-            var p = 3;
-
             using (var conn = OpenDbConnection())
             {
                 conn.Insert(new TestType {Id = 1, BoolColumn = false, IntColumn = 1, StringColumn = "test"});
