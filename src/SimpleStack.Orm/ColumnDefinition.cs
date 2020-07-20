@@ -4,15 +4,54 @@ namespace SimpleStack.Orm
 {
     public interface IColumnDefinition
     {
+        /// <summary>
+        /// Column Name
+        /// </summary>
         string Name { get; }
+        
+        /// <summary>
+        /// Is nullable or not
+        /// </summary>
         bool Nullable { get; }
+        
+        /// <summary>
+        /// Column Length
+        /// </summary>
         int? Length { get; }
+        
+        /// <summary>
+        /// Numeric precision
+        /// </summary>
         int? Precision { get; }
+        
+        /// <summary>
+        /// Numeric Scale
+        /// </summary>
         int? Scale { get; }
+        
+        /// <summary>
+        /// Columns definition as returned by database server
+        /// </summary>
         string Definition { get; }
+        
+        /// <summary>
+        /// Columns type
+        /// </summary>
         DbType DbType { get; }
+        
+        /// <summary>
+        /// True if column is part of the primary key
+        /// </summary>
         bool PrimaryKey { get; }
+        
+        /// <summary>
+        /// True if there is a unique index on that column
+        /// </summary>
         bool Unique { get; }
+        
+        /// <summary>
+        /// Column default value
+        /// </summary>
         string DefaultValue { get; }
     }
 
