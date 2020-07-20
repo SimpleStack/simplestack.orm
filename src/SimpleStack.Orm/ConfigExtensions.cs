@@ -23,25 +23,6 @@ namespace SimpleStack.Orm
                    && theType.GetGenericTypeDefinition() == typeof(Nullable<>);
         }
 
-        /// <summary>Check for identifier field.</summary>
-        /// <param name="objProperties">The object properties.</param>
-        /// <returns>true if it succeeds, false if it fails.</returns>
-        internal static bool CheckForIdField(IEnumerable<PropertyInfo> objProperties)
-        {
-            // Not using Linq.Where() and manually iterating through objProperties just to avoid dependencies on System.Xml??
-            foreach (var objProperty in objProperties)
-            {
-                if (objProperty.Name != Config.IdField)
-                {
-                    continue;
-                }
-
-                return true;
-            }
-
-            return false;
-        }
-
         /// <summary>A Type extension method that gets model definition.</summary>
         /// <param name="modelType">The modelType to act on.</param>
         /// <returns>The model definition.</returns>
@@ -65,18 +46,15 @@ namespace SimpleStack.Orm
             {
                 ModelType = modelType,
                 Name = modelType.Name,
-                Alias = modelAliasAttr != null ? modelAliasAttr.Name : null,
-                Schema = schemaAttr != null ? schemaAttr.Name : null
+                Alias = modelAliasAttr?.Name,
+                Schema = schemaAttr?.Name
             };
 
             modelDef.CompositeIndexes.AddRange(modelType.AlltAttributes<CompositeIndexAttribute>());
 
             var objProperties = modelType.GetProperties(
                 BindingFlags.Public | BindingFlags.Instance).ToList();
-
-            var hasIdField = CheckForIdField(objProperties);
-
-            var i = 0;
+            
             foreach (var propertyInfo in objProperties)
             {
                 var sequenceAttr = propertyInfo.FirstAttribute<SequenceAttribute>();
@@ -84,10 +62,8 @@ namespace SimpleStack.Orm
                 var pkAttribute = propertyInfo.FirstAttribute<PrimaryKeyAttribute>();
                 var decimalAttribute = propertyInfo.FirstAttribute<DecimalLengthAttribute>();
                 var belongToAttribute = propertyInfo.FirstAttribute<BelongToAttribute>();
-                var isFirst = i++ == 0;
 
-                var isPrimaryKey = propertyInfo.Name == Config.IdField /* || (!hasIdField && isFirst)*/ ||
-                                   pkAttribute != null;
+                var isPrimaryKey = pkAttribute != null;
 
                 var isNullableType = IsNullableType(propertyInfo.PropertyType);
 
