@@ -334,6 +334,10 @@ namespace SimpleStack.Orm.Tests
         {
             // Ignored
         }
+        public override void CanSetDefaultTypeMapperLength()
+        {
+            // Ignored, length is ignored in sqlite
+        }
     }
 
     public class SDQLiteTests : ExpressionTests
@@ -349,6 +353,10 @@ namespace SimpleStack.Orm.Tests
         public override void Can_Select_Logical_Bitwise_xor_int_expression()
         {
             // Ignored
+        }
+        public override void CanSetDefaultTypeMapperLength()
+        {
+            // Ignored, length is ignored in sqlite
         }
     }
 }
