@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Dapper;
 using Microsoft.Data.Sqlite;
@@ -12,6 +13,8 @@ namespace SimpleStack.Orm.Sqlite
     /// <summary>A sqlite ORM lite dialect provider base.</summary>
     public class SqliteDialectProvider : DialectProviderBase
     {
+        private static readonly Regex PrecisionAndScaleRegex = new Regex(@"\w+\((?<precision>\d+),?(?<scale>\d+)?\)",RegexOptions.Compiled);
+        
 	    /// <summary>
 	    ///     Initializes a new instance of the NServiceKit.OrmLite.Sqlite.SqliteOrmLiteDialectProviderBase
 	    ///     class.
@@ -123,6 +126,10 @@ namespace SimpleStack.Orm.Sqlite
             var sqlQuery = $"pragma table_info('{tableName}')";
             foreach (var c in connection.Query(sqlQuery))
             {
+                Match m = PrecisionAndScaleRegex.Match(c.type);
+                int? precision = m.Success && m.Groups["precision"].Success ? int.Parse(m.Groups["precision"].Value) : (int?)null;
+                int? scale = m.Success && m.Groups["scale"].Success ? int.Parse(m.Groups["scale"].Value) : (int?)null;
+                
                 yield return new ColumnDefinition
                 {
                     Name = c.name,
@@ -130,6 +137,8 @@ namespace SimpleStack.Orm.Sqlite
                     Nullable = c.notnull == 1,
                     PrimaryKey = c.pk == 1,
                     DefaultValue = c.dflt_value,
+                    Precision = precision,
+                    Scale = scale,
                     DbType = DbType.String
                 };
             }
