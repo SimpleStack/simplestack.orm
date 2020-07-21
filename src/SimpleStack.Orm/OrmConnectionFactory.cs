@@ -13,12 +13,19 @@ namespace SimpleStack.Orm
         }
 
         /// <summary>
-        ///     Default command timeout (in seconds) set on OrmConnections created from the Factory
+        ///    Default command timeout (in seconds) set on OrmConnections created from the Factory
         /// </summary>
         public int DefaultCommandTimeout { get; set; }
 
+        /// <summary>
+        /// Dialect Provider assigned to this factory
+        /// </summary>
         public IDialectProvider DialectProvider { get; }
 
+        /// <summary>
+        /// Open a new connection
+        /// </summary>
+        /// <returns>Opened connection</returns>
         public OrmConnection OpenConnection()
         {
             var conn = DialectProvider.CreateConnection(_connectionString);
@@ -27,6 +34,10 @@ namespace SimpleStack.Orm
             return conn;
         }
 
+        /// <summary>
+        /// Open a new connection asynchronously
+        /// </summary>
+        /// <returns>Opened connection</returns>
         public async Task<OrmConnection> OpenConnectionAsync()
         {
             var conn = DialectProvider.CreateConnection(_connectionString);
@@ -35,6 +46,10 @@ namespace SimpleStack.Orm
             return conn;
         }
 
+        /// <summary>
+        /// Return a string representation of the Factory.
+        /// </summary>
+        /// <returns></returns>
         public override string ToString()
         {
             return DialectProvider.GetType().ToString();

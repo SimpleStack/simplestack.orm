@@ -42,7 +42,7 @@ namespace SimpleStack.Orm
                 }
 
                 trans.Dispose();
-                db.ClearCurrrentTransaction();
+                db.ClearCurrentTransaction();
                 base.Dispose(true);
             }
         }
@@ -64,7 +64,7 @@ namespace SimpleStack.Orm
         {
             //Logger.Debug("Commit");
             trans.Commit();
-            db.ClearCurrrentTransaction();
+            db.ClearCurrentTransaction();
             _isOpen = false;
         }
 
@@ -85,7 +85,7 @@ namespace SimpleStack.Orm
         {
             //Logger.Debug("Rollback");
             trans.Rollback();
-            db.ClearCurrrentTransaction();
+            db.ClearCurrentTransaction();
             _isOpen = false;
         }
     }

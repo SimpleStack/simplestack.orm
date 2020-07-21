@@ -1,51 +1,63 @@
 ﻿using System.Data;
 using System.Data.Common;
 
-//using SimpleStack.Orm.Logging;
-
 namespace SimpleStack.Orm
 {
     public partial class OrmConnection : DbConnection
     {
-        ///// <summary>true if this object is open.</summary>
         private bool _isOpen;
 
-        ///// <summary>
-        ///// Initializes a new instance of the OrmLiteConnection class.
-        ///// </summary>
-        ///// <param name="connection"></param>
-        ///// <param name="dialectProvider"></param>
+        /// <summary>
+        /// Initializes a new instance of the OrmLiteConnection class.
+        /// </summary>
+        /// <param name="connection">The inner Connection</param>
+        /// <param name="dialectProvider">The dialect provider</param>
         internal OrmConnection(DbConnection connection, IDialectProvider dialectProvider)
         {
             DialectProvider = dialectProvider;
             DbConnection = connection;
         }
-        //private static readonly ILog Logger = LogProvider.For<OrmConnection>();
 
+        /// <summary>
+        /// The Dialect Provider attached to this connection
+        /// </summary>
         public IDialectProvider DialectProvider { get; }
 
+        /// <summary>
+        /// Command timeout for command created from this connection
+        /// </summary>
         public int CommandTimeout { get; set; }
 
-        ///// <summary>Gets the transaction.</summary>
-        ///// <value>The transaction.</value>
+        /// <summary>
+        /// The current transaction attached to this connection
+        /// </summary>
         public OrmTransaction Transaction { get; internal set; }
 
-        ///// <summary>Gets the database connection.</summary>
-        ///// <value>The database connection.</value>
+        /// <summary>
+        /// Internal DbConnection object
+        /// </summary>
         public DbConnection DbConnection { get; private set; }
-
+        
+        /// <inheritdoc />
         public override string ConnectionString
         {
             get => DbConnection.ConnectionString;
             set => DbConnection.ConnectionString = value;
         }
-
+        
+        /// <inheritdoc />
         public override string Database => DbConnection.Database;
-
+        
+        /// <inheritdoc />
         public override ConnectionState State => DbConnection.State;
+        
+        /// <inheritdoc />
         public override string DataSource => DbConnection.DataSource;
+        
+        /// <inheritdoc />
         public override string ServerVersion => DbConnection.ServerVersion;
 
+        /// <inheritdoc />
         protected override void Dispose(bool disposing)
         {
             if (disposing)
@@ -64,54 +76,63 @@ namespace SimpleStack.Orm
             base.Dispose(disposing);
         }
 
-        internal void ClearCurrrentTransaction()
+        internal void ClearCurrentTransaction()
         {
             Transaction = null;
         }
-
+        
+        /// <inheritdoc />
         protected override DbTransaction BeginDbTransaction(IsolationLevel isolationLevel)
         {
             Transaction = new OrmTransaction(this, DbConnection.BeginTransaction());
             return Transaction;
         }
 
+
+        /// <inheritdoc />
         public override void Close()
         {
             if (_isOpen)
             {
-                //Logger.DebugFormat("Closing Connection");
                 DbConnection.Close();
                 _isOpen = false;
             }
         }
 
+
+        /// <inheritdoc />
         public override void ChangeDatabase(string databaseName)
         {
             DbConnection.ChangeDatabase(databaseName);
         }
 
+
+        /// <inheritdoc />
         public override void Open()
         {
-            //Logger.DebugFormat("Opening Connection");
             DbConnection.Open();
             _isOpen = true;
         }
 
+        /// <inheritdoc />
         public override DataTable GetSchema()
         {
             return DbConnection.GetSchema();
         }
-
+        
+        /// <inheritdoc />
         public override DataTable GetSchema(string collectionName)
         {
             return DbConnection.GetSchema(collectionName);
         }
-
+        
+        /// <inheritdoc />
         public override DataTable GetSchema(string collectionName, string[] restrictionValues)
         {
             return DbConnection.GetSchema(collectionName, restrictionValues);
         }
-
+        
+        /// <inheritdoc />
         protected override DbCommand CreateDbCommand()
         {
             var cmd = new OrmCommand(DbConnection.CreateCommand());
