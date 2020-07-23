@@ -1,7 +1,7 @@
 # SimpleStack.Orm
 
 [![Build Status](https://img.shields.io/nuget/dt/simplestack.orm)](https://www.nuget.org/packages/SimpleStack.Orm)
-[![Build Status](https://img.shields.io/github/license/simplestack/simplestack.orm)](https://www.github.org/simplestack/simplestack.orm)
+[![Build Status](https://img.shields.io/github/license/simplestack/simplestack.orm)](https://www.github.com/simplestack/simplestack.orm)
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/simplestack/simplestack.orm)](https://github.com/SimpleStack/simplestack.orm/releases/)
 ![GitHub top language](https://img.shields.io/github/languages/top/simplestack/simplestack.orm)
 ![Maintenance](https://img.shields.io/maintenance/yes/2020)
