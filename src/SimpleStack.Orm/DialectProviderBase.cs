@@ -538,7 +538,7 @@ namespace SimpleStack.Orm
             switch (functionName.ToLower())
             {
                 case "length":
-                    return "LEN(" + quotedColumnName + ")";
+                    return "LENGTH(" + quotedColumnName + ")";
                 case "trim":
                     return $"ltrim(rtrim({quotedColumnName}))";
                 case "tlrim":

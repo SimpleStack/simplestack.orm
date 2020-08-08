@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Dynamic;
 using System.Linq;
 using Dapper;
 using SimpleStack.Orm.Attributes;
@@ -313,14 +314,17 @@ namespace SimpleStack.Orm.Tests
 		    {
 			    conn.Insert(new TestType {StringColumn = "1"});
 			    conn.Insert(new TestType {StringColumn = "3"});
-                
-			    var actual = conn.Select("testtype", q =>
+
+			    string tableName = _connectionFactory.DialectProvider.NamingStrategy.GetTableName("TestType");
+			    string columnName = _connectionFactory.DialectProvider.NamingStrategy.GetColumnName("StringColumn");
+			    
+			    var actual = conn.Select(tableName, q =>
 			    {
-				    q.Where<string>("stringcolumn", x => stringArray.Contains(x));
+				    q.Where<string>(columnName, x => stringArray.Contains(x));
 			    }).ToArray();
 
 			    Assert.AreEqual(1,actual.Length);
-			    Assert.AreEqual("1", actual[0].StringColumn);
+			    Assert.AreEqual("1", ((IDictionary<string, object>)actual[0])[columnName]);
 		    }
 	    }
 

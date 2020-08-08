@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using NUnit.Framework;
 
 namespace SimpleStack.Orm.Tests
@@ -35,7 +36,45 @@ namespace SimpleStack.Orm.Tests
                 CollectionAssert.Contains(actual, expected);
             }
         }
+        
+        [Test]
+        public void Can_select_using_string_length()
+        {
+            using (var conn = OpenDbConnection())
+            {
+                conn.Insert(new TestType {StringColumn = "10"});
+                conn.Insert(new TestType {StringColumn = "20"});
+                conn.Insert(new TestType {StringColumn = "1"});
+                
+                var actual = conn.Select<TestType>(q => q.StringColumn.Length == 1).ToArray();
 
+                Assert.AreEqual(1,actual.Length);
+                Assert.AreEqual("1", actual[0].StringColumn);
+            }
+        }
+        
+        [Test]
+        public void Can_select_dynamics_using_string_length()
+        {
+            using (var conn = OpenDbConnection())
+            {
+                conn.Insert(new TestType {StringColumn = "10"});
+                conn.Insert(new TestType {StringColumn = "20"});
+                conn.Insert(new TestType {StringColumn = "1"});
+                
+                string tableName = _connectionFactory.DialectProvider.NamingStrategy.GetTableName("TestType");
+                string columnName = _connectionFactory.DialectProvider.NamingStrategy.GetColumnName("StringColumn");
+
+                var actual = conn.Select(tableName, q =>
+                {
+                    q.Where<string>(columnName, x => x.Length == 1);
+                }).ToArray();
+                
+                Assert.AreEqual(1,actual.Length);
+                Assert.AreEqual("1", ((IDictionary<string, object>)actual[0])[columnName]);
+            }
+        }
+        
         /// <summary>Can select using contains with backtick in string.</summary>
         [Test]
         public void Can_select_using_contains_with_backtick_in_string()

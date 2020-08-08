@@ -218,6 +218,8 @@ namespace SimpleStack.Orm.SqlServer
 		{
 			switch (functionName.ToLower())
 			{
+				case "length":
+					return "LEN(" + quotedColumnName + ")";
 				case "substring":                    
 					//Ensure Offset is start at 1 instead of 0
 					int offset = ((int) parameters[availableParameters[0]]) + 1;

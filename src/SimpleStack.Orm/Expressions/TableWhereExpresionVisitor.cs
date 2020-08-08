@@ -28,6 +28,16 @@ namespace SimpleStack.Orm.Expressions
                 return new StatementPart(Visit(m.Expression) + " IS NOT NULL");
             }
             
+            if (m.Member.DeclaringType == typeof(string) &&
+                m.Member.Name == "Length")
+            {
+                return new StatementPart(
+                    DialectProvider.GetStringFunction("length",
+                        Visit(m.Expression).ToString(),
+                        null,
+                        null));
+            }
+            
             if (m.Member.DeclaringType == typeof(DateTime) || m.Member.DeclaringType == typeof(DateTime?))
             {
                 return VisitDateTimeMemberAccess(m);
