@@ -303,8 +303,28 @@ namespace SimpleStack.Orm.Tests
 	            Assert.AreEqual(2012, conn.GetScalar<TestType2, int>(x =>  x.DateCol.Year));
             }
 	    }
+	    
+	    [Test]
+	    public void Can_select_dynamics_using_array_contains()
+	    {
+		    var stringArray = new []{"1","2"};
 
-        /// <summary>Can select using in.</summary>
+		    using (var conn = OpenDbConnection())
+		    {
+			    conn.Insert(new TestType {StringColumn = "1"});
+			    conn.Insert(new TestType {StringColumn = "3"});
+                
+			    var actual = conn.Select("testtype", q =>
+			    {
+				    q.Where<string>("stringcolumn", x => stringArray.Contains(x));
+			    }).ToArray();
+
+			    Assert.AreEqual(1,actual.Length);
+			    Assert.AreEqual("1", actual[0].StringColumn);
+		    }
+	    }
+
+	    /// <summary>Can select using in.</summary>
         [Test]
 		public void Can_Select_using_IN()
 		{
