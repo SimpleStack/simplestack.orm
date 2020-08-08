@@ -1,5 +1,6 @@
 ﻿using System.Data;
 using System.Data.Common;
+using SimpleStack.Orm.Logging;
 
 //using SimpleStack.Orm.Logging;
 
@@ -7,14 +8,16 @@ namespace SimpleStack.Orm
 {
     internal class OrmCommand : DbCommand
     {
-        //private static readonly ILog Logger = LogProvider.For<OrmCommand>();
+        private ILogger<OrmCommand> _logger;
 
         private readonly DbCommand _command;
+        private readonly ILoggerFactory _loggerFactory;
 
-        internal OrmCommand(DbCommand command)
+        internal OrmCommand(DbCommand command, ILoggerFactory loggerFactory)
         {
-            //	Logger.Debug("Creating Command");
             _command = command;
+            _loggerFactory = loggerFactory;
+            _logger = _loggerFactory.CreateLogger<OrmCommand>();
         }
 
         public override string CommandText
@@ -63,13 +66,13 @@ namespace SimpleStack.Orm
 
         public override void Prepare()
         {
-            //	Logger.Debug("Preparing command");
+            _logger.LogDebug("Preparing command");
             _command.Prepare();
         }
 
         public override void Cancel()
         {
-            //Logger.DebugFormat("Cancelling command: {0}", CommandText);
+            _logger.LogDebug("Cancelling command: {0}", CommandText);
             _command.Cancel();
         }
 
@@ -80,24 +83,25 @@ namespace SimpleStack.Orm
 
         protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior)
         {
-            //Logger.DebugFormat("Before ExecuteDbDataReader : {0}",CommandText);
+            _logger.LogDebug("Executing ExecuteReader : {0}", CommandText);
             var res = _command.ExecuteReader(behavior);
-            //Logger.Debug("After ExecuteDbDataReader");
+            _logger.LogDebug("ExecuteReader complete");
             return res;
         }
 
         public override int ExecuteNonQuery()
         {
+            _logger.LogDebug("Executing ExecuteNonQuery : {0}", CommandText);
             var res = _command.ExecuteNonQuery();
-            //Logger.Debug("After ExecuteNonQuery");
+            _logger.LogDebug("ExecuteNonQuery complete with result '{0}'", res);
             return res;
         }
 
         public override object ExecuteScalar()
         {
-            //Logger.DebugFormat("Before ExecuteScalar: {0}", CommandText);
+            _logger.LogDebug("Executing ExecuteScalar: {0}", CommandText);
             var res = _command.ExecuteScalar();
-            //Logger.Debug("After ExecuteScalar");
+            _logger.LogDebug("ExecuteScalar complete with result '{0}'", res);
             return res;
         }
     }

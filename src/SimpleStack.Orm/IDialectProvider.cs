@@ -16,6 +16,7 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Dapper;
 using SimpleStack.Orm.Expressions.Statements;
+using SimpleStack.Orm.Logging;
 
 namespace SimpleStack.Orm
 {
@@ -53,7 +54,7 @@ namespace SimpleStack.Orm
         /// <param name="connectionString">Connection string.</param>
         /// <param name="options"> Options for controlling the operation.</param>
         /// <returns>The new connection.</returns>
-        OrmConnection CreateConnection(string connectionString);
+        OrmConnection CreateConnection(string connectionString, ILoggerFactory logger);
 
         /// <summary>Gets quoted table name.</summary>
         /// <param name="modelDef">The model definition.</param>

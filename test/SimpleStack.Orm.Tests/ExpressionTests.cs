@@ -6,6 +6,7 @@ using Dapper;
 using Microsoft.Data.Sqlite;
 using Newtonsoft.Json;
 using NUnit.Framework;
+using SimpleStack.Orm.Logging;
 using SimpleStack.Orm.MySQL;
 using SimpleStack.Orm.MySQLConnector;
 using SimpleStack.Orm.PostgreSQL;
@@ -31,7 +32,7 @@ namespace SimpleStack.Orm.Tests
                 _conn.Dispose();
                 _conn = null;
             }
-
+            
             SqlMapper.ResetTypeHandlers();
 
             SqlMapper.AddTypeHandler(typeof(TestEnum), new EnumAsIntTypeHandler<TestEnum>());
@@ -131,6 +132,7 @@ namespace SimpleStack.Orm.Tests
         protected ExpressionTests(IDialectProvider dialectProvider, string connectionString)
         {
             _connectionFactory = new OrmConnectionFactory(dialectProvider,connectionString);
+            _connectionFactory.LoggerFactory = new ConsoleLoggerFactory();
         }
 
         protected OrmConnection OpenDbConnection()

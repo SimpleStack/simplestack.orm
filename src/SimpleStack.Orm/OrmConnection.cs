@@ -1,10 +1,13 @@
 ﻿using System.Data;
 using System.Data.Common;
+using SimpleStack.Orm.Logging;
 
 namespace SimpleStack.Orm
 {
     public partial class OrmConnection : DbConnection
     {
+        private readonly ILoggerFactory _loggerFactory;
+        private readonly ILogger<OrmConnection> _logger;
         private bool _isOpen;
 
         /// <summary>
@@ -12,10 +15,13 @@ namespace SimpleStack.Orm
         /// </summary>
         /// <param name="connection">The inner Connection</param>
         /// <param name="dialectProvider">The dialect provider</param>
-        internal OrmConnection(DbConnection connection, IDialectProvider dialectProvider)
+        internal OrmConnection(DbConnection connection, IDialectProvider dialectProvider, ILoggerFactory loggerFactory)
         {
+            _loggerFactory = loggerFactory;
             DialectProvider = dialectProvider;
             DbConnection = connection;
+            
+            _logger = loggerFactory.CreateLogger<OrmConnection>();
         }
 
         /// <summary>
@@ -64,6 +70,7 @@ namespace SimpleStack.Orm
             {
                 if (DbConnection != null)
                 {
+                    _logger.LogDebug("Closing connection");
                     Close();
 
                     DbConnection.Dispose();
@@ -135,7 +142,7 @@ namespace SimpleStack.Orm
         /// <inheritdoc />
         protected override DbCommand CreateDbCommand()
         {
-            var cmd = new OrmCommand(DbConnection.CreateCommand());
+            var cmd = new OrmCommand(DbConnection.CreateCommand(), _loggerFactory);
             if (Transaction != null)
             {
                 cmd.Transaction = Transaction.trans;

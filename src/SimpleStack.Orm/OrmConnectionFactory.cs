@@ -1,15 +1,30 @@
 ﻿using System.Threading.Tasks;
+using SimpleStack.Orm.Logging;
 
 namespace SimpleStack.Orm
 {
     public class OrmConnectionFactory
     {
+        private ILoggerFactory _loggerFactory;
+        private ILogger<OrmConnectionFactory> _logger;
         private readonly string _connectionString;
 
         public OrmConnectionFactory(IDialectProvider dialectProvider, string connectionString)
         {
             DialectProvider = dialectProvider;
             _connectionString = connectionString;
+            LoggerFactory = new DummyLoggerFactory();
+        }
+
+        public ILoggerFactory LoggerFactory
+        {
+            get => _loggerFactory;
+            set
+            {
+                _loggerFactory = value;
+                _logger = _loggerFactory.CreateLogger<OrmConnectionFactory>();
+                _logger.LogInfo($"LoggingFactory initialized on OrmConnectionFactory using provider '{this}'");
+            }
         }
 
         /// <summary>
@@ -28,10 +43,7 @@ namespace SimpleStack.Orm
         /// <returns>Opened connection</returns>
         public OrmConnection OpenConnection()
         {
-            var conn = DialectProvider.CreateConnection(_connectionString);
-            conn.CommandTimeout = DefaultCommandTimeout;
-            conn.Open();
-            return conn;
+            return OpenConnectionAsync().Result;
         }
 
         /// <summary>
@@ -40,7 +52,9 @@ namespace SimpleStack.Orm
         /// <returns>Opened connection</returns>
         public async Task<OrmConnection> OpenConnectionAsync()
         {
-            var conn = DialectProvider.CreateConnection(_connectionString);
+            _logger.LogDebug("Opening connection");
+            
+            var conn = DialectProvider.CreateConnection(_connectionString,_loggerFactory);
             conn.CommandTimeout = DefaultCommandTimeout;
             await conn.OpenAsync();
             return conn;

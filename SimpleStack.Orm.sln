@@ -30,6 +30,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleStack.Orm.SDSQLite", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleStack.Orm.xUnit", "test\SimpleStack.Orm.xUnit\SimpleStack.Orm.xUnit.csproj", "{41DD3284-5112-4A27-AE18-09493B040031}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleStack.Orm.Logging.MicrosoftExtensions", "src\SimpleStack.Orm.Logging.MicrosoftExtensions\SimpleStack.Orm.Logging.MicrosoftExtensions.csproj", "{FA11989E-8998-40E3-B9D7-7925D8EBF7D0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -72,6 +74,10 @@ Global
 		{41DD3284-5112-4A27-AE18-09493B040031}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{41DD3284-5112-4A27-AE18-09493B040031}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{41DD3284-5112-4A27-AE18-09493B040031}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FA11989E-8998-40E3-B9D7-7925D8EBF7D0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FA11989E-8998-40E3-B9D7-7925D8EBF7D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FA11989E-8998-40E3-B9D7-7925D8EBF7D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FA11989E-8998-40E3-B9D7-7925D8EBF7D0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -86,6 +92,7 @@ Global
 		{75E2C0D4-FE33-484F-8EC1-58EA1EBFEBE0} = {6EAAA3BA-9C88-4F21-A822-F0A3A9613EBA}
 		{49DB362E-E574-4BF2-A4D2-76CAD8EA6E85} = {6EAAA3BA-9C88-4F21-A822-F0A3A9613EBA}
 		{41DD3284-5112-4A27-AE18-09493B040031} = {DBBF1C8A-4A4B-4EC5-911C-BA6AEAC12BD4}
+		{FA11989E-8998-40E3-B9D7-7925D8EBF7D0} = {6EAAA3BA-9C88-4F21-A822-F0A3A9613EBA}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {82883C1A-728B-43E5-A494-6BA0585C069B}

@@ -20,6 +20,7 @@ using System.Threading.Tasks;
 using Dapper;
 using SimpleStack.Orm.Attributes;
 using SimpleStack.Orm.Expressions.Statements;
+using SimpleStack.Orm.Logging;
 
 namespace SimpleStack.Orm
 {
@@ -64,9 +65,9 @@ namespace SimpleStack.Orm
         /// <summary>Creates a connection.</summary>
         /// <param name="connectionString">Connection String.</param>
         /// <returns>The new connection.</returns>
-        public OrmConnection CreateConnection(string connectionString)
+        public OrmConnection CreateConnection(string connectionString, ILoggerFactory logger)
         {
-            return new OrmConnection(CreateIDbConnection(connectionString), this);
+            return new OrmConnection(CreateIDbConnection(connectionString), this, logger);
         }
 
         public string GetParameterName(int parameterCount)
