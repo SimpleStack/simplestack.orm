@@ -220,6 +220,8 @@ namespace SimpleStack.Orm.SqlServer
 			{
 				case "length":
 					return "LEN(" + quotedColumnName + ")";
+				case "trim":
+					return $"ltrim(rtrim({quotedColumnName}))";
 				case "substring":                    
 					//Ensure Offset is start at 1 instead of 0
 					int offset = ((int) parameters[availableParameters[0]]) + 1;

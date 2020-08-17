@@ -540,10 +540,10 @@ namespace SimpleStack.Orm
                 case "length":
                     return "LENGTH(" + quotedColumnName + ")";
                 case "trim":
-                    return $"ltrim(rtrim({quotedColumnName}))";
-                case "tlrim":
+                    return $"trim({quotedColumnName})";
+                case "trimstart":
                     return $"ltrim({quotedColumnName})";
-                case "rtrim":
+                case "trimend":
                     return $"rtrim({quotedColumnName})";
                 case "toupper":
                     return $"upper({quotedColumnName})";
