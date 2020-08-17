@@ -338,5 +338,77 @@ namespace SimpleStack.Orm.Tests
                 CollectionAssert.Contains(actual, expected);
             }
         }
+       
+        [Test]
+        public void Can_select_using_upper_case_condition()
+        {
+            using (var conn = OpenDbConnection())
+            {
+                conn.Insert(new TestType
+                {
+                    StringColumn = "UpPeR"
+                });
+                
+                var actual = conn.Select<TestType>(q => q.StringColumn.ToUpper() == "UPPER");
+
+                Assert.IsNotNull(actual);
+                Assert.AreEqual(1, actual.Count());
+                Assert.AreEqual("UpPeR",actual.First().StringColumn);
+            }
+        }
+        [Test]
+        public void Can_select_using_lower_case_condition()
+        {
+            using (var conn = OpenDbConnection())
+            {
+                conn.Insert(new TestType
+                {
+                    StringColumn = "LOWer"
+                });
+                
+                var actual = conn.Select<TestType>(q => q.StringColumn.ToLower() == "lower");
+
+                Assert.IsNotNull(actual);
+                Assert.AreEqual(1, actual.Count());
+                Assert.AreEqual("LOWer",actual.First().StringColumn);
+            }
+        }
+        [Test]
+        public void Can_select_using_trim_condition()
+        {
+            using (var conn = OpenDbConnection())
+            {
+                conn.Insert(new TestType
+                {
+                    StringColumn = "   left"
+                });
+                conn.Insert(new TestType
+                {
+                    StringColumn = "right    "
+                });
+                conn.Insert(new TestType
+                {
+                    StringColumn = "   trim   "
+                });
+                
+                var actual = conn.Select<TestType>(q => q.StringColumn.TrimStart() == "left");
+                Assert.IsNotNull(actual);
+                Assert.AreEqual(1, actual.Count());
+                Assert.AreEqual("   left",actual.First().StringColumn);
+                
+                actual = conn.Select<TestType>(q => q.StringColumn.TrimEnd() == "right");
+                Assert.IsNotNull(actual);
+                Assert.AreEqual(1, actual.Count());
+                Assert.AreEqual("right    ",actual.First().StringColumn);
+                
+                actual = conn.Select<TestType>(q => q.StringColumn.Trim() == "trim");
+                Assert.IsNotNull(actual);
+                Assert.AreEqual(1, actual.Count());
+                Assert.AreEqual("   trim   ",actual.First().StringColumn);
+                
+                
+                actual = conn.Select<TestType>(q => q.StringColumn.Trim().TrimStart().ToUpper().ToLower().Substring(0,3) == "trim");
+            }
+        }
     }
 }
