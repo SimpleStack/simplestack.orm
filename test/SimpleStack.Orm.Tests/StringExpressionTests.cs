@@ -405,9 +405,6 @@ namespace SimpleStack.Orm.Tests
                 Assert.IsNotNull(actual);
                 Assert.AreEqual(1, actual.Count());
                 Assert.AreEqual("   trim   ",actual.First().StringColumn);
-                
-                
-                actual = conn.Select<TestType>(q => q.StringColumn.Trim().TrimStart().ToUpper().ToLower().Substring(0,3) == "trim");
             }
         }
     }
