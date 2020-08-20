@@ -14,7 +14,7 @@
     <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
     <AssemblyVersion>1.2.0.0</AssemblyVersion>
     <FileVersion>1.2.0.0</FileVersion>
-    <PackageVersion>1.2.0-beta98</PackageVersion>
+    <PackageVersion>1.2.0</PackageVersion>
     <TargetFramework>netstandard2.0</TargetFramework>
     <PackageProjectUrl>https://simplestack.org/</PackageProjectUrl>
     <RepositoryUrl>https://github.com/SimpleStack/simplestack.orm</RepositoryUrl>
