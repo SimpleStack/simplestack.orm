@@ -1,59 +1,46 @@
-﻿
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using SimpleStack.Orm.Attributes;
 #if NET45
 using System.Transactions;
 #endif
-using Dapper;
-using NUnit.Framework;
-using SimpleStack.Orm.Attributes;
 
 namespace SimpleStack.Orm.Tests
 {
-	public abstract partial class ExpressionTests
-	{
-		public class Member
-		{
-			[PrimaryKey]
-			[AutoIncrement]
-			public long Id { get; set; }
-			[Index]
-			[StringLength(255)]
-			public string Val1 { get; set; }
-			[StringLength(255)]
-			public string Val2 { get; set; }
-			[StringLength(255)]
-			public string Val3 { get; set; }
-			[StringLength(255)]
-			public string Val4 { get; set; }
-			[StringLength(255)]
-			public string Val5 { get; set; }
-			[StringLength(255)]
-			public string Val6 { get; set; }
-			[StringLength(255)]
-			public string Val7 { get; set; }
-			[StringLength(255)]
-			public string Val8 { get; set; }
-			[StringLength(255)]
-			public string Val9 { get; set; }
-			[StringLength(255)]
-			public string Val10 { get; set; }
-		}
+    public abstract partial class ExpressionTests
+    {
+        public class Member
+        {
+            [PrimaryKey] [AutoIncrement] public long Id { get; set; }
 
-		[CompositeIndex(true, nameof(Val1), nameof(Val2))]
-		public class CompositeMember
-		{
-			[PrimaryKey]
-			[AutoIncrement]
-			public long Id { get; set; }
-			[StringLength(255)]
-			public string Val1 { get; set; }
-			[StringLength(255)]
-			public string Val2 { get; set; }
-		}
+            [Index] [StringLength(255)] public string Val1 { get; set; }
+
+            [StringLength(255)] public string Val2 { get; set; }
+
+            [StringLength(255)] public string Val3 { get; set; }
+
+            [StringLength(255)] public string Val4 { get; set; }
+
+            [StringLength(255)] public string Val5 { get; set; }
+
+            [StringLength(255)] public string Val6 { get; set; }
+
+            [StringLength(255)] public string Val7 { get; set; }
+
+            [StringLength(255)] public string Val8 { get; set; }
+
+            [StringLength(255)] public string Val9 { get; set; }
+
+            [StringLength(255)] public string Val10 { get; set; }
+        }
+
+        [CompositeIndex(true, nameof(Val1), nameof(Val2))]
+        public class CompositeMember
+        {
+            [PrimaryKey] [AutoIncrement] public long Id { get; set; }
+
+            [StringLength(255)] public string Val1 { get; set; }
+
+            [StringLength(255)] public string Val2 { get; set; }
+        }
 
 #if NET45
 		[Test]
@@ -301,5 +288,5 @@ namespace SimpleStack.Orm.Tests
 			}
 		}
 #endif
-	}
+    }
 }

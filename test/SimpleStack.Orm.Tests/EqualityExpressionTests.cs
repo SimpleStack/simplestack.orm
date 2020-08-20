@@ -1,304 +1,296 @@
-﻿using System;
-using System.Linq;
-using Dapper;
+﻿using System.Linq;
 using NUnit.Framework;
 
 namespace SimpleStack.Orm.Tests
 {
-	/// <summary>An equality expressions test.</summary>
-	public partial class ExpressionTests
-	{
-		#region int tests
-		/// <summary>Can select equals constant int expression.</summary>
-		[Test]
-		public void Can_select_equals_constant_int_expression()
-		{
-			var expected = new TestType()
-			{
-				IntColumn = 3,
-				BoolColumn = true,
-				StringColumn = "4"
-			};
+    /// <summary>An equality expressions test.</summary>
+    public partial class ExpressionTests
+    {
+        /// <summary>Can select equals bool method expression.</summary>
+        [Test]
+        public void Can_select_equals_bool_method_expression()
+        {
+            var expected = new TestType
+            {
+                IntColumn = 3,
+                BoolColumn = true,
+                StringColumn = "4"
+            };
 
-			EstablishContext(10, expected);
-			using (var conn = OpenDbConnection())
-			{
-				var actual = conn.Select<TestType>(q => q.IntColumn == 3);
+            EstablishContext(10, expected);
+            using (var conn = OpenDbConnection())
+            {
+                var actual = conn.Select<TestType>(q => q.BoolColumn == GetValue(true));
 
-				Assert.IsNotNull(actual);
-				Assert.AreEqual(1, actual.Count());
-				CollectionAssert.Contains(actual, expected);
-			}
-		}
+                Assert.IsNotNull(actual);
+                Assert.Greater(actual.Count(), 0);
+                CollectionAssert.Contains(actual, expected);
+            }
+        }
 
-		/// <summary>Can select equals variable int expression.</summary>
-		[Test]
-		public void Can_select_equals_variable_int_expression()
-		{
-			// ReSharper disable ConvertToConstant.Local
-			var columnValue = 3;
-			// ReSharper restore ConvertToConstant.Local
+        /// <summary>Can select equals constant bool expression.</summary>
+        [Test]
+        public void Can_select_equals_constant_bool_expression()
+        {
+            var expected = new TestType
+            {
+                IntColumn = 3,
+                BoolColumn = true,
+                StringColumn = "4"
+            };
 
-			var expected = new TestType()
-			{
-				IntColumn = columnValue,
-				BoolColumn = true,
-				StringColumn = "4"
-			};
+            EstablishContext(10, expected);
 
-			EstablishContext(10, expected);
-			using (var conn = OpenDbConnection())
-			{
-				var actual = conn.Select<TestType>(q => q.IntColumn == columnValue);
+            // ReSharper disable RedundantBoolCompare
+            using (var conn = OpenDbConnection())
+            {
+                var actual = conn.Select<TestType>(q => q.BoolColumn == true);
+                // ReSharper restore RedundantBoolCompare
 
-				Assert.IsNotNull(actual);
-				Assert.AreEqual(1, actual.Count());
-				CollectionAssert.Contains(actual, expected);
-			}
-		}
+                Assert.IsNotNull(actual);
+                Assert.Greater(actual.Count(), 0);
+                CollectionAssert.Contains(actual, expected);
+            }
+        }
 
-		/// <summary>Can select equals int method expression.</summary>
-		[Test]
-		public void Can_select_equals_int_method_expression()
-		{
-			var expected = new TestType()
-			{
-				IntColumn = 3,
-				BoolColumn = true,
-				StringColumn = "4"
-			};
+        /// <summary>Can select equals constant bool expression 2.</summary>
+        [Test]
+        public void Can_select_equals_constant_bool_expression2()
+        {
+            var expected = new TestType
+            {
+                IntColumn = 3,
+                BoolColumn = true,
+                StringColumn = "4"
+            };
 
-			EstablishContext(10, expected);
-			using (var conn = OpenDbConnection())
-			{
-				var actual = conn.Select<TestType>(q => q.IntColumn == GetValue(3));
+            EstablishContext(10, expected);
 
-				Assert.IsNotNull(actual);
-				Assert.AreEqual(1, actual.Count());
-				CollectionAssert.Contains(actual, expected);
-			}
-		}
+            // ReSharper disable RedundantBoolCompare
+            using (var conn = OpenDbConnection())
+            {
+                var actual = conn.Select<TestType>(q => q.BoolColumn);
+                // ReSharper restore RedundantBoolCompare
 
-		/// <summary>Can select not equals constant int expression.</summary>
-		[Test]
-		public void Can_select_not_equals_constant_int_expression()
-		{
-			var expected = new TestType()
-			{
-				IntColumn = 3,
-				BoolColumn = true,
-				StringColumn = "4"
-			};
+                Assert.IsNotNull(actual);
+                Assert.Greater(actual.Count(), 0);
+                CollectionAssert.Contains(actual, expected);
+            }
+        }
 
-			EstablishContext(10, expected);
-			using (var conn = OpenDbConnection())
-			{
-				var actual = conn.Select<TestType>(q => q.IntColumn != 3);
+        /// <summary>Can select equals constant int expression.</summary>
+        [Test]
+        public void Can_select_equals_constant_int_expression()
+        {
+            var expected = new TestType
+            {
+                IntColumn = 3,
+                BoolColumn = true,
+                StringColumn = "4"
+            };
 
-				Assert.IsNotNull(actual);
-				Assert.AreEqual(10, actual.Count());
-				CollectionAssert.DoesNotContain(actual, expected);
-			}
-		}
+            EstablishContext(10, expected);
+            using (var conn = OpenDbConnection())
+            {
+                var actual = conn.Select<TestType>(q => q.IntColumn == 3);
 
-		/// <summary>Can select not equals variable int expression.</summary>
-		[Test]
-		public void Can_select_not_equals_variable_int_expression()
-		{
-			// ReSharper disable ConvertToConstant.Local
-			var columnValue = 3;
-			// ReSharper restore ConvertToConstant.Local
+                Assert.IsNotNull(actual);
+                Assert.AreEqual(1, actual.Count());
+                CollectionAssert.Contains(actual, expected);
+            }
+        }
 
-			var expected = new TestType()
-			{
-				IntColumn = columnValue,
-				BoolColumn = true,
-				StringColumn = "4"
-			};
+        /// <summary>Can select equals int method expression.</summary>
+        [Test]
+        public void Can_select_equals_int_method_expression()
+        {
+            var expected = new TestType
+            {
+                IntColumn = 3,
+                BoolColumn = true,
+                StringColumn = "4"
+            };
 
-			EstablishContext(10, expected);
-			using (var conn = OpenDbConnection())
-			{
-				var actual = conn.Select<TestType>(q => q.IntColumn != columnValue);
+            EstablishContext(10, expected);
+            using (var conn = OpenDbConnection())
+            {
+                var actual = conn.Select<TestType>(q => q.IntColumn == GetValue(3));
 
-				Assert.IsNotNull(actual);
-				Assert.AreEqual(10, actual.Count());
-				CollectionAssert.DoesNotContain(actual, expected);
-			}
-		}
+                Assert.IsNotNull(actual);
+                Assert.AreEqual(1, actual.Count());
+                CollectionAssert.Contains(actual, expected);
+            }
+        }
 
-		/// <summary>Can select not equals int method expression.</summary>
-		[Test]
-		public void Can_select_not_equals_int_method_expression()
-		{
-			var expected = new TestType()
-			{
-				IntColumn = 3,
-				BoolColumn = true,
-				StringColumn = "4"
-			};
+        /// <summary>Can select equals null espression.</summary>
+        [Test]
+        public void Can_select_equals_null_expression()
+        {
+            var expected = new TestType
+            {
+                IntColumn = 12,
+                BoolColumn = false,
+                StringColumn = null
+            };
 
-			EstablishContext(10, expected);
-			using (var conn = OpenDbConnection())
-			{
-				var actual = conn.Select<TestType>(q => q.IntColumn != GetValue(3));
+            EstablishContext(10, expected);
+            using (var conn = OpenDbConnection())
+            {
+                var actual = conn.Select<TestType>(q => q.StringColumn != null);
 
-				Assert.IsNotNull(actual);
-				Assert.AreEqual(10, actual.Count());
-				CollectionAssert.DoesNotContain(actual, expected);
-			}
-		}
+                Assert.IsNotNull(actual);
+                Assert.AreEqual(actual.Count(), 10);
+                CollectionAssert.DoesNotContain(actual, expected);
+            }
+        }
 
-		#endregion
+        /// <summary>Can select equals variable bool expression.</summary>
+        [Test]
+        public void Can_select_equals_variable_bool_expression()
+        {
+            // ReSharper disable ConvertToConstant.Local
+            var columnValue = true;
+            // ReSharper restore ConvertToConstant.Local
 
-		#region bool test
-		/// <summary>Can select equals constant bool expression.</summary>
-		[Test]
-		public void Can_select_equals_constant_bool_expression()
-		{
-			var expected = new TestType()
-			{
-				IntColumn = 3,
-				BoolColumn = true,
-				StringColumn = "4"
-			};
+            var expected = new TestType
+            {
+                IntColumn = 3,
+                BoolColumn = true,
+                StringColumn = "4"
+            };
 
-			EstablishContext(10, expected);
+            EstablishContext(10, expected);
+            using (var conn = OpenDbConnection())
+            {
+                var actual = conn.Select<TestType>(q => q.BoolColumn == columnValue);
 
-			// ReSharper disable RedundantBoolCompare
-			using (var conn = OpenDbConnection())
-			{
-				var actual = conn.Select<TestType>(q => q.BoolColumn == true);
-				// ReSharper restore RedundantBoolCompare
+                Assert.IsNotNull(actual);
+                Assert.Greater(actual.Count(), 0);
+                CollectionAssert.Contains(actual, expected);
+            }
+        }
 
-				Assert.IsNotNull(actual);
-				Assert.Greater(actual.Count(), 0);
-				CollectionAssert.Contains(actual, expected);
-			}
-		}
+        /// <summary>Can select equals variable int expression.</summary>
+        [Test]
+        public void Can_select_equals_variable_int_expression()
+        {
+            // ReSharper disable ConvertToConstant.Local
+            var columnValue = 3;
+            // ReSharper restore ConvertToConstant.Local
 
-		/// <summary>Can select equals constant bool expression 2.</summary>
-		[Test]
-		public void Can_select_equals_constant_bool_expression2()
-		{
-			var expected = new TestType()
-			{
-				IntColumn = 3,
-				BoolColumn = true,
-				StringColumn = "4"
-			};
+            var expected = new TestType
+            {
+                IntColumn = columnValue,
+                BoolColumn = true,
+                StringColumn = "4"
+            };
 
-			EstablishContext(10, expected);
+            EstablishContext(10, expected);
+            using (var conn = OpenDbConnection())
+            {
+                var actual = conn.Select<TestType>(q => q.IntColumn == columnValue);
 
-			// ReSharper disable RedundantBoolCompare
-			using (var conn = OpenDbConnection())
-			{
-				var actual = conn.Select<TestType>(q => q.BoolColumn);
-				// ReSharper restore RedundantBoolCompare
+                Assert.IsNotNull(actual);
+                Assert.AreEqual(1, actual.Count());
+                CollectionAssert.Contains(actual, expected);
+            }
+        }
 
-				Assert.IsNotNull(actual);
-				Assert.Greater(actual.Count(), 0);
-				CollectionAssert.Contains(actual, expected);
-			}
-		}
+        /// <summary>Can select not equals constant int expression.</summary>
+        [Test]
+        public void Can_select_not_equals_constant_int_expression()
+        {
+            var expected = new TestType
+            {
+                IntColumn = 3,
+                BoolColumn = true,
+                StringColumn = "4"
+            };
 
-		/// <summary>Can select equals variable bool expression.</summary>
-		[Test]
-		public void Can_select_equals_variable_bool_expression()
-		{
-			// ReSharper disable ConvertToConstant.Local
-			var columnValue = true;
-			// ReSharper restore ConvertToConstant.Local
+            EstablishContext(10, expected);
+            using (var conn = OpenDbConnection())
+            {
+                var actual = conn.Select<TestType>(q => q.IntColumn != 3);
 
-			var expected = new TestType()
-			{
-				IntColumn = 3,
-				BoolColumn = true,
-				StringColumn = "4"
-			};
+                Assert.IsNotNull(actual);
+                Assert.AreEqual(10, actual.Count());
+                CollectionAssert.DoesNotContain(actual, expected);
+            }
+        }
 
-			EstablishContext(10, expected);
-			using (var conn = OpenDbConnection())
-			{
-				var actual = conn.Select<TestType>(q => q.BoolColumn == columnValue);
+        /// <summary>Can select not equals int method expression.</summary>
+        [Test]
+        public void Can_select_not_equals_int_method_expression()
+        {
+            var expected = new TestType
+            {
+                IntColumn = 3,
+                BoolColumn = true,
+                StringColumn = "4"
+            };
 
-				Assert.IsNotNull(actual);
-				Assert.Greater(actual.Count(), 0);
-				CollectionAssert.Contains(actual, expected);
-			}
-		}
+            EstablishContext(10, expected);
+            using (var conn = OpenDbConnection())
+            {
+                var actual = conn.Select<TestType>(q => q.IntColumn != GetValue(3));
 
-		/// <summary>Can select equals bool method expression.</summary>
-		[Test]
-		public void Can_select_equals_bool_method_expression()
-		{
-			var expected = new TestType()
-			{
-				IntColumn = 3,
-				BoolColumn = true,
-				StringColumn = "4"
-			};
+                Assert.IsNotNull(actual);
+                Assert.AreEqual(10, actual.Count());
+                CollectionAssert.DoesNotContain(actual, expected);
+            }
+        }
 
-			EstablishContext(10, expected);
-			using (var conn = OpenDbConnection())
-			{
-				var actual = conn.Select<TestType>(q => q.BoolColumn == GetValue(true));
+        /// <summary>Can select not equals null espression.</summary>
+        [Test]
+        public void Can_select_not_equals_null_expression()
+        {
+            var expected = new TestType
+            {
+                IntColumn = 12,
+                BoolColumn = false,
+                StringColumn = null
+            };
 
-				Assert.IsNotNull(actual);
-				Assert.Greater(actual.Count(), 0);
-				CollectionAssert.Contains(actual, expected);
-			}
-		}
+            using (var conn = OpenDbConnection())
+            {
+                conn.Insert(expected);
+                expected.StringColumn = "hello";
+                conn.Insert(expected);
 
-		/// <summary>Can select equals null espression.</summary>
-		[Test]
-		public void Can_select_equals_null_expression()
-		{
-			
-			var expected = new TestType()
-			{
-				IntColumn = 12,
-				BoolColumn = false,
-				StringColumn = null,
-			};
+                var actual = conn.Select<TestType>(q => q.StringColumn != null);
 
-			EstablishContext(10, expected);
-			using (var conn = OpenDbConnection())
-			{
-				var actual = conn.Select<TestType>(q => q.StringColumn != null);
+                Assert.IsNotNull(actual);
+                Assert.AreEqual(actual.Count(), 1);
+                CollectionAssert.Contains(actual, expected);
+            }
+        }
 
-				Assert.IsNotNull(actual);
-				Assert.AreEqual(actual.Count(), 10);
-				CollectionAssert.DoesNotContain(actual, expected);
-			}
-		}
+        /// <summary>Can select not equals variable int expression.</summary>
+        [Test]
+        public void Can_select_not_equals_variable_int_expression()
+        {
+            // ReSharper disable ConvertToConstant.Local
+            var columnValue = 3;
+            // ReSharper restore ConvertToConstant.Local
 
-		/// <summary>Can select not equals null espression.</summary>
-		[Test]
-		public void Can_select_not_equals_null_expression()
-		{
-			var expected = new TestType()
-			{
-				IntColumn = 12,
-				BoolColumn = false,
-				StringColumn = null,
-			};
+            var expected = new TestType
+            {
+                IntColumn = columnValue,
+                BoolColumn = true,
+                StringColumn = "4"
+            };
 
-			using (var conn = OpenDbConnection())
-			{
-				conn.Insert(expected);
-				expected.StringColumn = "hello";
-				conn.Insert(expected);
+            EstablishContext(10, expected);
+            using (var conn = OpenDbConnection())
+            {
+                var actual = conn.Select<TestType>(q => q.IntColumn != columnValue);
 
-				var actual = conn.Select<TestType>(q => q.StringColumn != null);
+                Assert.IsNotNull(actual);
+                Assert.AreEqual(10, actual.Count());
+                CollectionAssert.DoesNotContain(actual, expected);
+            }
+        }
 
-				Assert.IsNotNull(actual);
-				Assert.AreEqual(actual.Count(), 1);
-				CollectionAssert.Contains(actual, expected);
-			}
-		}
-
-		// Assume not equal works ;-)
-		#endregion
-	}
+        // Assume not equal works ;-)
+    }
 }

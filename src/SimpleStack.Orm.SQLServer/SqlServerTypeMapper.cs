@@ -1,6 +1,5 @@
 using System;
 using System.Data;
-using System.Data.SqlClient;
 
 namespace SimpleStack.Orm.SqlServer
 {
@@ -8,9 +7,10 @@ namespace SimpleStack.Orm.SqlServer
     {
         public bool UseDateTime2 { get; set; }
 
-        public override string GetFieldDefinition(DbType type, int? length = null, int? scale = null, int? precision = null)
+        public override string GetFieldDefinition(DbType type, int? length = null, int? scale = null,
+            int? precision = null)
         {
-            var l = length ?? 4000;
+            var l = length ?? DefaultStringLength;
             switch (type)
             {
                 case DbType.AnsiStringFixedLength:
@@ -19,7 +19,7 @@ namespace SimpleStack.Orm.SqlServer
                 case DbType.AnsiString:
                 case DbType.String:
                 case DbType.Object: // Because of null management with Dapper
-                    return UseUnicode ? $"NVARCHAR({l})" : $"VARCHAR({l*2})";
+                    return UseUnicode ? $"NVARCHAR({l})" : $"VARCHAR({l * 2})";
                 case DbType.Binary:
                     return $"VARBINARY({(length.HasValue ? length.ToString() : "MAX")})";
                 case DbType.Boolean:
@@ -42,9 +42,9 @@ namespace SimpleStack.Orm.SqlServer
                 case DbType.Currency:
                     return "money";
                 case DbType.Decimal:
-                    return $"decimal({precision ?? 18},{scale ?? 0})";
+                    return $"decimal({precision ?? DefaultPrecision},{scale ?? DefaultScale})";
                 case DbType.VarNumeric:
-                    return $"numeric({precision ?? 18}, {scale ?? 0})";
+                    return $"numeric({precision ?? DefaultPrecision}, {scale ?? DefaultScale})";
                 case DbType.Date:
                     return "DATE";
                 case DbType.DateTime:

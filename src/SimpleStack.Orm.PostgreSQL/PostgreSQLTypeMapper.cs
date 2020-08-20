@@ -5,8 +5,8 @@ namespace SimpleStack.Orm.PostgreSQL
 {
     public class PostgreSQLTypeMapper : DbTypeMapperBase
     {
-
-        public override string GetFieldDefinition(DbType type, int? length = null, int? scale = null, int? precision = null)
+        public override string GetFieldDefinition(DbType type, int? length = null, int? scale = null,
+            int? precision = null)
         {
             var l = length ?? DefaultStringLength;
             switch (type)
@@ -39,7 +39,7 @@ namespace SimpleStack.Orm.PostgreSQL
                 case DbType.Double:
                     return "double precision";
                 case DbType.Decimal:
-                    return $"decimal({precision ?? 38},{scale ?? 6})";
+                    return $"decimal({precision ?? DefaultPrecision},{scale ?? DefaultScale})";
                 case DbType.Currency:
                     return "money";
                 case DbType.Date:

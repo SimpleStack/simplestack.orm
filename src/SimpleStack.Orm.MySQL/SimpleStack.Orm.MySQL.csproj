@@ -16,7 +16,10 @@
     <Version>1.2.0-beta95</Version>
     <AssemblyVersion>1.2.0.0</AssemblyVersion>
     <FileVersion>1.2.0.0</FileVersion>
-    <PackageVersion>1.2.0-beta98</PackageVersion>
+    <PackageVersion>1.2.0</PackageVersion>
+    <PackageProjectUrl>https://simplestack.org/</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/SimpleStack/simplestack.orm</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 
   <ItemGroup>
@@ -24,7 +27,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="MySql.Data" Version="8.0.16" />
+    <PackageReference Include="MySql.Data" Version="8.0.20" />
   </ItemGroup>
 
 </Project>

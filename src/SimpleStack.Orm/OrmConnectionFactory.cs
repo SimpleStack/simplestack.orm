@@ -1,48 +1,72 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using SimpleStack.Orm.Logging;
 
 namespace SimpleStack.Orm
 {
-	public class OrmConnectionFactory
-	{
-		private readonly IDialectProvider _dialectProvider;
-		private readonly string _connectionString;
+    public class OrmConnectionFactory
+    {
+        private ILoggerFactory _loggerFactory;
+        private ILogger<OrmConnectionFactory> _logger;
+        private readonly string _connectionString;
 
-		public OrmConnectionFactory(IDialectProvider dialectProvider, string connectionString)
-		{
-			_dialectProvider = dialectProvider;
-			_connectionString = connectionString;
-		}
-		
-		/// <summary>
-		/// Default command timeout (in seconds) set on OrmConnections created from the Factory
-		/// </summary>
-		public int DefaultCommandTimeout { get; set; }
+        public OrmConnectionFactory(IDialectProvider dialectProvider, string connectionString)
+        {
+            DialectProvider = dialectProvider;
+            _connectionString = connectionString;
+            LoggerFactory = new DummyLoggerFactory();
+        }
 
-		public IDialectProvider DialectProvider => _dialectProvider;
+        public ILoggerFactory LoggerFactory
+        {
+            get => _loggerFactory;
+            set
+            {
+                _loggerFactory = value;
+                _logger = _loggerFactory.CreateLogger<OrmConnectionFactory>();
+                _logger.LogInfo($"LoggingFactory initialized on OrmConnectionFactory using provider '{this}'");
+            }
+        }
 
-		public OrmConnection OpenConnection()
-		{
-			var conn = _dialectProvider.CreateConnection(_connectionString);
-			conn.CommandTimeout = DefaultCommandTimeout;
-			conn.Open();
-			return conn;
-		}
+        /// <summary>
+        ///    Default command timeout (in seconds) set on OrmConnections created from the Factory
+        /// </summary>
+        public int DefaultCommandTimeout { get; set; }
 
-		public async Task<OrmConnection> OpenConnectionAsync()
-		{
-			var conn = _dialectProvider.CreateConnection(_connectionString);
-			conn.CommandTimeout = DefaultCommandTimeout;
-			await conn.OpenAsync();
-			return conn;
-		}
+        /// <summary>
+        /// Dialect Provider assigned to this factory
+        /// </summary>
+        public IDialectProvider DialectProvider { get; }
 
-		public override string ToString()
-		{
-			return _dialectProvider.GetType().ToString();
-		}
-	}
+        /// <summary>
+        /// Open a new connection
+        /// </summary>
+        /// <returns>Opened connection</returns>
+        public OrmConnection OpenConnection()
+        {
+            return OpenConnectionAsync().Result;
+        }
+
+        /// <summary>
+        /// Open a new connection asynchronously
+        /// </summary>
+        /// <returns>Opened connection</returns>
+        public async Task<OrmConnection> OpenConnectionAsync()
+        {
+            _logger.LogDebug("Opening connection");
+            
+            var conn = DialectProvider.CreateConnection(_connectionString,_loggerFactory);
+            conn.CommandTimeout = DefaultCommandTimeout;
+            await conn.OpenAsync();
+            return conn;
+        }
+
+        /// <summary>
+        /// Return a string representation of the Factory.
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            return DialectProvider.GetType().ToString();
+        }
+    }
 }

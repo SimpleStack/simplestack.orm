@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using System.Linq.Expressions;
 
 namespace SimpleStack.Orm.Expressions.Statements.Typed
@@ -14,9 +13,8 @@ namespace SimpleStack.Orm.Expressions.Statements.Typed
         {
             _dialectProvider = dialectProvider;
             _modelDefinition = ModelDefinition<T>.Definition;
-            
-            Statement.TableName = _dialectProvider.GetQuotedTableName(_modelDefinition);
 
+            Statement.TableName = _dialectProvider.GetQuotedTableName(_modelDefinition);
             Statement.Columns.AddRange(_dialectProvider.GetColumnNames(_modelDefinition));
         }
 
@@ -51,6 +49,16 @@ namespace SimpleStack.Orm.Expressions.Statements.Typed
         public TypedSelectStatement<T> Select<TKey>(Expression<Func<T, TKey>> fields)
         {
             Statement.Columns.Clear();
+            Statement.Columns.AddRange(GetFieldsExpressionVisitor(true).VisitExpression(fields).Split(','));
+            return this;
+        }
+
+        /// <summary>Fields to be selected.</summary>
+        /// <typeparam name="TKey">objectWithProperties.</typeparam>
+        /// <param name="fields">x=> x.SomeProperty1 or x=> new{ x.SomeProperty1, x.SomeProperty2}</param>
+        /// <returns>A SqlExpressionVisitor&lt;T&gt;</returns>
+        public TypedSelectStatement<T> SelectAlso<TKey>(Expression<Func<T, TKey>> fields)
+        {
             Statement.Columns.AddRange(GetFieldsExpressionVisitor(true).VisitExpression(fields).Split(','));
             return this;
         }
@@ -106,7 +114,11 @@ namespace SimpleStack.Orm.Expressions.Statements.Typed
         /// <returns>A SqlExpressionVisitor&lt;T&gt;</returns>
         public TypedSelectStatement<T> GroupBy(string groupBy)
         {
-            if (Statement.GroupByExpression.Length > 0) Statement.GroupByExpression.Append(",");
+            if (Statement.GroupByExpression.Length > 0)
+            {
+                Statement.GroupByExpression.Append(",");
+            }
+
             Statement.GroupByExpression.Append(groupBy);
             return this;
         }
@@ -117,7 +129,7 @@ namespace SimpleStack.Orm.Expressions.Statements.Typed
         /// <returns>A SqlExpressionVisitor&lt;T&gt;</returns>
         public TypedSelectStatement<T> GroupBy<TKey>(Expression<Func<T, TKey>> keySelector)
         {
-            GroupBy(GetExpressionVisitor().VisitExpression(keySelector));
+            GroupBy(GetFieldsExpressionVisitor().VisitExpression(keySelector));
             return this;
         }
 
@@ -126,7 +138,10 @@ namespace SimpleStack.Orm.Expressions.Statements.Typed
         /// <returns>A SqlExpressionVisitor&lt;T&gt;</returns>
         public TypedSelectStatement<T> Having(Expression<Func<T, bool>> predicate)
         {
-            if (Statement.HavingExpression.Length > 0) Statement.HavingExpression.Append(",");
+            if (Statement.HavingExpression.Length > 0)
+            {
+                Statement.HavingExpression.Append(",");
+            }
 
             Statement.HavingExpression.Append(GetExpressionVisitor().VisitExpression(predicate));
             return this;
@@ -149,7 +164,10 @@ namespace SimpleStack.Orm.Expressions.Statements.Typed
         /// <returns>A SqlExpressionVisitor&lt;T&gt;</returns>
         public TypedSelectStatement<T> ThenBy<TKey>(Expression<Func<T, TKey>> keySelector)
         {
-            if (Statement.OrderByExpression.Length > 0) Statement.OrderByExpression.Append(",");
+            if (Statement.OrderByExpression.Length > 0)
+            {
+                Statement.OrderByExpression.Append(",");
+            }
 
             Statement.OrderByExpression.Append(GetFieldsExpressionVisitor().VisitExpression(keySelector) + " ASC");
             return this;
@@ -161,7 +179,10 @@ namespace SimpleStack.Orm.Expressions.Statements.Typed
         /// <returns>A SqlExpressionVisitor&lt;T&gt;</returns>
         public TypedSelectStatement<T> OrderByDescending<TKey>(Expression<Func<T, TKey>> keySelector)
         {
-            if (Statement.OrderByExpression.Length > 0) Statement.OrderByExpression.Append(",");
+            if (Statement.OrderByExpression.Length > 0)
+            {
+                Statement.OrderByExpression.Append(",");
+            }
 
             Statement.OrderByExpression.Append(GetFieldsExpressionVisitor().VisitExpression(keySelector) + " DESC");
             return this;
@@ -173,7 +194,10 @@ namespace SimpleStack.Orm.Expressions.Statements.Typed
         /// <returns>A SqlExpressionVisitor&lt;T&gt;</returns>
         public TypedSelectStatement<T> ThenByDescending<TKey>(Expression<Func<T, TKey>> keySelector)
         {
-            if (Statement.OrderByExpression.Length > 0) Statement.OrderByExpression.Append(",");
+            if (Statement.OrderByExpression.Length > 0)
+            {
+                Statement.OrderByExpression.Append(",");
+            }
 
             Statement.OrderByExpression.Append(GetFieldsExpressionVisitor().VisitExpression(keySelector) + " DESC");
             return this;

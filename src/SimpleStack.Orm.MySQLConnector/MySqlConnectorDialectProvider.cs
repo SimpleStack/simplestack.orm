@@ -2,134 +2,144 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
-using System.Text;
+using System.Linq;
 using Dapper;
-using SimpleStack.Orm.Attributes;
-using SimpleStack.Orm.Expressions;
-using MySql.Data.MySqlClient;
+using MySqlConnector;
 using SimpleStack.Orm.MySQL;
 
 namespace SimpleStack.Orm.MySQLConnector
 {
-	/// <summary>my SQL dialect provider.</summary>
-	public class MySqlConnectorDialectProvider : DialectProviderBase
-	{
-				/// <summary>
-		/// Prevents a default instance of the NServiceKit.OrmLite.MySql.MySqlDialectProvider class from
-		/// being created.
-		/// </summary>
-		public MySqlConnectorDialectProvider():base(new MySqlConnectorTypeMapper())
-		{
-			base.AutoIncrementDefinition = "AUTO_INCREMENT";
-			base.DefaultValueFormat = " DEFAULT '{0}'";
-			base.SelectIdentitySql = "SELECT LAST_INSERT_ID()";
-			EscapeChar = '`';
-		}
+    /// <summary>my SQL dialect provider.</summary>
+    public class MySqlConnectorDialectProvider : DialectProviderBase
+    {
+	    /// <summary>
+	    ///     Prevents a default instance of the NServiceKit.OrmLite.MySql.MySqlDialectProvider class from
+	    ///     being created.
+	    /// </summary>
+	    public MySqlConnectorDialectProvider() : base(new MySqlConnectorTypeMapper())
+        {
+            AutoIncrementDefinition = "AUTO_INCREMENT";
+            DefaultValueFormat = " DEFAULT '{0}'";
+            base.SelectIdentitySql = "SELECT LAST_INSERT_ID()";
+            EscapeChar = '`';
+        }
 
-		/// <summary>Creates a connection.</summary>
-		/// <param name="connectionString">The connection string.</param>
-		/// <param name="options">         Options for controlling the operation.</param>
-		/// <returns>The new connection.</returns>
-		public override DbConnection CreateIDbConnection(string connectionString)
-		{
-			var c = new MySqlConnection(connectionString);
-			return c;
+        /// <summary>Creates a connection.</summary>
+        /// <param name="connectionString">The connection string.</param>
+        /// <param name="options">         Options for controlling the operation.</param>
+        /// <returns>The new connection.</returns>
+        public override DbConnection CreateIDbConnection(string connectionString)
+        {
+            var c = new MySqlConnection(connectionString);
+            return c;
+        }
 
-		}
+        /// <summary>Gets quoted column name.</summary>
+        /// <param name="columnName">Name of the column.</param>
+        /// <returns>The quoted column name.</returns>
+        public override string GetQuotedColumnName(string columnName)
+        {
+            return string.Format("`{0}`", NamingStrategy.GetColumnName(columnName));
+        }
 
-		/// <summary>Gets quoted column name.</summary>
-		/// <param name="columnName">Name of the column.</param>
-		/// <returns>The quoted column name.</returns>
-		public override string GetQuotedColumnName(string columnName)
-		{
-			return string.Format("`{0}`", NamingStrategy.GetColumnName(columnName));
-		}
+        /// <summary>Gets quoted name.</summary>
+        /// <param name="name">The name.</param>
+        /// <returns>The quoted name.</returns>
+        public override string GetQuotedName(string name)
+        {
+            return string.Format("`{0}`", name);
+        }
 
-		/// <summary>Gets quoted name.</summary>
-		/// <param name="name">The name.</param>
-		/// <returns>The quoted name.</returns>
-		public override string GetQuotedName(string name)
-		{
-			return string.Format("`{0}`", name);
-		}
-
-		/// <summary>Query if 'dbCmd' does table exist.</summary>
-		/// <param name="connection">    The database command.</param>
-		/// <param name="tableName">Name of the table.</param>
-		/// <returns>true if it succeeds, false if it fails.</returns>
-		public override bool DoesTableExist(IDbConnection connection, string tableName, string schemaName = null)
-		{
-			//Same as SQL Server apparently?
-			var sql = $@"SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES 
+        /// <summary>Query if 'dbCmd' does table exist.</summary>
+        /// <param name="connection">    The database command.</param>
+        /// <param name="tableName">Name of the table.</param>
+        /// <returns>true if it succeeds, false if it fails.</returns>
+        public override bool DoesTableExist(IDbConnection connection, string tableName, string schemaName = null)
+        {
+            //Same as SQL Server apparently?
+            var sql = $@"SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES 
                          WHERE TABLE_NAME = '{tableName}' 
                          AND TABLE_SCHEMA = '{schemaName ?? connection.Database}'";
 
-			var result = connection.ExecuteScalar<long>(sql);
+            var result = connection.ExecuteScalar<long>(sql);
 
-			return result > 0;
-		}
+            return result > 0;
+        }
 
-		public override string GetCreateSchemaStatement(string schema, bool ignoreIfExists)
-		{
-			return $"CREATE SCHEMA {(ignoreIfExists ? "IF NOT EXISTS" : string.Empty)} {schema}";
-		}
-
-		public override string GetDatePartFunction(string name, string quotedColName)
-		{
-			switch (name)
-			{
-				case "Year":
-					return $"YEAR({quotedColName})";
-				case "Month":
-					return $"MONTH({quotedColName})";
-				case "Day":
-					return $"DAY({quotedColName})";
-				case "Hour":
-					return $"HOUR({quotedColName})";
-				case "Minute":
-					return $"MINUTE({quotedColName})";
-				case "Second":
-					return $"SECOND({quotedColName})";
-				case "Quarter":
-					return $"QUARTER({quotedColName})";
-				default:
-					throw new NotImplementedException();
-			}
-		}
-
-		public override IEnumerable<IColumnDefinition> GetTableColumnDefinitions(IDbConnection connection,
-			string tableName, string schemaName = null)
-		{
-			string sqlQuery = "select * from INFORMATION_SCHEMA.COLUMNS where TABLE_NAME = @TableName";
-			if (!string.IsNullOrWhiteSpace(schemaName))
-			{
-				sqlQuery += " AND TABLE_SCHEMA = @SchemaName";
-			}
-
-			foreach (var c in connection.Query<InformationSchema>(sqlQuery,
-				new {TableName = tableName, SchemaName = schemaName}))
-			{
-				var ci = GetDbType(c.DATA_TYPE, c.CHARACTER_MAXIMUM_LENGTH, c.COLUMN_TYPE);
-
-				yield return new ColumnDefinition
-				{
-					Name = c.COLUMN_NAME,
-					Definition = c.DATA_TYPE,
-					DefaultValue = c.COLUMN_DEFAULT,
-					Nullable = c.IS_NULLABLE == "YES",
-					PrimaryKey = c.COLUMN_KEY == "PRI",
-					Length = c.CHARACTER_MAXIMUM_LENGTH,
-					DbType = c.COLUMN_TYPE == "tinyint(1)" ? DbType.Boolean : ci,
-					Precision = c.NUMERIC_PRECISION,
-					Scale = c.NUMERIC_SCALE
-				};
-			}
-		}
-
-		protected virtual DbType GetDbType(string dataType, int? length, string columnType)
+        public override string GetCreateSchemaStatement(string schema, bool ignoreIfExists)
         {
-	        bool unsigned = columnType.ToLower().Contains("unsigned");
-	        
+            return $"CREATE SCHEMA {(ignoreIfExists ? "IF NOT EXISTS" : string.Empty)} {schema}";
+        }
+
+        public override string GetDatePartFunction(string name, string quotedColName)
+        {
+            switch (name)
+            {
+                case "Year":
+                    return $"YEAR({quotedColName})";
+                case "Month":
+                    return $"MONTH({quotedColName})";
+                case "Day":
+                    return $"DAY({quotedColName})";
+                case "Hour":
+                    return $"HOUR({quotedColName})";
+                case "Minute":
+                    return $"MINUTE({quotedColName})";
+                case "Second":
+                    return $"SECOND({quotedColName})";
+                case "Quarter":
+                    return $"QUARTER({quotedColName})";
+                default:
+                    throw new NotImplementedException();
+            }
+        }
+
+        public override IEnumerable<IColumnDefinition> GetTableColumnDefinitions(IDbConnection connection,
+            string tableName, string schemaName = null)
+        {
+            var whereClause = " TABLE_NAME = @TableName";
+            if (!string.IsNullOrWhiteSpace(schemaName))
+            {
+                whereClause += " AND TABLE_SCHEMA = @SchemaName";
+            }  
+            
+            //Select Index with only one column to detect Unique columns
+            var indexQuery = @"SELECT COLUMN_NAME, NON_UNIQUE 
+                            FROM INFORMATION_SCHEMA.STATISTICS 
+                            WHERE INDEX_NAME NOT IN (SELECT INDEX_NAME FROM INFORMATION_SCHEMA.STATISTICS WHERE SEQ_IN_INDEX = 2 AND "+ whereClause + ") AND "+whereClause;
+            
+            var columnQuery = "SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE " + whereClause;
+
+            var indexedColumns = connection.Query(indexQuery, new {TableName = tableName, SchemaName = schemaName})
+                .ToDictionary(x => (string)x.COLUMN_NAME, x => (bool) (x.NON_UNIQUE == 0));
+            
+
+            foreach (var c in connection.Query<InformationSchema>(columnQuery,
+                new {TableName = tableName, SchemaName = schemaName}))
+            {
+                var ci = GetDbType(c.DATA_TYPE, c.CHARACTER_MAXIMUM_LENGTH, c.COLUMN_TYPE);
+
+                yield return new ColumnDefinition
+                {
+                    Name = c.COLUMN_NAME,
+                    Definition = c.DATA_TYPE,
+                    DefaultValue = c.COLUMN_DEFAULT,
+                    Nullable = c.IS_NULLABLE == "YES",
+                    PrimaryKey = c.COLUMN_KEY == "PRI",
+                    Unique = indexedColumns.ContainsKey(c.COLUMN_NAME) && indexedColumns[c.COLUMN_NAME],
+                    Length = c.CHARACTER_MAXIMUM_LENGTH,
+                    DbType = c.COLUMN_TYPE == "tinyint(1)" ? DbType.Boolean : ci,
+                    Precision = c.NUMERIC_PRECISION,
+                    Scale = c.NUMERIC_SCALE
+                };
+            }
+
+        }
+
+        protected virtual DbType GetDbType(string dataType, int? length, string columnType)
+        {
+            var unsigned = columnType.ToLower().Contains("unsigned");
+
             switch (dataType.ToUpper())
             {
                 case "VARCHAR":
@@ -157,7 +167,7 @@ namespace SimpleStack.Orm.MySQLConnector
                 case "DOUBLE":
                     return DbType.Double;
                 case "NUMERIC":
-                case "DEC" :
+                case "DEC":
                 case "DECIMAL":
                     return DbType.Decimal;
                 case "TIME":
@@ -173,7 +183,7 @@ namespace SimpleStack.Orm.MySQLConnector
                 case "CHAR BYTE":
                 case "VARBINARY":
                 case "TINYBLOB":
-                case "MEDIUMBLOB": 
+                case "MEDIUMBLOB":
                 case "LONGBLOB":
                 case "BLOB":
                     return DbType.Binary;

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Dynamic;
 using System.Linq;
 using Dapper;
 using SimpleStack.Orm.Attributes;
@@ -303,8 +304,31 @@ namespace SimpleStack.Orm.Tests
 	            Assert.AreEqual(2012, conn.GetScalar<TestType2, int>(x =>  x.DateCol.Year));
             }
 	    }
+	    
+	    [Test]
+	    public void Can_select_dynamics_using_array_contains()
+	    {
+		    var stringArray = new []{"1","2"};
 
-        /// <summary>Can select using in.</summary>
+		    using (var conn = OpenDbConnection())
+		    {
+			    conn.Insert(new TestType {StringColumn = "1"});
+			    conn.Insert(new TestType {StringColumn = "3"});
+
+			    string tableName = _connectionFactory.DialectProvider.NamingStrategy.GetTableName("TestType");
+			    string columnName = _connectionFactory.DialectProvider.NamingStrategy.GetColumnName("StringColumn");
+			    
+			    var actual = conn.Select(tableName, q =>
+			    {
+				    q.Where<string>(columnName, x => stringArray.Contains(x));
+			    }).ToArray();
+
+			    Assert.AreEqual(1,actual.Length);
+			    Assert.AreEqual("1", ((IDictionary<string, object>)actual[0])[columnName]);
+		    }
+	    }
+
+	    /// <summary>Can select using in.</summary>
         [Test]
 		public void Can_Select_using_IN()
 		{
@@ -500,6 +524,7 @@ namespace SimpleStack.Orm.Tests
 		
 		/// <summary>Gets or sets the text col.</summary>
 		/// <value>The text col.</value>
+		[Index(Unique = true)]
 		public string TextCol { get; set; }
 
 		/// <summary>Gets or sets a value indicating whether the col.</summary>

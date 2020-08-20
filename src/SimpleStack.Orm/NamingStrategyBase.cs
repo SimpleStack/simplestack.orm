@@ -13,22 +13,22 @@
 namespace SimpleStack.Orm
 {
     /// <summary>An ORM lite naming strategy base.</summary>
-	public class NamingStrategyBase : INamingStrategy
-	{
+    public class NamingStrategyBase : INamingStrategy
+    {
         /// <summary>Gets table name.</summary>
         /// <param name="name">The name.</param>
         /// <returns>The table name.</returns>
-		public virtual string GetTableName(string name)
-		{
-			return name;
-		}
+        public virtual string GetTableName(string name)
+        {
+            return name;
+        }
 
         /// <summary>Gets column name.</summary>
         /// <param name="name">The name.</param>
         /// <returns>The column name.</returns>
-		public virtual string GetColumnName(string name)
-		{
-			return name;
-		}
-	}
+        public virtual string GetColumnName(string name)
+        {
+            return name;
+        }
+    }
 }

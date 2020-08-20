@@ -24,9 +24,9 @@ namespace SimpleStack.Orm.Expressions.Statements.Typed
         {
             return new TableWhereExpresionVisitor<T>(_dialectProvider, WhereStatement.Parameters, _modelDefinition);
         }
-        
+
         /// <summary>
-        /// Used to overwrite the tablename generated from the Typed parameter
+        ///     Used to overwrite the tablename generated from the Typed parameter
         /// </summary>
         /// <param name="tableName">The new table name</param>
         /// <returns></returns>
@@ -35,7 +35,7 @@ namespace SimpleStack.Orm.Expressions.Statements.Typed
             WhereStatement.TableName = _dialectProvider.GetQuotedTableName(tableName);
             return this;
         }
-        
+
         public virtual TypedWhereStatement<T> Clear()
         {
             WhereStatement.Clear();
@@ -58,7 +58,9 @@ namespace SimpleStack.Orm.Expressions.Statements.Typed
         public TypedWhereStatement<T> And(Expression<Func<T, bool>> predicate)
         {
             if (predicate == null)
+            {
                 return this;
+            }
 
             Where(GetExpressionVisitor(), predicate);
             return this;
@@ -70,7 +72,9 @@ namespace SimpleStack.Orm.Expressions.Statements.Typed
         public TypedWhereStatement<T> Or(Expression<Func<T, bool>> predicate)
         {
             if (predicate == null)
+            {
                 return this;
+            }
 
             Where(GetExpressionVisitor(), predicate, "OR");
             return this;

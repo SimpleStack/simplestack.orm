@@ -182,13 +182,21 @@ namespace SimpleStack.Orm.PostgreSQL
                 sqlQuery += " AND table_schema = @SchemaName";
             }
 
+            var table = string.IsNullOrEmpty(schemaName) ? tableName : $"{schemaName}.{tableName}"; 
+
             var pks = connection.Query($@"SELECT a.attname
                 FROM   pg_index i
                 JOIN   pg_attribute a ON a.attrelid = i.indrelid
                                      AND a.attnum = ANY(i.indkey)
                 WHERE  i.indrelid = '{tableName}'::regclass
                 AND    i.indisprimary;").ToArray();
-
+            
+            var uniqueCols = connection.Query($@"SELECT a.attname
+                FROM   pg_index i
+                JOIN   pg_attribute a ON a.attrelid = i.indrelid
+                                     AND a.attnum = ANY(i.indkey)
+                WHERE  i.indrelid = '{tableName}'::regclass
+                AND    i.indisunique;").ToArray();
             foreach (var c in connection.Query<ColumnInformationSchema>(sqlQuery, new { 
                 TableName = NamingStrategy.GetTableName(tableName),
                 SchemaName = schemaName == null ? null : NamingStrategy.GetTableName(schemaName) }))
@@ -197,6 +205,7 @@ namespace SimpleStack.Orm.PostgreSQL
                              {
                                  Name = c.column_name,
                                  PrimaryKey = pks.Any(x => x.attname == c.column_name),
+                                 Unique = uniqueCols.Any(x => x.attname == c.column_name),
                                  Length = c.character_maximum_length,
                                  DefaultValue = c.column_default,
                                  Definition = c.data_type,

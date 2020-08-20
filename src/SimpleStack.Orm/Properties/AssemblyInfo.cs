@@ -12,4 +12,3 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("SimpleStack.Orm.SQLServer")]
 [assembly: InternalsVisibleTo("SimpleStack.Orm.Sqlite")]
 [assembly: InternalsVisibleTo("SimpleStack.Orm.Tests")]
-

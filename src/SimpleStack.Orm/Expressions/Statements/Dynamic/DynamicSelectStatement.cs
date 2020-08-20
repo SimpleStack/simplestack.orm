@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using System.Linq.Expressions;
 
 namespace SimpleStack.Orm.Expressions.Statements.Dynamic
@@ -7,7 +6,7 @@ namespace SimpleStack.Orm.Expressions.Statements.Dynamic
     public class DynamicSelectStatement : DynamicCountStatement
     {
         public DynamicSelectStatement(IDialectProvider dialectProvider)
-            :base(dialectProvider)
+            : base(dialectProvider)
         {
         }
 
@@ -25,7 +24,7 @@ namespace SimpleStack.Orm.Expressions.Statements.Dynamic
 
         public new DynamicSelectStatement From(string tableName, string schemaName = null)
         {
-            base.From(tableName,schemaName);
+            base.From(tableName, schemaName);
             return this;
         }
 
@@ -52,7 +51,7 @@ namespace SimpleStack.Orm.Expressions.Statements.Dynamic
             base.And(statement, func);
             return this;
         }
-        
+
         public new DynamicSelectStatement And<T>(string statement, Expression<Func<T, bool>> func)
         {
             base.Where(GetExpressionVisitor<T>(statement), func);
@@ -64,7 +63,7 @@ namespace SimpleStack.Orm.Expressions.Statements.Dynamic
             base.Where(GetExpressionVisitor<T>(statement), func, "OR");
             return this;
         }
- 
+
         public new DynamicSelectStatement Having<T>(string statement, Expression<Func<T, bool>> predicate)
         {
             base.Having(statement, predicate);

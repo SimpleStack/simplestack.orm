@@ -15,7 +15,10 @@ namespace SimpleStack.Orm.Expressions.Statements
             set
             {
                 if (value < 0)
+                {
                     throw new ArgumentException($"Offset value:'{value.ToString()}' must be>=0");
+                }
+
                 _offset = value;
             }
         }
@@ -26,7 +29,10 @@ namespace SimpleStack.Orm.Expressions.Statements
             set
             {
                 if (value < 0)
+                {
                     throw new ArgumentException($"MaxRows value:'{value.ToString()}' must be>=0");
+                }
+
                 _maxRows = value;
             }
         }

@@ -1,35 +1,29 @@
-# A Dapper based ORM for .NET
+# SimpleStack.Orm
 
-## Introduction
+[![Build Status](https://img.shields.io/nuget/dt/simplestack.orm)](https://www.nuget.org/packages/SimpleStack.Orm)
+[![Build Status](https://img.shields.io/github/license/simplestack/simplestack.orm)](https://www.github.com/simplestack/simplestack.orm)
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/simplestack/simplestack.orm)](https://github.com/SimpleStack/simplestack.orm/releases/)
+![GitHub top language](https://img.shields.io/github/languages/top/simplestack/simplestack.orm)
+![Maintenance](https://img.shields.io/maintenance/yes/2020)
+[![Twitter URL](https://img.shields.io/twitter/url?label=Follow%20us&style=social&url=https%3A%2F%2Ftwitter.com%2Fsimplestackproj)](https://twitter.com/simplestackproj)
 
-Follow [@simplestackproj](http://twitter.com/simplestackproj) on twitter for updates.
+[SimpleStack.Orm](https://simplestack.org) is a layer on top of the wonderful [Dapper](https://github.com/StackExchange/dapper-dot-net/) project that generate SQL queries based on lambda expressions. It is designed to persist types with a minimal amount of intrusion and configuration. All the generated sql queries are using parameters to improve performance and security.  
+  
+By using Dynamic queries it is also possible to generate queries without a corresponding Type, see [Dynamic Queries](https://simplestack.org/query/select_async_dyn) for more information.  
 
-SimpleStack.Orm is a set of light-weight C# extension methods around `System.Data.*` interfaces which is designed to persist POCO classes with a minimal amount of intrusion and configuration.
+#### Main goals:  
 
-SimpleStack.Orm is based on the wonderfull [Dapper](https://github.com/StackExchange/dapper-dot-net/) project for all database acces. The SQL query generation code is based on [NServiceKit.OrmLite](https://github.com/NServiceKit/NServiceKit.OrmLite)
+* Map a Type 1:1 to an RDBMS table or view.
+* Create/Drop DB Table schemas using nothing but a Type. (IOTW a true code-first ORM)  
+* Simplicity - typed, wrist friendly API for common data access patterns.  
+* Full use of query parameters.  
+* Supports multiple databases. Currently: Sql Server, Sqlite, MySql, PostgreSQL)  
+* Cross Platform, based on netstandard 2.0.  
+* Support connections on multiple databases from the same application  
+  
+In SimpleStak.Orm : **1 Class = 1 Table/View**. There are no surprising or hidden behavior.  [Attributes](https://simplestack.org/attributes) may be added on your Type to tune the queries generation (Alias, Schema, PrimaryKey, Index,...)
 
-Main objectives:
-
-  * Map a POCO class 1:1 to an RDBMS table, cleanly by conventions, without any attributes required.
-  * Create/Drop DB Table schemas using nothing but POCO class definitions (IOTW a true code-first ORM)
-  * Simplicity - typed, wrist friendly API for common data access patterns.
-  * Fully parameterized queries
-  * Cross platform - supports multiple dbs (currently: Sql Server, Sqlite, MySql, PostgreSQL) running on both .NET and Mono platforms.
-
-In SimpleStak.Orm : **1 Class = 1 Table**. There should be no surprising or hidden behaviour.
-
-Effectively this allows you to create a table from any POCO type and it should persist as expected in a DB Table with columns for each of the classes 1st level public properties.
-
-# Install
-
-## Depending on the database you want to target:
-
-  - [Sql Server](https://www.nuget.org/packages/SimpleStack.Orm.SqlServer)
-  - [MySql](https://www.nuget.org/packages/SimpleStack.Orm.MySQL)
-  - [PostgreSQL](https://www.nuget.org/packages/SimpleStack.Orm.PostgreSQL)
-  - [Sqlite](https://www.nuget.org/packages/SimpleStack.Orm.Sqlite/)
-
-### 2 minutes sample
+### Sample usage
 
 ```csharp
 using SimpleStack.Orm;
@@ -39,10 +33,13 @@ namespace Test{
 
    public class sample{
 
+      [Alias("dogs")]
       public class Dog{
-         [PrimaryKey]
+         [PrimaryKey()]
+         [AutoIncrement()]
          public int Id{get; set;}
          public string Name{get; set;}
+         [Alias("birth_date")]
          public DateTime? BirthDate{get; set;}
          public decimal Weight{get; set;}
          public string Breed{get; set;}
@@ -53,218 +50,42 @@ namespace Test{
       {
          conn.CreateTable<Dog>();
 
+         // INSERT INTO "dogs" ("Id", "Name", "birth_date", "Weight", "Breed" ) VALUES (@p_0, @p_1, @p_2, @p_3, @p_4)
          conn.Insert(new Dog{Name="Snoopy", BirthDate = new DateTime(1950,10,01), Weight=25.4});
          conn.Insert(new Dog{Name="Rex", Weight=45.6});
-         conn.Insert(new Dog{Name="Rintintin", BirthDate = new DateTime(1918,09,13), Weight=2});
+         conn.Insert(new Dog{Name="Popol", BirthDate = new DateTime(1918,09,13), Weight=2});
 
+         // SELECT "Id", "Name", "birth_date" AS BirthDate, "Weight", "Breed"
+         // FROM "dogs"
+         // WHERE ("Id" = @p_0)
+         // ORDER BY 1 -- ORDER BY is mandatory to use OFFSET and FETCH clause in SQLServer
+         // OFFSET 0 ROWS FETCH NEXT 1 ROWS ONLY
          var rex = conn.First<Dog>(x => Id == 2);
+
          rex.BirthDate = new DateTime(1994,11,10);
 
+         // UPDATE "dogs" SET "Name"=@p_0, "birth_date"=@p_1, "Weight"=@p_2, "Breed"=@p_3 WHERE "Id"=@p_4
          conn.Update(rex);
 
-         conn.Delete<Dog>(x => x.Name == "Rintintin");
+         // DELETE FROM "dogs" WHERE ("Name" = @p_0)
+         conn.DeleteAll<Dog>(x => x.Name == "Popol");
+
+         // SELECT "Name", "Breed", "Weight"
+         // FROM "dogsbackup"
+         // WHERE (DATEPART(year,"birth_date") = @p_0) --will be specific depending on database
+         // ORDER BY "Breed" ASC,"Weight" DESC
+         conn.Select<Dog>(x => {
+             x.From("dogsbackup");                         // Change From clause
+             x.Select(y => new {y.Name,y.Breed,y.Weight}); // Only return some fields
+             x.Where(y => y.BirthDate.Value.Year == 2019);
+             x.OrderBy(y => y.Breed)
+              .ThenByDescending(y => y.Weight);
+         });
+
+         // SELECT AVG(Weight) AS Weight
+         // FROM "dogs"
+         conn.GetScalar<Dog, decimal>(x => Sql.Avg(x.Weight))
       }
    }
 }
 ```
-
-## 20 Minutes sample
-
-As SimpleStack.Orm is based on Dapper, I encourage you to have a look at [Dapper documentation](https://github.com/StackExchange/dapper-dot-net/blob/master/Readme.md).
-
-The first thing todo is to create an OrmConnectionFactory specifying the Dialectprovider to use and the connectionstring of your database.
-
-```csharp
-
-var factory = new OrmConnectionFactory(new SqlServerDialectProvider(), "server=...");
-using (var conn = factory.OpenConnection())
-{
-   //TODO use connection
-}
-```
-
-The DialectProvider contains all the specific code required for each database.
-
-## WHERE clause generation using strong type LINQ queries
-
-### Equals, Not equals, Bigger than, Less than, Contains,...
-
-```csharp
-db.Select<Dog>(q => q.Name == "Rex"); // WHERE ("Name" = 'Rex')
-db.Select<Dog>(q => q.Name != "Rex"); // WHERE ("Name" <> 'Rex')
-db.Select<Dog>(q => q.Weight == 10); // WHERE ("Weight" = 10)
-db.Select<Dog>(q => q.Weight > 10); // WHERE ("Weight" > 10)
-db.Select<Dog>(q => q.Weight >= 10); // WHERE ("Weight" >= 10)
-db.Select<Dog>(q => q.Weight < 10); // WHERE ("Weight" < 10)
-db.Select<Dog>(q => q.Weight <= 10); // WHERE ("Weight" <= 10)
-db.Select<Dog>(q => q.Name.Contains("R")); // WHERE ("Name" LIKE("%R%"))
-db.Select<Dog>(q => q.Name.StartWith("R")); // WHERE ("Name" LIKE("R%"))
-db.Select<Dog>(q => q.Name.EndWidth("R")); // WHERE ("Name" LIKE("%R"))
-
-```
-
-### Combine criterias with AND or OR
-
-```csharp
-// WHERE ("Name" LIKE 'R' OR "Weight" > 10)
-db.Select<Dog>(q => q.Name.Contains("R") || q.Weight > 10);
-// WHERE ("Name" LIKE 'R' AND "Weight" > 10)
-db.Select<Dog>(q => q.Name.Contains("R") && q.Weight > 10);
-```
-
-### Sql class
-
-#### IN Criteria
-
-```csharp
-// WHERE "Breed" In ('Beagle', 'Border Collie', 'Golden Retriever')
-db.Select<Dog>(q => Sql.In(q.Breed, "Beagle", "Border Collie", "Golden Retriever"));
-```
-
-#### Date part methods
-Use the date function (specific for each database)
-```csharp
-// SELECT YEAR("BirthDate") FROM DOG
-conn.GetScalar<Dog, int>(x => Sql.Year(x.BirthDate))
-// OR
-conn.GetScalar<Dog, int>(x => x.BirthDate.Year)
-
-// SELECT "Id","Name","Breed","DareBirth","Weight" FROM DOG WHERE MONTH("BirthDate") = 10
-conn.Select<Dog>(x => Sql.Month(x.BirthDate) = 10)
-// OR
-conn.Select<Dog>(x => x.BirthDate.Month = 10)
-```
-
-#### Aggregation function
-
-```csharp
-// SELECT MAX("BirthDate") FROM DOG
-conn.GetScalar<Dog, DateTime>(x => Sql.Max(x.BirthDate))
-// SELECT AVG("Weight") FROM DOG
-conn.GetScalar<Dog, decimal>(x => Sql.Avg(x.Weight))
-```
-
-
-## INSERT, UPDATE and DELETEs
-
-To see the behaviour of the different APIs, all sample uses this simple model
-
-```csharp
-public class Person
-{
-	public int Id { get; set; }
-	public string FirstName { get; set; }
-	public string LastName { get; set; }
-	public int? Age { get; set; }
-}
-```
-
-### Update
-
-The "Update" method will always update up to one row by generating the where clause using PrimaryKey definitions
-
-```csharp
-//UPDATE "Person" SET "FirstName" = 'Jimi',"LastName" = 'Hendrix',"Age" = 27 WHERE "Id" = 1
-db.Update(new Person { Id = 1, FirstName = "Jimi", LastName = "Hendrix", Age = 27});
-```
-
-To update only some columns, you can use the "onlyField" parameter
-
-```csharp
-//UPDATE "Person" SET "Age" = 27 WHERE "Id" = 1
-db.Update(new Person { Id = 1, Age = 27}, x => x.Age);
-//UPDATE "Person" SET "LastName" = 'Hendrix',"Age" = 27 WHERE "Id" = 1
-db.Update(new Person { Id = 1, LastName = "Hendrix", Age = 27}, x => new {x.Age, x.LastName});
-```
-
-Anonymous object can also be used
-
-```csharp
-//UPDATE "Person" SET "Age" = 27 WHERE "Id" = 1
-db.Update<Person>(new { Id = 1, Age = 27}, x => x.Age);
-//UPDATE "Person" SET "LastName" = 'Hendrix',"Age" = 27 WHERE "Id" = 1
-db.Update<Person>(new { Id = 1, LastName = "Hendrix", Age = 27}, x => new {x.Age, x.LastName});
-```
-
-### UpdateAll
-
-The "UpdateAll" method will update rows using the specified where clause (if any).
-
-```csharp
-//UPDATE "Person" SET "FirstName" = 'JJ'
-db.UpdateAll(new Person { FirstName = "JJ" }, p => p.FirstName);
-//UPDATE "Person" SET "FirstName" = 'JJ' WHERE AGE > 27
-db.UpdateAll(new Person { FirstName = "JJ" }, p => p.FirstName, x => x.Age > 27);
-```
-
-### INSERT
-
-#### Insert a single row
-
-```csharp
-//INSERT INTO "Person" ("Id","FirstName","LastName","Age") VALUES (1,'Jimi','Hendrix',27)
-db.Insert(new Person { Id = 1, FirstName = "Jimi", LastName = "Hendrix", Age = 27 });
-```
-
-#### Insert multiple rows
-
-```csharp
-//INSERT INTO "Person" ("Id","FirstName","LastName","Age") VALUES (1,'Jimi','Hendrix',27)
-db.Insert(new []{
-   new Person { Id = 1, FirstName = "Jimi", LastName = "Hendrix", Age = 27 },
-   new Person { Id = 2, FirstName = "Kurt", LastName = "Cobain", Age = 27 },
-   });
-```
-
-#### AutoIncremented Primary Keys
-
-if you specify a PrimaryKey as AutoIncrement, the PrimaryKey is not added in the INSERT query
-
-```csharp
-public class Person
-{
-   [PrimaryKey]
-   [AutoIncrement]
-	public int Id { get; set; }
-	public string FirstName { get; set; }
-	public string LastName { get; set; }
-	public int? Age { get; set; }
-}
-
-//INSERT INTO "Person" ("FirstName","LastName","Age") VALUES ('Jimi','Hendrix',27)
-db.Insert(new Person { FirstName = "Jimi", LastName = "Hendrix", Age = 27 });
-
-```
-
-### Delete
-
-The "Delete" method will always delete up to one row by generating the where clause using PrimaryKey definitions
-
-```csharp
-//DELETE FROM "Person" WHERE ("Id" = 2)
-db.Delete(new Person{Id = 2});
-```
-
-### DeleteAll
-Or an Expression Visitor:
-```csharp
-//DELETE FROM "Person" WHERE ("Age" = 27)
-db.DeleteAll<Person>(x => x.Age = 27);
-```
-
-### Primary Keys, Foreign keys and Indexes
-
-TODO
-
-### Available Attributes
-
-TODO
-
-### Select using JOINs
-
-TODO
-
-### TypeMappers
-
-TODO
-

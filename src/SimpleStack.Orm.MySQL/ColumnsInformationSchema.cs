@@ -1,5 +1,3 @@
-using SimpleStack.Orm.Attributes;
-
 namespace SimpleStack.Orm.MySQL
 {
     internal class InformationSchema
@@ -22,6 +20,5 @@ namespace SimpleStack.Orm.MySQL
         public string COLUMN_TYPE { get; set; }
         public string COLUMN_KEY { get; set; }
         public string EXTRA { get; set; }
-
     }
 }

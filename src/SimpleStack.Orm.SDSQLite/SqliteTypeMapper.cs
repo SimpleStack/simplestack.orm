@@ -1,11 +1,12 @@
 using System;
 using System.Data;
 
-namespace SimpleStack.Orm.SDSQlite
+namespace SimpleStack.Orm.SDSQLite
 {
     public class SqliteTypeMapper : DbTypeMapperBase
     {
-        public override string GetFieldDefinition(DbType type, int? length = null, int? scale = null, int? precision = null)
+        public override string GetFieldDefinition(DbType type, int? length = null, int? scale = null,
+            int? precision = null)
         {
             var l = length ?? DefaultStringLength;
             switch (type)
@@ -15,7 +16,7 @@ namespace SimpleStack.Orm.SDSQlite
                 case DbType.StringFixedLength:
                 case DbType.String:
                 case DbType.Xml:
-                    return "text";// : $"character varying({l})";
+                    return "text"; // : $"character varying({l})";
                 case DbType.Guid:
                     return "guid";
                 case DbType.Binary:
