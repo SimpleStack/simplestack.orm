@@ -474,7 +474,7 @@ namespace SimpleStack.Orm
             }
 
             var tables = new List<TableDefinition>();
-            foreach (var table in await connection.QueryAsync(sqlQuery, new {SchemaName = schemaName}))
+            foreach (var table in await connection.QueryAsync(sqlQuery, new {SchemaName = schemaName}).ConfigureAwait(false))
             {
                 tables.Add(new TableDefinition
                 {
