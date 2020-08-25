@@ -49,8 +49,8 @@ namespace SimpleStack.Orm.Expressions.Statements.Typed
 
             foreach (var fieldDef in fields)
             {
-                var v = fieldDef.GetValue(values);
-                if (fieldDef.DefaultValue == null || v != null)
+                var v = fieldDef.GetValue(values) ?? fieldDef.DefaultValue;
+                if (v != null)
                 {
                     var pname = _dialectProvider.GetParameterName(Statement.Parameters.Count);
                     Statement.Parameters.Add(pname, v);
