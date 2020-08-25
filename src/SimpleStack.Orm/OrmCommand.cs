@@ -2,15 +2,13 @@
 using System.Data.Common;
 using SimpleStack.Orm.Logging;
 
-//using SimpleStack.Orm.Logging;
-
 namespace SimpleStack.Orm
 {
     internal class OrmCommand : DbCommand
     {
         private ILogger<OrmCommand> _logger;
 
-        private readonly DbCommand _command;
+        private DbCommand _command;
         private readonly ILoggerFactory _loggerFactory;
 
         internal OrmCommand(DbCommand command, ILoggerFactory loggerFactory)
@@ -103,6 +101,16 @@ namespace SimpleStack.Orm
             var res = _command.ExecuteScalar();
             _logger.LogDebug("ExecuteScalar complete with result '{0}'", res);
             return res;
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _command.Dispose();
+                _command = null;
+            }
+            base.Dispose(disposing);
         }
     }
 }
