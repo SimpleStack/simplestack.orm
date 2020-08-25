@@ -207,7 +207,8 @@ namespace SimpleStack.Orm
             query.Append(insertStatement.InsertFields.Aggregate((x, y) => x + ", " + y));
             query.Append(" ) VALUES (");
             query.Append(insertStatement.Parameters.Select(x => x.Key).Aggregate((x, y) => x + ", " + y));
-            query.Append(")");
+            query.Append(");");
+            query.Append(SelectIdentitySql);
 
             return new CommandDefinition(query.ToString(), insertStatement.Parameters, flags: flags);
         }

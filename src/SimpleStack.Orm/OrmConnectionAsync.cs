@@ -317,14 +317,26 @@ namespace SimpleStack.Orm
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
         /// <exception cref="OrmException"></exception>
-        public async Task<int> InsertAsync<T>(T obj)
+        public Task<int> InsertAsync<T>(T obj)
+        {
+            return InsertAsync<int, T>(obj);
+        }
+
+        /// <summary>
+        /// Insert an object in the database 
+        /// </summary>
+        /// <param name="obj">The object to insert</param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        /// <exception cref="OrmException"></exception>
+        public async Task<TKey> InsertAsync<TKey, T>(T obj)
         {
             try
             {
                 var insertStatement = new TypedInsertStatement<T>(DialectProvider);
                 insertStatement.Values(obj, new List<string>());
 
-                return await this.ExecuteScalarAsync<int>(
+                return await this.ExecuteScalarAsync<TKey>(
                     DialectProvider.ToInsertStatement(insertStatement.Statement, CommandFlags.None));
             }
             catch (Exception e)
@@ -339,21 +351,32 @@ namespace SimpleStack.Orm
         /// <param name="objs">The objects to insert</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public async Task<IEnumerable<int>> InsertAsync<T>(IEnumerable<T> objs)
+        public Task<IEnumerable<int>> InsertAsync<T>(IEnumerable<T> objs)
+        {
+            return InsertAsync<int, T>(objs);
+        }
+
+        /// <summary>
+        /// Insert multiple objects at once in the database
+        /// </summary>
+        /// <param name="objs">The objects to insert</param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public async Task<IEnumerable<TKey>> InsertAsync<TKey, T>(IEnumerable<T> objs)
         {
             if (objs == null)
             {
                 throw new ArgumentNullException(nameof(objs));
             }
 
-            List<int> result = new List<int>();
+            List<TKey> result = new List<TKey>();
             foreach (var t in objs)
             {
                 //TODO: Optimize this only generating query once and use different parameters
                 var insertStatement = new TypedInsertStatement<T>(DialectProvider);
                 insertStatement.Values(t, new List<string>());
 
-                result.Add(await this.ExecuteScalarAsync<int>(
+                result.Add(await this.ExecuteScalarAsync<TKey>(
                     DialectProvider.ToInsertStatement(insertStatement.Statement, CommandFlags.None)));
             }
 
