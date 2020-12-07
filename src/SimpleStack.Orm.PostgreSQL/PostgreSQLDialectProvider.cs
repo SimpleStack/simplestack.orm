@@ -249,8 +249,8 @@ namespace SimpleStack.Orm.PostgreSQL
                     return DbType.Time;
                 case "date":
                 case "timestamp without time zone":
-                    return DbType.DateTime;
-                case "timestamp whith time zone":
+                    return DbType.DateTime2;
+                case "timestamp with time zone":
                     return DbType.DateTimeOffset;
                 case "money":
                     return DbType.Currency;
