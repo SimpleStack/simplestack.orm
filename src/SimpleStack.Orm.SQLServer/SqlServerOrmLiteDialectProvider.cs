@@ -278,7 +278,7 @@ namespace SimpleStack.Orm.SqlServer
             }
         }
 
-		private DbType GetDbType(string dataType)
+		protected virtual DbType GetDbType(string dataType)
 		{
 			switch (dataType.ToLower())
 			{
@@ -308,6 +308,7 @@ namespace SimpleStack.Orm.SqlServer
 				case "varbinary":
 					return DbType.Binary;
 				case "numeric":
+				case "decimal":
 					return DbType.Decimal;
 				case "date":
 					return DbType.Date;
