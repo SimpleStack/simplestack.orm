@@ -56,7 +56,7 @@ namespace SimpleStack.Orm
             
             var conn = DialectProvider.CreateConnection(_connectionString,_loggerFactory);
             conn.CommandTimeout = DefaultCommandTimeout;
-            await conn.OpenAsync();
+            await conn.OpenAsync().ConfigureAwait(false);
             return conn;
         }
 
