@@ -258,10 +258,20 @@ namespace SimpleStack.Orm
         {
             CreateTableIfNotExistsAsync<T>().Wait();
         }
+        
+        public void CreateTableIfNotExists(Type tableType)
+        {
+            CreateTableIfNotExistsAsync(tableType).Wait();
+        }
 
         public bool TableExists<T>()
         {
             return TableExistsAsync<T>().Result;
+        }
+        
+        public bool TableExists(Type tableType)
+        {
+            return TableExistsAsync(tableType).Result;
         }
 
         public bool TableExists(string tableName, string schemaName = null)
@@ -282,6 +292,11 @@ namespace SimpleStack.Orm
         public bool DropTableIfExists<T>()
         {
             return DropTableIfExistsAsync<T>().Result;
+        }
+        
+        public bool DropTableIfExists(Type tableType)
+        {
+            return DropTableIfExistsAsync(tableType).Result;
         }
 
         public IEnumerable<ITableDefinition> GetTables(string schemaName = null, bool includeViews = false)
