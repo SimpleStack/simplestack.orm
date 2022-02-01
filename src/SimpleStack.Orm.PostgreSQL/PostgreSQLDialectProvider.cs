@@ -213,7 +213,8 @@ namespace SimpleStack.Orm.PostgreSQL
                                  Nullable = c.is_nullable == "YES",
                                  Precision = c.numeric_precision,
                                  Scale = c.numeric_scale,
-                                 DbType = GetDbType(c)
+                                 DbType = GetDbType(c),
+                                 ComputedExpression = c.generation_expression
                 };
             }
         }
