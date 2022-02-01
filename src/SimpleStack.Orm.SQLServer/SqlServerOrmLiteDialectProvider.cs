@@ -237,43 +237,49 @@ namespace SimpleStack.Orm.SqlServer
 		}
 
 		public override IEnumerable<IColumnDefinition> GetTableColumnDefinitions(IDbConnection connection, string tableName, string schemaName = null)
-        {
-            string sqlQuery = @"SELECT *, OBJECTPROPERTY(OBJECT_ID(CONSTRAINT_SCHEMA + '.' + QUOTENAME(CONSTRAINT_NAME)), 'IsPrimaryKey') as IS_PRIMARY_KEY,
-								OBJECTPROPERTY(OBJECT_ID(CONSTRAINT_SCHEMA + '.' + QUOTENAME(CONSTRAINT_NAME)), 'IsIndexed') as IS_UNIQUE
-                                FROM INFORMATION_SCHEMA.COLUMNS
-                                LEFT JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE ON INFORMATION_SCHEMA.KEY_COLUMN_USAGE.TABLE_NAME = INFORMATION_SCHEMA.COLUMNS.TABLE_NAME
-                                                                             AND INFORMATION_SCHEMA.KEY_COLUMN_USAGE.TABLE_CATALOG = INFORMATION_SCHEMA.COLUMNS.TABLE_CATALOG
-                                                                             AND INFORMATION_SCHEMA.KEY_COLUMN_USAGE.TABLE_SCHEMA = INFORMATION_SCHEMA.COLUMNS.TABLE_SCHEMA
-                                                                             AND INFORMATION_SCHEMA.KEY_COLUMN_USAGE.COLUMN_NAME = INFORMATION_SCHEMA.COLUMNS.COLUMN_NAME
-                                                                             AND (OBJECTPROPERTY(OBJECT_ID(CONSTRAINT_SCHEMA + '.' + QUOTENAME(CONSTRAINT_NAME)), 'IsPrimaryKey') = 1)
-                                WHERE INFORMATION_SCHEMA.COLUMNS.TABLE_NAME = @TableName ";
+		{
+			string fullTableName = string.IsNullOrEmpty(schemaName) ? tableName : $"{schemaName}.{tableName}";
+	        
+            string sqlQuery = @"SELECT c.name COLUMN_NAME,
+								       t.name DATA_TYPE,
+								       dc.definition COLUMN_DEFAULT,
+								       c.max_length CHARACTER_MAXIMUM_LENGTH,
+								       c.is_nullable IS_NULLABLE,
+								       c.[precision] NUMERIC_PRECISION,
+								       c.[scale] NUMERIC_SCALE,
+								       cl.definition COMPUTED_DEFINITION
+								FROM sys.columns c
+								LEFT JOIN sys.computed_columns cl ON cl.column_id = c.column_id 
+								LEFT JOIN sys.default_constraints dc ON dc.object_id = c.default_object_id 
+								INNER JOIN sys.types t ON t.user_type_id  = c.user_type_id 
+								where c.object_id = OBJECT_ID(@TableName);";
 
-            string uniqueQuery = @"SELECT COL_NAME(ic.object_id,ic.column_id) AS column_name  , is_unique
+            string uniqueQuery = @"SELECT COL_NAME(ic.object_id,ic.column_id) AS COLUMN_NAME  , is_unique IS_UNIQUE, is_primary_key IS_PRIMARYKEY 
 									FROM sys.indexes AS i  
 									INNER JOIN sys.index_columns AS ic
 									    ON i.object_id = ic.object_id AND i.index_id = ic.index_id 
 										WHERE i.object_id = OBJECT_ID(@TableName)
-										AND is_unique = 1;";
-            var uniqueCols = connection.Query(uniqueQuery, new {TableName = tableName, SchemaName = schemaName}).ToArray();
-            if (!string.IsNullOrWhiteSpace(schemaName))	
-            {
-                sqlQuery +=" AND INFORMATION_SCHEMA.COLUMNS.TABLE_SCHEMA = @SchemaName";
-            }
+										AND is_unique = 1";
+            
+            var indexes = connection.Query(uniqueQuery, new {TableName = fullTableName}).ToArray();
 
-            foreach (var c in connection.Query(sqlQuery, new {TableName = tableName, SchemaName = schemaName}))
+            foreach (var c in connection.Query(sqlQuery, new {TableName = fullTableName}))
             {
+	            var i = indexes.FirstOrDefault(x => x.COLUMN_NAME == c.COLUMN_NAME);
+	            
 	            yield return new ColumnDefinition
 	            {
 		            Name = c.COLUMN_NAME,
 		            Definition = c.DATA_TYPE,
 		            DefaultValue = c.COLUMN_DEFAULT,
-		            PrimaryKey = c.IS_PRIMARY_KEY == 1,
-		            Unique = uniqueCols.Any(x => x.column_name == c.COLUMN_NAME),
-		            Length = c.CHARACTER_MAXIMUM_LENGTH,
-		            Nullable = c.IS_NULLABLE == "YES",
+		            PrimaryKey = i != null && i.IS_PRIMARY_KEY ?? false, 
+		            Unique = i != null && i.IS_UNIQUE ?? false, 
+		            Length = (c.DATA_TYPE == "nvarchar" || c.DATA_TYPE == "ntext" || c.DATA_TYPE == "nchar") ? c.CHARACTER_MAXIMUM_LENGTH / 2 : c.CHARACTER_MAXIMUM_LENGTH,
+		            Nullable = c.IS_NULLABLE,
 		            Precision = c.NUMERIC_PRECISION,
 		            Scale = c.NUMERIC_SCALE,
-		            DbType = GetDbType(c.DATA_TYPE)
+		            DbType = GetDbType(c.DATA_TYPE),
+		            ComputedExpression = c.COMPUTED_DEFINITION
 	            };
             }
         }
