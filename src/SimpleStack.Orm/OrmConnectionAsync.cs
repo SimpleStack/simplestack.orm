@@ -434,6 +434,23 @@ namespace SimpleStack.Orm
             var tableType = typeof(T);
             await CreateTableAsync(dropIfExists, tableType);
         }
+        
+        /// <summary>
+        /// Create a table based on the give Type
+        /// </summary>
+        /// <param name="tableType"></param>
+        /// <param name="dropIfExists">True to drop the table if it already exists</param>
+        /// <returns></returns>
+        /// <exception cref="OrmException"></exception>
+        public async Task CreateTableAsync(Type tableType, bool dropIfExists)
+        {
+            if (!dropIfExists && await TableExistsAsync(tableType))
+            {
+                throw new OrmException("Table already exists");
+            }
+
+            await CreateTableAsync(dropIfExists, tableType);
+        }
 
         /// <summary>
         /// Create a table corresponding to the specified type if it didn't exists
@@ -445,7 +462,17 @@ namespace SimpleStack.Orm
             var tableType = typeof(T);
             await CreateTableAsync(false, tableType);
         }
-
+        
+        /// <summary>
+        /// Create a table corresponding to the specified type if it didn't exists
+        /// </summary>
+        /// <param name="tableType"></param>
+        /// <returns></returns>
+        public async Task CreateTableIfNotExistsAsync(Type tableType)
+        {
+            await CreateTableAsync(false, tableType);
+        }
+        
         /// <summary>
         /// Create a schema if no exists
         /// </summary>
@@ -479,6 +506,20 @@ namespace SimpleStack.Orm
                     tableModelDef.Alias ?? tableModelDef.ModelName,
                     tableModelDef.Schema));
         }
+        
+        /// <summary>
+        /// Execute a query to detect if a table already exists
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public async Task<bool> TableExistsAsync(Type tableType)
+        {
+            var tableModelDef = tableType.GetModelDefinition();
+            return await Task.Run(() =>
+                DialectProvider.DoesTableExist(this,
+                    tableModelDef.Alias ?? tableModelDef.ModelName,
+                    tableModelDef.Schema));
+        }
 
         /// <summary>
         /// Execute a query to detect if a table already exists
@@ -502,6 +543,22 @@ namespace SimpleStack.Orm
             if (await TableExistsAsync<T>())
             {
                 var tableModelDef = typeof(T).GetModelDefinition();
+                await DropTableAsync(tableModelDef);
+            }
+
+            return false;
+        }
+        
+        /// <summary>
+        /// Drop a table if it exists
+        /// </summary>
+        /// <param name="tableType"></param>
+        /// <returns>True if table did exists and has been dropped</returns>
+        public async Task<bool> DropTableIfExistsAsync(Type tableType)
+        {
+            if (await TableExistsAsync(tableType))
+            {
+                var tableModelDef = tableType.GetModelDefinition();
                 await DropTableAsync(tableModelDef);
             }
 

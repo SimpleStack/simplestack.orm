@@ -122,7 +122,7 @@ namespace SimpleStack.Orm.SDSQLite
         public override IEnumerable<IColumnDefinition> GetTableColumnDefinitions(IDbConnection connection,
             string tableName, string schemaName = null)
         {
-            var sqlQuery = $"pragma table_info('{tableName}')";
+            var sqlQuery = $"pragma table_xinfo('{tableName}')";
             foreach (var c in connection.Query(sqlQuery))
             {
                 Match m = PrecisionAndScaleRegex.Match(c.type);
