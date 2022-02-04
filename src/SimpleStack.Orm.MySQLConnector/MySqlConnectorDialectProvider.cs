@@ -130,7 +130,8 @@ namespace SimpleStack.Orm.MySQLConnector
                     Length = c.CHARACTER_MAXIMUM_LENGTH,
                     DbType = c.COLUMN_TYPE == "tinyint(1)" ? DbType.Boolean : ci,
                     Precision = c.NUMERIC_PRECISION,
-                    Scale = c.NUMERIC_SCALE
+                    Scale = c.NUMERIC_SCALE,
+                    ComputedExpression = c.GENERATION_EXPRESSION
                 };
             }
 
