@@ -4,7 +4,7 @@
 [![Build Status](https://img.shields.io/github/license/simplestack/simplestack.orm)](https://www.github.com/simplestack/simplestack.orm)
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/simplestack/simplestack.orm)](https://github.com/SimpleStack/simplestack.orm/releases/)
 ![GitHub top language](https://img.shields.io/github/languages/top/simplestack/simplestack.orm)
-![Maintenance](https://img.shields.io/maintenance/yes/2020)
+![Maintenance](https://img.shields.io/maintenance/yes/2022)
 [![Twitter URL](https://img.shields.io/twitter/url?label=Follow%20us&style=social&url=https%3A%2F%2Ftwitter.com%2Fsimplestackproj)](https://twitter.com/simplestackproj)
 
 [SimpleStack.Orm](https://simplestack.org) is a layer on top of the wonderful [Dapper](https://github.com/StackExchange/dapper-dot-net/) project that generate SQL queries based on lambda expressions. It is designed to persist types with a minimal amount of intrusion and configuration. All the generated sql queries are using parameters to improve performance and security.  

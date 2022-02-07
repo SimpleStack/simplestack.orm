@@ -53,6 +53,11 @@ namespace SimpleStack.Orm
         /// Column default value
         /// </summary>
         string DefaultValue { get; }
+        
+        /// <summary>
+        /// Computed Column Expression
+        /// </summary>
+        string ComputedExpression { get; }
     }
 
     public class ColumnType
@@ -83,5 +88,8 @@ namespace SimpleStack.Orm
 
         /// <inheritdoc />
         public string DefaultValue { get; set; }
+        
+        /// <inheritdoc />
+        public string ComputedExpression { get; set; }
     }
 }

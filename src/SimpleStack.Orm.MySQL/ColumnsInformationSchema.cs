@@ -20,5 +20,6 @@ namespace SimpleStack.Orm.MySQL
         public string COLUMN_TYPE { get; set; }
         public string COLUMN_KEY { get; set; }
         public string EXTRA { get; set; }
+        public string GENERATION_EXPRESSION { get; set; }
     }
 }
