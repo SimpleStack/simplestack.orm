@@ -203,15 +203,20 @@ namespace SimpleStack.Orm
         {
             var query = new StringBuilder("INSERT INTO ");
             query.Append(insertStatement.TableName);
-            query.Append(" (");
-            query.Append(insertStatement.InsertFields.Aggregate((x, y) => x + ", " + y));
-            query.Append(" ) VALUES (");
-            query.Append(insertStatement.Parameters.Select(x => x.Key).Aggregate((x, y) => x + ", " + y));
-            query.Append(");");
-            if (insertStatement.HasIdentity)
-                query.Append(SelectIdentitySql);
+            if (insertStatement.InsertFields.Any())
+            {
+                query.Append(" (");
+                query.Append(insertStatement.InsertFields.Aggregate((x, y) => x + ", " + y));
+                query.Append(" ) VALUES (");
+                query.Append(insertStatement.Parameters.Select(x => x.Key).Aggregate((x, y) => x + ", " + y));
+                query.Append(");");
+            }
             else
-                query.Append("SELECT 0");
+            {
+                query.Append(" DEFAULT VALUES; ");
+            }
+
+            query.Append(insertStatement.HasIdentity ? SelectIdentitySql : "SELECT 0");
 
             return new CommandDefinition(query.ToString(), insertStatement.Parameters, flags: flags);
         }

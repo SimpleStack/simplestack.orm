@@ -6,6 +6,14 @@ namespace SimpleStack.Orm.Tests
     [TestFixture]
     public partial class ExpressionTests
     {
+        public class ModeWithOnlyAutoIncrement
+        {
+            /// <summary>Gets or sets the identifier.</summary>
+            /// <value>The identifier.</value>
+            [AutoIncrement]
+            [PrimaryKey]
+            public int Id { get; set; }
+        }
         public class ModeWithAutoIncrement
         {
             /// <summary>Gets or sets the identifier.</summary>
@@ -31,6 +39,22 @@ namespace SimpleStack.Orm.Tests
             public string Name { get; set; }
         }
 
+        [Test]
+        public void InsertOnlyAutoIncrement()
+        {
+            using (var conn = OpenDbConnection())
+            {
+                conn.CreateTable<ModeWithOnlyAutoIncrement>(true);
+
+                var identity = conn.Insert(new ModeWithOnlyAutoIncrement());
+                var identity2 = conn.Insert(new ModeWithOnlyAutoIncrement());
+                
+                Assert.NotNull(identity);
+                
+                Assert.False(identity == identity2);
+            }
+        }
+        
         [Test]
         public void InsertAndRetrieveIdentity()
         {

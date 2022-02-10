@@ -48,7 +48,6 @@ namespace SimpleStack.Orm.Tests
             {
                 var row = new ModelWithFieldsOfDifferentTypes
                 {
-                    Id = id,
                     Bool = id % 2 == 0,
                     DateTime = DateTime.Now.AddDays(id),
                     Double = 1.11d + id,
@@ -67,7 +66,6 @@ namespace SimpleStack.Orm.Tests
             {
                 var row = new ModelWithFieldsOfDifferentTypes
                 {
-                    Id = id,
                     Bool = id % 2 == 0,
                     DateTime = new DateTime(1979, id % 12 + 1, id % 28 + 1),
                     Double = 1.11d + id,
