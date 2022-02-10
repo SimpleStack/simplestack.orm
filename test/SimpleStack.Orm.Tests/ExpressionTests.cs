@@ -208,7 +208,7 @@ namespace SimpleStack.Orm.Tests
 
     public class PostgreSQLTests : ExpressionTests
     {
-        public PostgreSQLTests() : base(new PostgreSQLDialectProvider(),"server=localhost;user id=postgres;password=depfac$2000;database=test;Enlist=true")
+        public PostgreSQLTests() : base(new PostgreSQLDialectProvider(),"server=localhost;port=25432;user id=postgres;password=Simplestack2022!;database=test;Enlist=true")
         {
         }
 
@@ -220,21 +220,21 @@ namespace SimpleStack.Orm.Tests
 
     public class MySQLConnectorTests : ExpressionTests
     {
-        public MySQLConnectorTests() : base(new MySqlConnectorDialectProvider(),"server=localhost;user=root;password=depfac$2000;database=test")
+        public MySQLConnectorTests() : base(new MySqlConnectorDialectProvider(),"server=localhost;Port=23306;user=root;password=Simplestack2022!;database=Test")
         {
         }
     }
 
     public class MySQLTests : ExpressionTests
     {
-        public MySQLTests() : base(new MySqlDialectProvider(), "server=localhost;user=root;password=depfac$2000;database=test")
+        public MySQLTests() : base(new MySqlDialectProvider(), "server=localhost;Port=23306;user=root;password=Simplestack2022!;database=Test")
         {
         }
     }
 
     public class SQLServerTests : ExpressionTests
     {
-        public SQLServerTests() : base(new SqlServerDialectProvider(),@"server=localhost;User id=sa;Password=depfac$2000;database=test")
+        public SQLServerTests() : base(new SqlServerDialectProvider(),@"server=localhost,21433;User id=sa;Password=Simplestack2022!;database=test;Encrypt=True;TrustServerCertificate=True")
         {
         }
         
