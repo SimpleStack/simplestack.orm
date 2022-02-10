@@ -37,7 +37,7 @@ namespace SimpleStack.Orm.Tests
                 Assert.AreEqual("datecol", columns[3].Name.ToLower());
                 Assert.AreEqual(false, columns[3].PrimaryKey);
                 Assert.False(columns[3].Unique);
-                Assert.AreEqual(DbType.DateTime, columns[3].DbType);
+                Assert.True(columns[3].DbType == DbType.DateTime || columns[3].DbType == DbType.DateTime2);
 
                 Assert.AreEqual("enumcol", columns[4].Name.ToLower());
                 Assert.AreEqual(false, columns[4].PrimaryKey);
