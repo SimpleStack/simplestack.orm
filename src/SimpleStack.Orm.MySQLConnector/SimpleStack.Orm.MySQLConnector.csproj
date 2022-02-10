@@ -25,7 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="MySqlConnector" Version="1.0.0" />
+    <PackageReference Include="MySqlConnector" Version="2.1.6" />
   </ItemGroup>
 
   <ItemGroup>
