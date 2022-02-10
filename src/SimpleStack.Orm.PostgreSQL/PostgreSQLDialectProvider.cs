@@ -7,8 +7,6 @@ using System.Linq.Expressions;
 using System.Text;
 using Dapper;
 using Npgsql;
-using SimpleStack.Orm.Attributes;
-using SimpleStack.Orm.Expressions;
 
 namespace SimpleStack.Orm.PostgreSQL
 {

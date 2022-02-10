@@ -210,6 +210,7 @@ namespace SimpleStack.Orm.Tests
     {
         public PostgreSQLTests() : base(new PostgreSQLDialectProvider(),"server=localhost;port=25432;user id=postgres;password=Simplestack2022!;database=test;Enlist=true")
         {
+            AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
         }
 
         public override void CanSetDefaultTypeMapperLength()
