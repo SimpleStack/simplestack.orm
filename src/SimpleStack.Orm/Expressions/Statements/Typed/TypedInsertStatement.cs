@@ -14,6 +14,7 @@ namespace SimpleStack.Orm.Expressions.Statements.Typed
         {
             _dialectProvider = dialectProvider;
             Statement.TableName = _dialectProvider.GetQuotedTableName(_modelDefinition);
+            Statement.HasIdentity = _modelDefinition.FieldDefinitions.Any(x => x.AutoIncrement);
         }
 
         public InsertStatement Statement { get; } = new InsertStatement();

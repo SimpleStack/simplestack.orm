@@ -272,7 +272,7 @@ namespace SimpleStack.Orm.SqlServer
 		            Name = c.COLUMN_NAME,
 		            Definition = c.DATA_TYPE,
 		            DefaultValue = c.COLUMN_DEFAULT,
-		            PrimaryKey = i != null && i.IS_PRIMARY_KEY ?? false, 
+		            PrimaryKey = i != null && i.IS_PRIMARYKEY ?? false, 
 		            Unique = i != null && i.IS_UNIQUE ?? false, 
 		            Length = (c.DATA_TYPE == "nvarchar" || c.DATA_TYPE == "ntext" || c.DATA_TYPE == "nchar") ? c.CHARACTER_MAXIMUM_LENGTH / 2 : c.CHARACTER_MAXIMUM_LENGTH,
 		            Nullable = c.IS_NULLABLE,

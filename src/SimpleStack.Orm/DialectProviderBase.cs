@@ -203,11 +203,20 @@ namespace SimpleStack.Orm
         {
             var query = new StringBuilder("INSERT INTO ");
             query.Append(insertStatement.TableName);
-            query.Append(" (");
-            query.Append(insertStatement.InsertFields.Aggregate((x, y) => x + ", " + y));
-            query.Append(" ) VALUES (");
-            query.Append(insertStatement.Parameters.Select(x => x.Key).Aggregate((x, y) => x + ", " + y));
-            query.Append(")");
+            if (insertStatement.InsertFields.Any())
+            {
+                query.Append(" (");
+                query.Append(insertStatement.InsertFields.Aggregate((x, y) => x + ", " + y));
+                query.Append(" ) VALUES (");
+                query.Append(insertStatement.Parameters.Select(x => x.Key).Aggregate((x, y) => x + ", " + y));
+                query.Append(");");
+            }
+            else
+            {
+                query.Append(" DEFAULT VALUES; ");
+            }
+
+            query.Append(insertStatement.HasIdentity ? SelectIdentitySql : "SELECT 0");
 
             return new CommandDefinition(query.ToString(), insertStatement.Parameters, flags: flags);
         }
@@ -473,7 +482,7 @@ namespace SimpleStack.Orm
             }
 
             var tables = new List<TableDefinition>();
-            foreach (var table in await connection.QueryAsync(sqlQuery, new {SchemaName = schemaName}))
+            foreach (var table in await connection.QueryAsync(sqlQuery, new {SchemaName = schemaName}).ConfigureAwait(false))
             {
                 tables.Add(new TableDefinition
                 {

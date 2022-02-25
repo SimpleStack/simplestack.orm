@@ -208,8 +208,9 @@ namespace SimpleStack.Orm.Tests
 
     public class PostgreSQLTests : ExpressionTests
     {
-        public PostgreSQLTests() : base(new PostgreSQLDialectProvider(),"server=localhost;user id=postgres;password=depfac$2000;database=test;Enlist=true")
+        public PostgreSQLTests() : base(new PostgreSQLDialectProvider(),"server=localhost;port=25432;user id=postgres;password=Simplestack2022!;database=test;Enlist=true")
         {
+            AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
         }
 
         public override void CanSetDefaultTypeMapperLength()
@@ -220,21 +221,21 @@ namespace SimpleStack.Orm.Tests
 
     public class MySQLConnectorTests : ExpressionTests
     {
-        public MySQLConnectorTests() : base(new MySqlConnectorDialectProvider(),"server=localhost;user=root;password=depfac$2000;database=test")
+        public MySQLConnectorTests() : base(new MySqlConnectorDialectProvider(),"server=localhost;Port=23306;user=root;password=Simplestack2022!;database=Test")
         {
         }
     }
 
     public class MySQLTests : ExpressionTests
     {
-        public MySQLTests() : base(new MySqlDialectProvider(), "server=localhost;user=root;password=depfac$2000;database=test")
+        public MySQLTests() : base(new MySqlDialectProvider(), "server=localhost;Port=23306;user=root;password=Simplestack2022!;database=Test")
         {
         }
     }
 
     public class SQLServerTests : ExpressionTests
     {
-        public SQLServerTests() : base(new SqlServerDialectProvider(),@"server=localhost;User id=sa;Password=depfac$2000;database=test")
+        public SQLServerTests() : base(new SqlServerDialectProvider(),@"server=localhost,21433;User id=sa;Password=Simplestack2022!;database=test;Encrypt=True;TrustServerCertificate=True")
         {
         }
         
@@ -253,56 +254,57 @@ namespace SimpleStack.Orm.Tests
             // Not supported
         }
         
-        public override void CanGetColumns()
-        {
-            using (var db = OpenDbConnection())
-            {
-                db.CreateTable<TestType2>(true);
-                var columns = db.GetTableColumns("TestType2").ToArray();
-                Assert.AreEqual(9, columns.Length);
-
-                Assert.AreEqual("id", columns[0].Name.ToLower());
-                Assert.True(columns[0].PrimaryKey);
-                Assert.AreEqual(DbType.Int32, columns[0].DbType);
-                Assert.False(columns[0].Nullable);
-
-                Assert.AreEqual("textcol", columns[1].Name.ToLower());
-                Assert.AreEqual(false, columns[1].PrimaryKey);
-                Assert.AreEqual(DbType.String, columns[1].DbType);
-                Assert.True(columns[1].Nullable);
-
-                Assert.AreEqual("boolcol", columns[2].Name.ToLower());
-                Assert.AreEqual(false, columns[2].PrimaryKey);
-                Assert.AreEqual(DbType.Boolean, columns[2].DbType);
-                Assert.False(columns[2].Nullable);
-                
-                Assert.AreEqual("datecol", columns[3].Name.ToLower());
-                Assert.AreEqual(false, columns[3].PrimaryKey);
-                Assert.AreEqual(DbType.DateTime, columns[3].DbType);
-                Assert.False(columns[3].Nullable);
-                
-                Assert.AreEqual("nullabledatecol", columns[4].Name.ToLower());
-                Assert.False(columns[4].PrimaryKey);
-                Assert.AreEqual(DbType.DateTime, columns[4].DbType);
-                Assert.True(columns[4].Nullable);
-
-                Assert.AreEqual("enumcol", columns[5].Name.ToLower());
-                Assert.AreEqual(false, columns[5].PrimaryKey);
-                Assert.AreEqual(DbType.Int32, columns[5].DbType);
-
-                Assert.AreEqual("guidcol", columns[6].Name.ToLower());
-                Assert.AreEqual(false, columns[6].PrimaryKey);
-                Assert.AreEqual(DbType.Guid, columns[6].DbType);
-
-                Assert.AreEqual("complexobjcol", columns[7].Name.ToLower());
-                Assert.AreEqual(false, columns[7].PrimaryKey);
-                Assert.AreEqual(DbType.String, columns[7].DbType);
-
-                Assert.AreEqual("longcol", columns[8].Name.ToLower());
-                Assert.AreEqual(false, columns[8].PrimaryKey);
-                Assert.AreEqual(DbType.Int64, columns[8].DbType);
-            }
-        }
+        // [Test]
+        // public override void CanGetColumns()
+        // {
+        //     using (var db = OpenDbConnection())
+        //     {
+        //         db.CreateTable<TestType2>(true);
+        //         var columns = db.GetTableColumns("TestType2").ToArray();
+        //         Assert.AreEqual(8, columns.Length);
+        //
+        //         Assert.AreEqual("id", columns[0].Name.ToLower());
+        //         Assert.True(columns[0].PrimaryKey);
+        //         Assert.AreEqual(DbType.Int32, columns[0].DbType);
+        //         Assert.False(columns[0].Nullable);
+        //
+        //         Assert.AreEqual("textcol", columns[1].Name.ToLower());
+        //         Assert.AreEqual(false, columns[1].PrimaryKey);
+        //         Assert.AreEqual(DbType.String, columns[1].DbType);
+        //         Assert.True(columns[1].Nullable);
+        //
+        //         Assert.AreEqual("boolcol", columns[2].Name.ToLower());
+        //         Assert.AreEqual(false, columns[2].PrimaryKey);
+        //         Assert.AreEqual(DbType.Boolean, columns[2].DbType);
+        //         Assert.False(columns[2].Nullable);
+        //         
+        //         Assert.AreEqual("datecol", columns[3].Name.ToLower());
+        //         Assert.AreEqual(false, columns[3].PrimaryKey);
+        //         Assert.AreEqual(DbType.DateTime, columns[3].DbType);
+        //         Assert.False(columns[3].Nullable);
+        //         
+        //         Assert.AreEqual("nullabledatecol", columns[4].Name.ToLower());
+        //         Assert.False(columns[4].PrimaryKey);
+        //         Assert.AreEqual(DbType.DateTime, columns[4].DbType);
+        //         Assert.True(columns[4].Nullable);
+        //
+        //         Assert.AreEqual("enumcol", columns[5].Name.ToLower());
+        //         Assert.AreEqual(false, columns[5].PrimaryKey);
+        //         Assert.AreEqual(DbType.Int32, columns[5].DbType);
+        //
+        //         Assert.AreEqual("guidcol", columns[6].Name.ToLower());
+        //         Assert.AreEqual(false, columns[6].PrimaryKey);
+        //         Assert.AreEqual(DbType.Guid, columns[6].DbType);
+        //
+        //         Assert.AreEqual("complexobjcol", columns[7].Name.ToLower());
+        //         Assert.AreEqual(false, columns[7].PrimaryKey);
+        //         Assert.AreEqual(DbType.String, columns[7].DbType);
+        //
+        //         Assert.AreEqual("longcol", columns[8].Name.ToLower());
+        //         Assert.AreEqual(false, columns[8].PrimaryKey);
+        //         Assert.AreEqual(DbType.Int64, columns[8].DbType);
+        //     }
+        // }
     }
 
     public class SQLLiteTests : ExpressionTests

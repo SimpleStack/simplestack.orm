@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Linq;
+using System.Text;
 using Dapper;
 using MySqlConnector;
+using SimpleStack.Orm.Expressions.Statements;
 using SimpleStack.Orm.MySQL;
 
 namespace SimpleStack.Orm.MySQLConnector
@@ -191,6 +193,29 @@ namespace SimpleStack.Orm.MySQLConnector
                 default:
                     return DbType.Object;
             }
+        }
+        
+        public override CommandDefinition ToInsertStatement(InsertStatement insertStatement, CommandFlags flags)
+        {
+            var query = new StringBuilder("INSERT INTO ");
+            query.Append(insertStatement.TableName);
+            
+            query.Append(" (");
+            if (insertStatement.InsertFields.Any())
+            {
+                query.Append(insertStatement.InsertFields.Aggregate((x, y) => x + ", " + y));
+            }
+            query.Append(" ) VALUES (");
+
+            if (insertStatement.Parameters.Any())
+            {
+                query.Append(insertStatement.Parameters.Select(x => x.Key).Aggregate((x, y) => x + ", " + y));
+            }
+            query.Append(");");
+            
+            query.Append(insertStatement.HasIdentity ? SelectIdentitySql : "SELECT 0");
+
+            return new CommandDefinition(query.ToString(), insertStatement.Parameters, flags: flags);
         }
     }
 }

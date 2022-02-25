@@ -135,7 +135,7 @@ namespace SimpleStack.Orm.SDSQLite
                     Name = c.name,
                     Definition = c.type,
                     Nullable = c.notnull == 1,
-                    PrimaryKey = c.pk == 1,
+                    PrimaryKey = c.pk > 0,
                     DefaultValue = c.dflt_value,
                     Precision = precision,
                     Scale = scale,
