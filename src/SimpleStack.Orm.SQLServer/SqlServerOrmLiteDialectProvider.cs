@@ -252,7 +252,8 @@ namespace SimpleStack.Orm.SqlServer
 								LEFT JOIN sys.computed_columns cl ON cl.column_id = c.column_id 
 								LEFT JOIN sys.default_constraints dc ON dc.object_id = c.default_object_id 
 								INNER JOIN sys.types t ON t.user_type_id  = c.user_type_id 
-								where c.object_id = OBJECT_ID(@TableName);";
+								where c.object_id = OBJECT_ID(@TableName)
+                                order by c.column_id;";
 
             string uniqueQuery = @"SELECT COL_NAME(ic.object_id,ic.column_id) AS COLUMN_NAME  , is_unique IS_UNIQUE, is_primary_key IS_PRIMARYKEY 
 									FROM sys.indexes AS i  

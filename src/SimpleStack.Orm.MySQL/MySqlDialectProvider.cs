@@ -108,7 +108,7 @@ namespace SimpleStack.Orm.MySQL
                             FROM INFORMATION_SCHEMA.STATISTICS 
                             WHERE INDEX_NAME NOT IN (SELECT INDEX_NAME FROM INFORMATION_SCHEMA.STATISTICS WHERE SEQ_IN_INDEX = 2 AND "+ whereClause + ") AND "+whereClause;
             
-            var columnQuery = "SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE " + whereClause;
+            var columnQuery = "SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE " + whereClause  + " ORDER BY ordinal_position";
 
             var indexedColumns = connection.Query(indexQuery, new {TableName = tableName, SchemaName = schemaName})
                 .ToDictionary(x => (string)x.COLUMN_NAME, x => (bool) (x.NON_UNIQUE == 0));
