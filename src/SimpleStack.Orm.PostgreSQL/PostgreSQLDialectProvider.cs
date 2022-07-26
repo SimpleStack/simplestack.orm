@@ -180,6 +180,8 @@ namespace SimpleStack.Orm.PostgreSQL
                 sqlQuery += " AND table_schema = @SchemaName";
             }
 
+            sqlQuery += " ORDER BY ordinal_position";
+
             var table = string.IsNullOrEmpty(schemaName) ? tableName : $"{schemaName}.{tableName}"; 
 
             var pks = connection.Query($@"SELECT a.attname
