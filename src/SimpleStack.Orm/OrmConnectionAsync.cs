@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Dapper;
 using SimpleStack.Orm.Attributes;
@@ -20,9 +21,9 @@ namespace SimpleStack.Orm
         /// <param name="flags">the command flags</param>
         /// <returns>IEnumerable of results as dynamix objects</returns>
         public Task<IEnumerable<dynamic>> SelectAsync(string tableName,
-            Action<DynamicSelectStatement> selectStatement, CommandFlags flags = CommandFlags.Buffered)
+            Action<DynamicSelectStatement> selectStatement, CommandFlags flags = CommandFlags.Buffered, CancellationToken cancellationToken = new CancellationToken())
         {
-            return SelectAsync(tableName, null, selectStatement, flags);
+            return SelectAsync(tableName, null, selectStatement, flags,cancellationToken);
         }
 
         /// <summary>
@@ -34,13 +35,13 @@ namespace SimpleStack.Orm
         /// <param name="flags">the command flags</param>
         /// <returns>IEnumerable of results as dynamix objects</returns>
         public Task<IEnumerable<dynamic>> SelectAsync(string tableName, string schemaName,
-            Action<DynamicSelectStatement> selectStatement, CommandFlags flags = CommandFlags.Buffered)
+            Action<DynamicSelectStatement> selectStatement, CommandFlags flags = CommandFlags.Buffered, CancellationToken cancellationToken = new CancellationToken())
         {
             var statement = new DynamicSelectStatement(DialectProvider);
 
             selectStatement(statement.From(tableName, schemaName));
 
-            var cmd = DialectProvider.ToSelectStatement(statement.Statement, flags);
+            var cmd = DialectProvider.ToSelectStatement(statement.Statement, flags, cancellationToken);
             return this.QueryAsync(cmd.CommandText, cmd.Parameters, cmd.Transaction, cmd.CommandTimeout,
                 cmd.CommandType);
         }
@@ -53,11 +54,11 @@ namespace SimpleStack.Orm
        /// <typeparam name="T"></typeparam>
        /// <returns></returns>
         public Task<IEnumerable<T>> SelectAsync<T>(Expression<Func<T, bool>> predicate,
-            CommandFlags flags = CommandFlags.Buffered)
+            CommandFlags flags = CommandFlags.Buffered, CancellationToken cancellationToken = new CancellationToken())
         {
             var select = new TypedSelectStatement<T>(DialectProvider);
             select.Where(predicate);
-            return this.QueryAsync<T>(DialectProvider.ToSelectStatement(select.Statement, flags));
+            return this.QueryAsync<T>(DialectProvider.ToSelectStatement(select.Statement, flags,cancellationToken));
         }
 
         /// <summary>
@@ -68,11 +69,11 @@ namespace SimpleStack.Orm
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
         public Task<IEnumerable<T>> SelectAsync<T>(Action<TypedSelectStatement<T>> expression,
-            CommandFlags flags = CommandFlags.Buffered)
+            CommandFlags flags = CommandFlags.Buffered, CancellationToken cancellationToken = new CancellationToken())
         {
             var select = new TypedSelectStatement<T>(DialectProvider);
             expression(select);
-            return this.QueryAsync<T>(DialectProvider.ToSelectStatement(select.Statement, flags));
+            return this.QueryAsync<T>(DialectProvider.ToSelectStatement(select.Statement, flags, cancellationToken));
         }
 
         /// <summary>
@@ -81,10 +82,10 @@ namespace SimpleStack.Orm
         /// <param name="flags">Command flags</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public Task<IEnumerable<T>> SelectAsync<T>(CommandFlags flags = CommandFlags.Buffered)
+        public Task<IEnumerable<T>> SelectAsync<T>(CommandFlags flags = CommandFlags.Buffered, CancellationToken cancellationToken = new CancellationToken())
         {
             return this.QueryAsync<T>(
-                DialectProvider.ToSelectStatement(new TypedSelectStatement<T>(DialectProvider).Statement, flags));
+                DialectProvider.ToSelectStatement(new TypedSelectStatement<T>(DialectProvider).Statement, flags, cancellationToken));
         }
 
         /// <summary>
@@ -163,12 +164,12 @@ namespace SimpleStack.Orm
         /// <typeparam name="T">The Type specifying the target table</typeparam>
         /// <typeparam name="TKey">The Type of the result</typeparam>
         /// <returns></returns>
-        public Task<TKey> GetScalarAsync<T, TKey>(Expression<Func<T, TKey>> field)
+        public Task<TKey> GetScalarAsync<T, TKey>(Expression<Func<T, TKey>> field, CancellationToken cancellationToken = new CancellationToken())
         {
             var select = new TypedSelectStatement<T>(DialectProvider);
             select.Select(field);
             return this.ExecuteScalarAsync<TKey>(
-                DialectProvider.ToSelectStatement(select.Statement, CommandFlags.None));
+                DialectProvider.ToSelectStatement(select.Statement, CommandFlags.None, cancellationToken));
         }
 
         /// <summary>
@@ -183,13 +184,13 @@ namespace SimpleStack.Orm
         /// <typeparam name="TKey">The type of the result</typeparam>
         /// <returns></returns>
         public Task<TKey> GetScalarAsync<T, TKey>(Expression<Func<T, TKey>> field,
-            Expression<Func<T, bool>> predicate)
+            Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = new CancellationToken())
         {
             var select = new TypedSelectStatement<T>(DialectProvider);
             select.Select(field);
             select.Where(predicate);
             return this.ExecuteScalarAsync<TKey>(
-                DialectProvider.ToSelectStatement(select.Statement, CommandFlags.None));
+                DialectProvider.ToSelectStatement(select.Statement, CommandFlags.None, cancellationToken));
         }
 
         /// <summary>
@@ -198,13 +199,13 @@ namespace SimpleStack.Orm
         /// <param name="expression">The Select Statement action</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public Task<long> CountAsync<T>(Action<TypedSelectStatement<T>> expression)
+        public Task<long> CountAsync<T>(Action<TypedSelectStatement<T>> expression, CancellationToken cancellationToken = new CancellationToken())
         {
             var select = new TypedSelectStatement<T>(DialectProvider);
             expression(select);
 
             return this.ExecuteScalarAsync<long>(
-                DialectProvider.ToCountStatement(select.Statement, CommandFlags.None));
+                DialectProvider.ToCountStatement(select.Statement, CommandFlags.None, cancellationToken));
         }
                 
         /// <summary>
@@ -213,9 +214,9 @@ namespace SimpleStack.Orm
         /// <param name="expression">the where clause expression</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public Task<long> CountAsync<T>(Expression<Func<T, bool>> expression)
+        public Task<long> CountAsync<T>(Expression<Func<T, bool>> expression, CancellationToken cancellationToken = new CancellationToken())
         {
-            return CountAsync<T>(e => e.Where(expression));
+            return CountAsync<T>(e => e.Where(expression), cancellationToken);
         }
 
         /// <summary>
@@ -224,9 +225,9 @@ namespace SimpleStack.Orm
         /// <param name="tableName">The table name</param>
         /// <param name="expression">The Select Statement action</param>
         /// <returns></returns>
-        public Task<long> CountAsync(string tableName, Action<DynamicSelectStatement> expression)
+        public Task<long> CountAsync(string tableName, Action<DynamicSelectStatement> expression, CancellationToken cancellationToken = new CancellationToken())
         {
-            return CountAsync(tableName, null, expression);
+            return CountAsync(tableName, null, expression, cancellationToken);
         }
 
         /// <summary>
@@ -237,13 +238,13 @@ namespace SimpleStack.Orm
         /// <param name="expression">The Select Statement action</param>
         /// <returns></returns>
         public Task<long> CountAsync(string tableName, string schemaName,
-            Action<DynamicSelectStatement> expression)
+            Action<DynamicSelectStatement> expression, CancellationToken cancellationToken = new CancellationToken())
         {
             var select = new DynamicSelectStatement(DialectProvider);
             expression(select.From(tableName, schemaName));
 
             return this.ExecuteScalarAsync<long>(
-                DialectProvider.ToCountStatement(select.Statement, CommandFlags.None));
+                DialectProvider.ToCountStatement(select.Statement, CommandFlags.None, cancellationToken));
         }
 
         /// <summary>
@@ -251,9 +252,9 @@ namespace SimpleStack.Orm
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public Task<long> CountAsync<T>()
+        public Task<long> CountAsync<T>(CancellationToken cancellationToken = new CancellationToken())
         {
-            return CountAsync<T>(e => { });
+            return CountAsync<T>(e => { }, cancellationToken);
         }
 
         /// <summary>
@@ -262,11 +263,11 @@ namespace SimpleStack.Orm
         /// <param name="model">the object to update</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public Task<int> UpdateAsync<T>(T model)
+        public Task<int> UpdateAsync<T>(T model, CancellationToken cancellationToken = new CancellationToken())
         {
             var s = new TypedUpdateStatement<T>(DialectProvider);
             s.ValuesOnly(model);
-            var cmd = DialectProvider.ToUpdateStatement(s.Statement, CommandFlags.None);
+            var cmd = DialectProvider.ToUpdateStatement(s.Statement, CommandFlags.None, cancellationToken);
             return this.ExecuteScalarAsync<int>(cmd);
         }
 
@@ -278,11 +279,11 @@ namespace SimpleStack.Orm
         /// <typeparam name="T"></typeparam>
         /// <typeparam name="TKey"></typeparam>
         /// <returns></returns>
-        public Task<int> UpdateAsync<T, TKey>(T model, Expression<Func<T, TKey>> onlyFields)
+        public Task<int> UpdateAsync<T, TKey>(T model, Expression<Func<T, TKey>> onlyFields, CancellationToken cancellationToken = new CancellationToken())
         {
             var s = new TypedUpdateStatement<T>(DialectProvider);
             s.ValuesOnly(model, onlyFields);
-            var cmd = DialectProvider.ToUpdateStatement(s.Statement, CommandFlags.None);
+            var cmd = DialectProvider.ToUpdateStatement(s.Statement, CommandFlags.None, cancellationToken);
             return this.ExecuteScalarAsync<int>(cmd);
         }
 
@@ -296,7 +297,7 @@ namespace SimpleStack.Orm
         /// <typeparam name="TKey"></typeparam>
         /// <returns></returns>
         public Task<int> UpdateAllAsync<T, TKey>(object obj, Expression<Func<T, TKey>> onlyField,
-            Expression<Func<T, bool>> where = null)
+            Expression<Func<T, bool>> where = null, CancellationToken cancellationToken = new CancellationToken())
         {
             var s = new TypedUpdateStatement<T>(DialectProvider);
             if (where != null)
@@ -306,7 +307,7 @@ namespace SimpleStack.Orm
 
             s.Values(obj, onlyField);
 
-            var cmd = DialectProvider.ToUpdateStatement(s.Statement, CommandFlags.None);
+            var cmd = DialectProvider.ToUpdateStatement(s.Statement, CommandFlags.None, cancellationToken);
             return this.ExecuteScalarAsync<int>(cmd);
         }
 
@@ -317,9 +318,9 @@ namespace SimpleStack.Orm
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
         /// <exception cref="OrmException"></exception>
-        public Task<int> InsertAsync<T>(T obj)
+        public Task<int> InsertAsync<T>(T obj, CancellationToken cancellationToken = new CancellationToken())
         {
-            return InsertAsync<int, T>(obj);
+            return InsertAsync<int, T>(obj, cancellationToken);
         }
 
         /// <summary>
@@ -329,13 +330,13 @@ namespace SimpleStack.Orm
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
         /// <exception cref="OrmException"></exception>
-        public Task<TKey> InsertAsync<TKey, T>(T obj)
+        public Task<TKey> InsertAsync<TKey, T>(T obj, CancellationToken cancellationToken = new CancellationToken())
         {
             try
             {
                 var insertStatement = new TypedInsertStatement<T>(DialectProvider);
                 insertStatement.Values(obj, Array.Empty<string>());
-                var commandDefinition = DialectProvider.ToInsertStatement(insertStatement.Statement, CommandFlags.None);
+                var commandDefinition = DialectProvider.ToInsertStatement(insertStatement.Statement, CommandFlags.None, cancellationToken);
                 return this.ExecuteScalarAsync<TKey>(commandDefinition);
             }
             catch (Exception e)
@@ -350,9 +351,9 @@ namespace SimpleStack.Orm
         /// <param name="objs">The objects to insert</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public Task<IEnumerable<int>> InsertAsync<T>(IEnumerable<T> objs)
+        public Task<IEnumerable<int>> InsertAsync<T>(IEnumerable<T> objs, CancellationToken cancellationToken = new CancellationToken())
         {
-            return InsertAsync<int, T>(objs);
+            return InsertAsync<int, T>(objs, cancellationToken);
         }
 
         /// <summary>
@@ -361,7 +362,7 @@ namespace SimpleStack.Orm
         /// <param name="objs">The objects to insert</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public async Task<IEnumerable<TKey>> InsertAsync<TKey, T>(IEnumerable<T> objs)
+        public async Task<IEnumerable<TKey>> InsertAsync<TKey, T>(IEnumerable<T> objs, CancellationToken cancellationToken = new CancellationToken())
         {
             if (objs == null)
             {
@@ -376,7 +377,7 @@ namespace SimpleStack.Orm
                 insertStatement.Values(t, new List<string>());
 
                 result.Add(await this.ExecuteScalarAsync<TKey>(
-                    DialectProvider.ToInsertStatement(insertStatement.Statement, CommandFlags.None)).ConfigureAwait(false));
+                    DialectProvider.ToInsertStatement(insertStatement.Statement, CommandFlags.None, cancellationToken)).ConfigureAwait(false));
             }
 
             return result;
@@ -390,14 +391,14 @@ namespace SimpleStack.Orm
         /// <typeparam name="T"></typeparam>
         /// <typeparam name="TKey"></typeparam>
         /// <returns></returns>
-        public Task<int> InsertOnlyAsync<T, TKey>(T obj, Expression<Func<T, TKey>> onlyFields)
+        public Task<int> InsertOnlyAsync<T, TKey>(T obj, Expression<Func<T, TKey>> onlyFields, CancellationToken cancellationToken = new CancellationToken())
             where T : new()
         {
             var insertStatement = new TypedInsertStatement<T>(DialectProvider);
             insertStatement.Values(obj, onlyFields);
 
             return this.ExecuteScalarAsync<int>(
-                DialectProvider.ToInsertStatement(insertStatement.Statement, CommandFlags.None));
+                DialectProvider.ToInsertStatement(insertStatement.Statement, CommandFlags.None, cancellationToken));
         }
 
         /// <summary>
@@ -406,9 +407,9 @@ namespace SimpleStack.Orm
         /// <param name="where">The where clause</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public Task<int> DeleteAllAsync<T>(Expression<Func<T, bool>> where = null)
+        public Task<int> DeleteAllAsync<T>(Expression<Func<T, bool>> where = null, CancellationToken cancellationToken = new CancellationToken())
         {
-            return DeleteAllAsync<T>(x => { x.Where(where); });
+            return DeleteAllAsync<T>(x => { x.Where(where); }, cancellationToken);
         }
         
         /// <summary>
@@ -417,11 +418,11 @@ namespace SimpleStack.Orm
         /// <param name="where">the where statement action</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public Task<int> DeleteAllAsync<T>(Action<TypedWhereStatement<T>> where)
+        public Task<int> DeleteAllAsync<T>(Action<TypedWhereStatement<T>> where, CancellationToken cancellationToken = new CancellationToken())
         {
             var s = new TypedDeleteStatement<T>(DialectProvider);
             where(s);
-            return this.ExecuteScalarAsync<int>(DialectProvider.ToDeleteStatement(s.Statement));
+            return this.ExecuteScalarAsync<int>(DialectProvider.ToDeleteStatement(s.Statement, cancellationToken));
         }
 
 
@@ -431,12 +432,12 @@ namespace SimpleStack.Orm
         /// <param name="obj">The object to delete</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public Task<int> DeleteAsync<T>(T obj)
+        public Task<int> DeleteAsync<T>(T obj, CancellationToken cancellationToken = new CancellationToken())
         {
             var s = new TypedDeleteStatement<T>(DialectProvider);
             s.AddPrimaryKeyWhereCondition(obj);
-
-            return this.ExecuteScalarAsync<int>(DialectProvider.ToDeleteStatement(s.Statement));
+            
+            return this.ExecuteScalarAsync<int>(DialectProvider.ToDeleteStatement(s.Statement, cancellationToken: cancellationToken));
         }
 
         /// <summary>
@@ -446,15 +447,15 @@ namespace SimpleStack.Orm
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
         /// <exception cref="OrmException">If the table already exists and cannot be dropped</exception>
-        public async Task CreateTableAsync<T>(bool dropIfExists)
+        public async Task CreateTableAsync<T>(bool dropIfExists, CancellationToken cancellationToken = new CancellationToken())
         {
-            if (!dropIfExists && await TableExistsAsync<T>().ConfigureAwait(false))
+            if (!dropIfExists && await TableExistsAsync<T>(cancellationToken).ConfigureAwait(false))
             {
                 throw new OrmException("Table already exists");
             }
 
             var tableType = typeof(T);
-            await CreateTableAsync(dropIfExists, tableType).ConfigureAwait(false);
+            await CreateTableAsync(dropIfExists, tableType, cancellationToken).ConfigureAwait(false);
         }
         
         /// <summary>
@@ -464,14 +465,14 @@ namespace SimpleStack.Orm
         /// <param name="dropIfExists">True to drop the table if it already exists</param>
         /// <returns></returns>
         /// <exception cref="OrmException"></exception>
-        public async Task CreateTableAsync(Type tableType, bool dropIfExists)
+        public async Task CreateTableAsync(Type tableType, bool dropIfExists, CancellationToken cancellationToken = new CancellationToken())
         {
-            if (!dropIfExists && await TableExistsAsync(tableType))
+            if (!dropIfExists && await TableExistsAsync(tableType, cancellationToken))
             {
                 throw new OrmException("Table already exists");
             }
 
-            await CreateTableAsync(dropIfExists, tableType);
+            await CreateTableAsync(dropIfExists, tableType, cancellationToken);
         }
 
         /// <summary>
@@ -479,10 +480,10 @@ namespace SimpleStack.Orm
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public Task CreateTableIfNotExistsAsync<T>()
+        public Task CreateTableIfNotExistsAsync<T>(CancellationToken cancellationToken = new CancellationToken())
         {
             var tableType = typeof(T);
-            return CreateTableAsync(false, tableType);
+            return CreateTableAsync(false, tableType, cancellationToken);
         }
         
         /// <summary>
@@ -490,9 +491,9 @@ namespace SimpleStack.Orm
         /// </summary>
         /// <param name="tableType"></param>
         /// <returns></returns>
-        public async Task CreateTableIfNotExistsAsync(Type tableType)
+        public async Task CreateTableIfNotExistsAsync(Type tableType, CancellationToken cancellationToken = new CancellationToken())
         {
-            await CreateTableAsync(false, tableType);
+            await CreateTableAsync(false, tableType, cancellationToken);
         }
         
         /// <summary>
@@ -500,9 +501,10 @@ namespace SimpleStack.Orm
         /// </summary>
         /// <param name="schemaName">Name of the schema</param>
         /// <returns></returns>
-        public Task CreateSchemaIfNotExistsAsync(string schemaName)
+        public Task CreateSchemaIfNotExistsAsync(string schemaName, CancellationToken cancellationToken = new CancellationToken())
         {
-            return this.ExecuteScalarAsync(DialectProvider.GetCreateSchemaStatement(schemaName, true));
+            return this.ExecuteScalarAsync(new CommandDefinition(DialectProvider.GetCreateSchemaStatement(schemaName, true),
+                cancellationToken: cancellationToken));
         }
 
         /// <summary>
@@ -510,9 +512,10 @@ namespace SimpleStack.Orm
         /// </summary>
         /// <param name="schemaName"></param>
         /// <returns></returns>
-        public Task CreateSchemaAsync(string schemaName)
+        public Task CreateSchemaAsync(string schemaName, CancellationToken cancellationToken = new CancellationToken())
         {
-            return this.ExecuteScalarAsync(DialectProvider.GetCreateSchemaStatement(schemaName, false));
+            return this.ExecuteScalarAsync(new CommandDefinition(DialectProvider.GetCreateSchemaStatement(schemaName, false),
+                cancellationToken: cancellationToken));
         }
 
         /// <summary>
@@ -520,11 +523,10 @@ namespace SimpleStack.Orm
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public Task<bool> TableExistsAsync<T>()
+        public Task<bool> TableExistsAsync<T>(CancellationToken cancellationToken = new CancellationToken())
         {
             var tableModelDef = typeof(T).GetModelDefinition();
-            return Task.Run(() =>
-                DialectProvider.DoesTableExist(this,
+            return Task.FromResult(DialectProvider.DoesTableExist(this,
                     tableModelDef.Alias ?? tableModelDef.ModelName,
                     tableModelDef.Schema));
         }
@@ -534,11 +536,10 @@ namespace SimpleStack.Orm
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public async Task<bool> TableExistsAsync(Type tableType)
+        public Task<bool> TableExistsAsync(Type tableType, CancellationToken cancellationToken = new CancellationToken())
         {
             var tableModelDef = tableType.GetModelDefinition();
-            return await Task.Run(() =>
-                DialectProvider.DoesTableExist(this,
+            return Task.FromResult(DialectProvider.DoesTableExist(this,
                     tableModelDef.Alias ?? tableModelDef.ModelName,
                     tableModelDef.Schema));
         }
@@ -549,10 +550,9 @@ namespace SimpleStack.Orm
         /// <param name="tableName">the table name</param>
         /// <param name="schema">the schema name</param>
         /// <returns></returns>
-        public Task<bool> TableExistsAsync(string tableName, string schema = null)
+        public Task<bool> TableExistsAsync(string tableName, string schema = null, CancellationToken cancellationToken = new CancellationToken())
         {
-            return Task.Run(() =>
-                DialectProvider.DoesTableExist(this, tableName, schema));
+            return Task.FromResult(DialectProvider.DoesTableExist(this, tableName, schema));
         }
 
         /// <summary>
@@ -560,12 +560,12 @@ namespace SimpleStack.Orm
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns>True if table did exists and has been dropped</returns>
-        public async Task<bool> DropTableIfExistsAsync<T>()
+        public async Task<bool> DropTableIfExistsAsync<T>(CancellationToken cancellationToken = new CancellationToken())
         {
-            if (await TableExistsAsync<T>().ConfigureAwait(false))
+            if (await TableExistsAsync<T>(cancellationToken))
             {
                 var tableModelDef = typeof(T).GetModelDefinition();
-                await DropTableAsync(tableModelDef).ConfigureAwait(false);
+                await DropTableAsync(tableModelDef, cancellationToken).ConfigureAwait(false);
             }
 
             return false;
@@ -576,12 +576,12 @@ namespace SimpleStack.Orm
         /// </summary>
         /// <param name="tableType"></param>
         /// <returns>True if table did exists and has been dropped</returns>
-        public async Task<bool> DropTableIfExistsAsync(Type tableType)
+        public async Task<bool> DropTableIfExistsAsync(Type tableType,CancellationToken cancellationToken = new CancellationToken())
         {
-            if (await TableExistsAsync(tableType))
+            if (await TableExistsAsync(tableType, cancellationToken))
             {
                 var tableModelDef = tableType.GetModelDefinition();
-                await DropTableAsync(tableModelDef);
+                await DropTableAsync(tableModelDef, cancellationToken);
             }
 
             return false;
@@ -611,7 +611,7 @@ namespace SimpleStack.Orm
             return Task.Run(() => DialectProvider.GetTableColumnDefinitions(DbConnection, tableName, schemaName));
         }
         
-        private async Task CreateTableAsync(bool overwrite, Type modelType)
+        private async Task CreateTableAsync(bool overwrite, Type modelType, CancellationToken cancellationToken = new CancellationToken())
         {
             var modelDef = modelType.GetModelDefinition();
 
@@ -621,18 +621,18 @@ namespace SimpleStack.Orm
 
             if (overwrite && tableExists)
             {
-                await DropTableAsync(modelDef).ConfigureAwait(false);
+                await DropTableAsync(modelDef, cancellationToken).ConfigureAwait(false);
                 tableExists = false;
             }
 
             if (!tableExists)
             {
-                await this.ExecuteAsync(dialectProvider.ToCreateTableStatement(modelDef)).ConfigureAwait(false);
+                await this.ExecuteAsync(dialectProvider.ToCreateTableStatement(modelDef), cancellationToken).ConfigureAwait(false);
 
                 var sqlIndexes = dialectProvider.ToCreateIndexStatements(modelDef);
                 foreach (var sqlIndex in sqlIndexes)
                 {
-                    await this.ExecuteAsync(sqlIndex).ConfigureAwait(false);
+                    await this.ExecuteAsync(sqlIndex, cancellationToken).ConfigureAwait(false);
                 }
 
                 var sequenceList = dialectProvider.SequenceList(modelDef);
@@ -643,7 +643,7 @@ namespace SimpleStack.Orm
                         if (dialectProvider.DoesSequenceExist(this, seq) == false)
                         {
                             var seqSql = dialectProvider.ToCreateSequenceStatement(modelDef, seq);
-                            await this.ExecuteAsync(seqSql).ConfigureAwait(false);
+                            await this.ExecuteAsync(seqSql, cancellationToken).ConfigureAwait(false);
                         }
                     }
                 }
@@ -652,21 +652,21 @@ namespace SimpleStack.Orm
                     var sequences = dialectProvider.ToCreateSequenceStatements(modelDef);
                     foreach (var seq in sequences)
                     {
-                        await this.ExecuteAsync(seq).ConfigureAwait(false);
+                        await this.ExecuteAsync(seq, cancellationToken).ConfigureAwait(false);
                     }
                 }
             }
         }
         
-        private async Task DropTableAsync(ModelDefinition modelDef)
+        private async Task DropTableAsync(ModelDefinition modelDef, CancellationToken cancellationToken = new CancellationToken())
         {
             var dropTableFks = DialectProvider.GetDropForeignKeyConstraints(modelDef);
             if (!string.IsNullOrEmpty(dropTableFks))
             {
-                await this.ExecuteAsync(dropTableFks).ConfigureAwait(false);
+                await this.ExecuteAsync(dropTableFks, cancellationToken).ConfigureAwait(false);
             }
 
-            await this.ExecuteAsync(DialectProvider.GetDropTableStatement(modelDef)).ConfigureAwait(false);
+            await this.ExecuteAsync(DialectProvider.GetDropTableStatement(modelDef), cancellationToken).ConfigureAwait(false);
         }
     }
 }

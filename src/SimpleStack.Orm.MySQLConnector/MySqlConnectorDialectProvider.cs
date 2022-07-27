@@ -4,6 +4,7 @@ using System.Data;
 using System.Data.Common;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using Dapper;
 using MySqlConnector;
 using SimpleStack.Orm.Expressions.Statements;
@@ -195,7 +196,7 @@ namespace SimpleStack.Orm.MySQLConnector
             }
         }
         
-        public override CommandDefinition ToInsertStatement(InsertStatement insertStatement, CommandFlags flags)
+        public override CommandDefinition ToInsertStatement(InsertStatement insertStatement, CommandFlags flags, CancellationToken cancellationToken = new CancellationToken())
         {
             var query = new StringBuilder("INSERT INTO ");
             query.Append(insertStatement.TableName);
@@ -215,7 +216,7 @@ namespace SimpleStack.Orm.MySQLConnector
             
             query.Append(insertStatement.HasIdentity ? SelectIdentitySql : "SELECT 0");
 
-            return new CommandDefinition(query.ToString(), insertStatement.Parameters, flags: flags);
+            return new CommandDefinition(query.ToString(), insertStatement.Parameters, flags: flags, cancellationToken: cancellationToken);
         }
     }
 }

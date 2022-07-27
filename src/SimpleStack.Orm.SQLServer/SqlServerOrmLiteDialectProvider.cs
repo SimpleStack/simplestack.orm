@@ -5,6 +5,7 @@ using System.Data.Common;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using Dapper;
 using Microsoft.Data.SqlClient;
 using SimpleStack.Orm.Expressions.Statements;
@@ -170,11 +171,11 @@ namespace SimpleStack.Orm.SqlServer
 								 column);
 		}
 
-		public override CommandDefinition ToSelectStatement(SelectStatement statement, CommandFlags flags)
+		public override CommandDefinition ToSelectStatement(SelectStatement statement, CommandFlags flags, CancellationToken cancellationToken = new CancellationToken())
 		{
 			if (statement.Offset == null && (statement.MaxRows == null || statement.MaxRows == int.MaxValue))
 			{
-				return base.ToSelectStatement(statement, flags);
+				return base.ToSelectStatement(statement, flags, cancellationToken);
 			}
 
 			//Ensure we have an OrderBy clause, this is required by SQLServer paging (and makes more sense anyway)
@@ -184,7 +185,7 @@ namespace SimpleStack.Orm.SqlServer
 				statement.OrderByExpression.Append(1);
 			}
 
-			return base.ToSelectStatement(statement, flags);
+			return base.ToSelectStatement(statement, flags, cancellationToken);
 		}
 
 		public override string GetLimitExpression(int? skip, int? rows)

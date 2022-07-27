@@ -13,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq.Expressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Dapper;
 using SimpleStack.Orm.Expressions.Statements;
@@ -73,15 +74,15 @@ namespace SimpleStack.Orm
         string GetQuotedColumnName(string columnName);
 
 
-        CommandDefinition ToInsertStatement(InsertStatement insertStatement, CommandFlags flags);
+        CommandDefinition ToInsertStatement(InsertStatement insertStatement, CommandFlags flags, CancellationToken cancellationToken = new CancellationToken());
 
-        CommandDefinition ToSelectStatement(SelectStatement statement, CommandFlags flags);
+        CommandDefinition ToSelectStatement(SelectStatement statement, CommandFlags flags, CancellationToken cancellationToken = new CancellationToken());
 
-        CommandDefinition ToUpdateStatement(UpdateStatement statement, CommandFlags flags);
+        CommandDefinition ToUpdateStatement(UpdateStatement statement, CommandFlags flags, CancellationToken cancellationToken = new CancellationToken());
 
-        CommandDefinition ToCountStatement(CountStatement statement, CommandFlags flags);
+        CommandDefinition ToCountStatement(CountStatement statement, CommandFlags flags, CancellationToken cancellationToken = new CancellationToken());
 
-        CommandDefinition ToDeleteStatement(DeleteStatement deleteStatement);
+        CommandDefinition ToDeleteStatement(DeleteStatement deleteStatement, CancellationToken cancellationToken = new CancellationToken());
 
         /// <summary>Converts a tableType to a create table statement.</summary>
         /// <param name="modelDefinition">Model Definition.</param>
@@ -113,7 +114,7 @@ namespace SimpleStack.Orm
         /// <param name="connection">       The database.</param>
         /// <param name="tableName">Name of the table.</param>
         /// <returns>true if it exists, false otherwise.</returns>
-        bool DoesTableExist(IDbConnection connection, string tableName, string schemaName = null);
+        bool DoesTableExist(IDbConnection connection, string tableName, string schemaName);
 
         /// <summary>Query if schema exist.</summary>
         /// <param name="connection">       The database.</param>
