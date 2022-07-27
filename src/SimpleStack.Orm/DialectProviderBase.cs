@@ -16,6 +16,7 @@ using System.Data.Common;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Dapper;
 using SimpleStack.Orm.Attributes;
@@ -103,7 +104,7 @@ namespace SimpleStack.Orm
         }
 
         /// <inheritdoc />
-        public virtual CommandDefinition ToSelectStatement(SelectStatement statement, CommandFlags flags)
+        public virtual CommandDefinition ToSelectStatement(SelectStatement statement, CommandFlags flags, CancellationToken cancellationToken = new CancellationToken())
         {
             var sql = new StringBuilder("SELECT ");
 
@@ -149,10 +150,10 @@ namespace SimpleStack.Orm
             }
 
 
-            return new CommandDefinition(sql.ToString(), statement.Parameters, flags: flags);
+            return new CommandDefinition(sql.ToString(), statement.Parameters, flags: flags, cancellationToken:cancellationToken);
         }
 
-        public virtual CommandDefinition ToCountStatement(CountStatement statement, CommandFlags flags)
+        public virtual CommandDefinition ToCountStatement(CountStatement statement, CommandFlags flags, CancellationToken cancellationToken = new CancellationToken())
         {
             var sql = new StringBuilder("SELECT COUNT(");
 
@@ -183,10 +184,10 @@ namespace SimpleStack.Orm
                 sql.Append(statement.HavingExpression);
             }
 
-            return new CommandDefinition(sql.ToString(), statement.Parameters, flags: flags);
+            return new CommandDefinition(sql.ToString(), statement.Parameters, flags: flags, cancellationToken:cancellationToken);
         }
 
-        public virtual CommandDefinition ToDeleteStatement(DeleteStatement statement)
+        public virtual CommandDefinition ToDeleteStatement(DeleteStatement statement, CancellationToken cancellationToken = new CancellationToken())
         {
             var query = new StringBuilder("DELETE FROM ");
             query.Append(statement.TableName);
@@ -196,10 +197,10 @@ namespace SimpleStack.Orm
                 query.Append(statement.WhereExpression);
             }
 
-            return new CommandDefinition(query.ToString(), statement.Parameters);
+            return new CommandDefinition(query.ToString(), statement.Parameters, cancellationToken:cancellationToken);
         }
 
-        public virtual CommandDefinition ToInsertStatement(InsertStatement insertStatement, CommandFlags flags)
+        public virtual CommandDefinition ToInsertStatement(InsertStatement insertStatement, CommandFlags flags, CancellationToken cancellationToken = new CancellationToken())
         {
             var query = new StringBuilder("INSERT INTO ");
             query.Append(insertStatement.TableName);
@@ -218,11 +219,10 @@ namespace SimpleStack.Orm
 
             query.Append(insertStatement.HasIdentity ? SelectIdentitySql : "SELECT 0");
 
-            return new CommandDefinition(query.ToString(), insertStatement.Parameters, flags: flags);
+            return new CommandDefinition(query.ToString(), insertStatement.Parameters, flags: flags, cancellationToken:cancellationToken);
         }
 
-
-        public virtual CommandDefinition ToUpdateStatement(UpdateStatement statement, CommandFlags flags)
+        public virtual CommandDefinition ToUpdateStatement(UpdateStatement statement, CommandFlags flags, CancellationToken cancellationToken = new CancellationToken())
         {
             var query = new StringBuilder("UPDATE ");
             query.Append(statement.TableName);
@@ -248,7 +248,7 @@ namespace SimpleStack.Orm
                 query.Append(statement.WhereExpression);
             }
 
-            return new CommandDefinition(query.ToString(), statement.Parameters, flags: flags);
+            return new CommandDefinition(query.ToString(), statement.Parameters, flags: flags, cancellationToken:cancellationToken);
         }
 
         /// <summary>Converts a tableType to a create table statement.</summary>
@@ -347,7 +347,7 @@ namespace SimpleStack.Orm
         /// <param name="connection">The database.</param>
         /// <param name="tableName">Name of the table.</param>
         /// <returns>true if it succeeds, false if it fails.</returns>
-        public virtual bool DoesTableExist(IDbConnection connection, string tableName, string schemaName = null)
+        public virtual bool DoesTableExist(IDbConnection connection, string tableName, string schemaName)
         {
             return false;
         }
