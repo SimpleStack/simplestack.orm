@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Dapper;
 using Microsoft.Data.Sqlite;
@@ -43,21 +44,16 @@ namespace SimpleStack.Orm.Sqlite
                 ? $"{EscapeChar}{NamingStrategy.GetTableName(tableName)}{EscapeChar}"
                 : $"{EscapeChar}{NamingStrategy.GetTableName(schemaName)}_{NamingStrategy.GetTableName(tableName)}{EscapeChar}";
         }
-
-        /// <summary>Query if 'dbCmd' does table exist.</summary>
-        /// <param name="connection">    The database command.</param>
-        /// <param name="tableName">Name of the table.</param>
-        /// <returns>true if it succeeds, false if it fails.</returns>
-        public override bool DoesTableExist(IDbConnection connection, string tableName, string schemaName = null)
+        
+        public override CommandDefinition ToTableExistStatement(string tableName, string schemaName,
+            CancellationToken cancellationToken = new CancellationToken())
         {
             var name = string.IsNullOrEmpty(schemaName) ? tableName : $"{schemaName}_{tableName}";
-
-            var sql = string.Format("SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name = '{0}'"
-                , name);
-
-            var result = connection.ExecuteScalar<int>(sql);
-
-            return result > 0;
+            
+            var sql = $"SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name =  {GetParameterName(0)}";
+            var parameters = new Dictionary<string, object> {{GetParameterName(0), tableName}};
+            
+            return new CommandDefinition(sql, parameters, cancellationToken: cancellationToken);
         }
 
         /// <summary>Gets column definition.</summary>

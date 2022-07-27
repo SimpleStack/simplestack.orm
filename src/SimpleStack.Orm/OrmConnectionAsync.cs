@@ -525,10 +525,7 @@ namespace SimpleStack.Orm
         /// <returns></returns>
         public Task<bool> TableExistsAsync<T>(CancellationToken cancellationToken = new CancellationToken())
         {
-            var tableModelDef = typeof(T).GetModelDefinition();
-            return Task.FromResult(DialectProvider.DoesTableExist(this,
-                    tableModelDef.Alias ?? tableModelDef.ModelName,
-                    tableModelDef.Schema));
+            return TableExistsAsync(typeof(T), cancellationToken);
         }
         
         /// <summary>
@@ -539,9 +536,9 @@ namespace SimpleStack.Orm
         public Task<bool> TableExistsAsync(Type tableType, CancellationToken cancellationToken = new CancellationToken())
         {
             var tableModelDef = tableType.GetModelDefinition();
-            return Task.FromResult(DialectProvider.DoesTableExist(this,
-                    tableModelDef.Alias ?? tableModelDef.ModelName,
-                    tableModelDef.Schema));
+            
+            return TableExistsAsync(tableModelDef.Alias ?? tableModelDef.ModelName, tableModelDef.Schema,
+                cancellationToken);
         }
 
         /// <summary>
@@ -550,9 +547,10 @@ namespace SimpleStack.Orm
         /// <param name="tableName">the table name</param>
         /// <param name="schema">the schema name</param>
         /// <returns></returns>
-        public Task<bool> TableExistsAsync(string tableName, string schema = null, CancellationToken cancellationToken = new CancellationToken())
+        public async Task<bool> TableExistsAsync(string tableName, string schema = null, CancellationToken cancellationToken = new CancellationToken())
         {
-            return Task.FromResult(DialectProvider.DoesTableExist(this, tableName, schema));
+            return await this.ExecuteScalarAsync<int>(
+                DialectProvider.ToTableExistStatement(tableName, schema, cancellationToken: cancellationToken)) > 0;
         }
 
         /// <summary>
@@ -617,7 +615,7 @@ namespace SimpleStack.Orm
 
             var dialectProvider = DialectProvider;
             var tableName = dialectProvider.NamingStrategy.GetTableName(modelDef.ModelName);
-            var tableExists = dialectProvider.DoesTableExist(this, tableName, modelDef.Schema);
+            var tableExists = await TableExistsAsync(tableName, modelDef.Schema, cancellationToken);
 
             if (overwrite && tableExists)
             {
@@ -627,7 +625,7 @@ namespace SimpleStack.Orm
 
             if (!tableExists)
             {
-                await this.ExecuteAsync(dialectProvider.ToCreateTableStatement(modelDef), cancellationToken).ConfigureAwait(false);
+                await this.ExecuteAsync(dialectProvider.ToCreateTableStatement(modelDef)).ConfigureAwait(false);
 
                 var sqlIndexes = dialectProvider.ToCreateIndexStatements(modelDef);
                 foreach (var sqlIndex in sqlIndexes)

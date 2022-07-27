@@ -52,24 +52,7 @@ namespace SimpleStack.Orm.SqlServer
 
 			return new SqlConnection(connectionString);
 		}
-		
-		/// <summary>Query if 'dbCmd' does table exist.</summary>
-		/// <param name="connection">    The database command.</param>
-		/// <param name="tableName">Name of the table.</param>
-		/// <returns>true if it succeeds, false if it fails.</returns>
-		public override bool DoesTableExist(IDbConnection connection, string tableName, string schemaName = null)
-		{
-			var sql = String.Format("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = '{0}'"
-				,tableName);
 
-			if (!string.IsNullOrEmpty(schemaName))
-			    sql += $" AND TABLE_SCHEMA = '{schemaName}'";
-
-			var result = connection.ExecuteScalar<int>(sql);
-
-			return result > 0;
-		}
-		
 		public override string GetCreateSchemaStatement(string schema, bool ignoreIfExists)
 		{
 			return ignoreIfExists ? 
