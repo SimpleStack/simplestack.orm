@@ -543,7 +543,7 @@ namespace SimpleStack.Orm.Tests
 
 		/// <summary>Gets or sets the complex object col.</summary>
 		/// <value>The complex object col.</value>
-		public TestType2 ComplexObjCol { get; set; }
+		//public TestType2 ComplexObjCol { get; set; }
 		
 		public long LongCol { get; set; }
 

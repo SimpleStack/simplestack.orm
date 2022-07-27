@@ -645,8 +645,12 @@ namespace SimpleStack.Orm
         /// <returns>The column type definition.</returns>
         public virtual string GetColumnTypeDefinition(Type fieldType, string fieldName, int? fieldLength)
         {
+            // DateTime has been removed from Dapper DBTypes
+            if(fieldType == typeof(DateTime))
+                return TypesMapper.GetFieldDefinition(DbType.DateTime2, fieldLength);
+            
 #pragma warning disable 618
-            var dbType = SqlMapper.LookupDbType(fieldType, fieldName, false, out var typeHandler);
+            var dbType = SqlMapper.LookupDbType(fieldType, fieldName, true, out var typeHandler);
 #pragma warning restore 618
 
             if (typeHandler is ITypeHandlerColumnType typeHandlerColumnType)
@@ -655,7 +659,7 @@ namespace SimpleStack.Orm
                 fieldLength = typeHandlerColumnType.Length;
             }
 
-            return TypesMapper.GetFieldDefinition(dbType, fieldLength);
+            return TypesMapper.GetFieldDefinition(dbType.GetValueOrDefault(DbType.Object), fieldLength);
         }
 
         /// <summary>Gets foreign key on delete clause.</summary>

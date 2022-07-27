@@ -18,7 +18,7 @@ namespace SimpleStack.Orm.Tests
 
         /// <summary>Gets or sets the nullable col.</summary>
         /// <value>The nullable col.</value>
-        public TestType2 NullableCol { get; set; }
+        //public TestType2 NullableCol { get; set; }
 
         /// <summary>Gets or sets the identifier.</summary>
         /// <value>The identifier.</value>

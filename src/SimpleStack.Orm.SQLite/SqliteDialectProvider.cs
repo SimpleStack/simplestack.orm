@@ -14,6 +14,8 @@ namespace SimpleStack.Orm.Sqlite
     /// <summary>A sqlite ORM lite dialect provider base.</summary>
     public class SqliteDialectProvider : DialectProviderBase
     {
+
+        
         private static readonly Regex PrecisionAndScaleRegex = new Regex(@"\w+\((?<precision>\d+),?(?<scale>\d+)?\)",RegexOptions.Compiled);
         
 	    /// <summary>
