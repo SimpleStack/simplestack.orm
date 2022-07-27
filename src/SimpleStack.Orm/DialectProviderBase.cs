@@ -347,7 +347,7 @@ namespace SimpleStack.Orm
             CancellationToken cancellationToken = new CancellationToken())
         {
             var sql = $"SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = {GetParameterName(0)}";
-            var parameters = new Dictionary<string, object> {{GetParameterName(0), tableName}};
+            var parameters = new Dictionary<string, object> {{GetParameterName(0), NamingStrategy.GetTableName(tableName)}};
 
             if (!string.IsNullOrEmpty(schemaName))
             {
