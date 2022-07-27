@@ -254,7 +254,7 @@ namespace SimpleStack.Orm
         /// <summary>Converts a tableType to a create table statement.</summary>
         /// <param name="modelDef">Model Definition.</param>
         /// <returns>tableType as a string.</returns>
-        public virtual string ToCreateTableStatement(ModelDefinition modelDef)
+        public virtual CommandDefinition ToCreateTableStatement(ModelDefinition modelDef, CancellationToken cancellationToken = new CancellationToken())
         {
             var sbColumns = new StringBuilder();
             var sbConstraints = new StringBuilder();
@@ -306,8 +306,8 @@ namespace SimpleStack.Orm
                 sbPrimaryKeys.Append(")");
             }
 
-            return
-                $"CREATE TABLE {GetQuotedTableName(modelDef)} \n(\n  {sbColumns}{sbPrimaryKeys}{sbConstraints} \n); \n";
+            return new CommandDefinition($"CREATE TABLE {GetQuotedTableName(modelDef)} \n(\n  {sbColumns}{sbPrimaryKeys}{sbConstraints} \n); \n",
+                cancellationToken:cancellationToken);
         }
 
         /// <summary>Converts a tableType to a create index statements.</summary>
@@ -343,22 +343,19 @@ namespace SimpleStack.Orm
             return sqlIndexes;
         }
 
-        /// <summary>Query if 'dbCmd' does table exist.</summary>
-        /// <param name="connection">The database.</param>
-        /// <param name="tableName">Name of the table.</param>
-        /// <returns>true if it succeeds, false if it fails.</returns>
-        public virtual bool DoesTableExist(IDbConnection connection, string tableName, string schemaName)
+        public virtual CommandDefinition ToTableExistStatement(string tableName, string schemaName,
+            CancellationToken cancellationToken = new CancellationToken())
         {
-            return false;
-        }
+            var sql = $"SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = {GetParameterName(0)}";
+            var parameters = new Dictionary<string, object> {{GetParameterName(0), tableName}};
 
-        /// <summary>Query if 'dbCmd' does table exist.</summary>
-        /// <param name="connection">The database.</param>
-        /// <param name="tableName">Name of the table.</param>
-        /// <returns>true if it succeeds, false if it fails.</returns>
-        public virtual bool DoesSchemaExist(IDbConnection connection, string schemaName)
-        {
-            return false;
+            if (!string.IsNullOrEmpty(schemaName))
+            {
+                sql += $" AND TABLE_SCHEMA = {GetParameterName(1)}";
+                parameters.Add(GetParameterName(1), schemaName);
+            }
+            
+            return new CommandDefinition(sql, parameters, cancellationToken: cancellationToken);
         }
 
         /// <summary>Query if 'dbCmd' does sequence exist.</summary>

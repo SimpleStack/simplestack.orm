@@ -83,11 +83,13 @@ namespace SimpleStack.Orm
         CommandDefinition ToCountStatement(CountStatement statement, CommandFlags flags, CancellationToken cancellationToken = new CancellationToken());
 
         CommandDefinition ToDeleteStatement(DeleteStatement deleteStatement, CancellationToken cancellationToken = new CancellationToken());
+        
+        CommandDefinition ToTableExistStatement(string tableName, string schemaName, CancellationToken cancellationToken = new CancellationToken());
 
         /// <summary>Converts a tableType to a create table statement.</summary>
         /// <param name="modelDefinition">Model Definition.</param>
         /// <returns>tableType as a string.</returns>
-        string ToCreateTableStatement(ModelDefinition modelDefinition);
+        CommandDefinition ToCreateTableStatement(ModelDefinition modelDefinition, CancellationToken cancellationToken = new CancellationToken());
 
         /// <summary>Converts a tableType to a create index statements.</summary>
         /// <param name="modelDefinition">Model Definition.</param>
@@ -109,18 +111,6 @@ namespace SimpleStack.Orm
         /// <param name="modelDefinition">Model Definition.</param>
         /// <returns>A List&lt;string&gt;</returns>
         List<string> SequenceList(ModelDefinition modelDefinition);
-
-        /// <summary>Query if  table exist.</summary>
-        /// <param name="connection">       The database.</param>
-        /// <param name="tableName">Name of the table.</param>
-        /// <returns>true if it exists, false otherwise.</returns>
-        bool DoesTableExist(IDbConnection connection, string tableName, string schemaName);
-
-        /// <summary>Query if schema exist.</summary>
-        /// <param name="connection">       The database.</param>
-        /// <param name="tableName">Name of the table.</param>
-        /// <returns>true if it exists, false otherwise.</returns>
-        bool DoesSchemaExist(IDbConnection connection, string schemaName);
 
         /// <summary>Query if 'dbCmd' does sequence exist.</summary>
         /// <param name="dbCmd">      The database command.</param>

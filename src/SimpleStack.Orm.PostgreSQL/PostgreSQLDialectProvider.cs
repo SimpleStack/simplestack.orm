@@ -5,6 +5,7 @@ using System.Data.Common;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
+using System.Threading;
 using Dapper;
 using Npgsql;
 
@@ -95,27 +96,30 @@ namespace SimpleStack.Orm.PostgreSQL
 
             return sql.ToString();
         }
-
-        /// <summary>Query if 'dbCmd' does table exist.</summary>
-        /// <param name="connection">    The database command.</param>
-        /// <param name="tableName">Name of the table.</param>
-        /// <returns>true if it succeeds, false if it fails.</returns>
-        public override bool DoesTableExist(IDbConnection connection, string tableName, string schemaName = null)
+        
+        public override CommandDefinition ToTableExistStatement(string tableName, string schemaName,
+            CancellationToken cancellationToken = new CancellationToken())
         {
-            var query = @"SELECT COUNT(*) FROM pg_class
+            var sql = $@"SELECT COUNT(*) FROM pg_class
                        LEFT JOIN pg_namespace n ON n.oid = pg_class.relnamespace
-                       WHERE relname = :table AND nspname = ";
+                       WHERE relname = {GetParameterName(0)}";
 
+            var parameters = new Dictionary<string, object>
+            {
+                {GetParameterName(0), tableName},
+            };
+            
             if (string.IsNullOrEmpty(schemaName))
-                query += "current_schema()";
+            {
+                sql += " AND nspname = current_schema()";
+            }
             else
             {
-                query += $"'{NamingStrategy.GetTableName(schemaName)}'";
+                sql += $" AND nspname = {GetParameterName(1)}";
+                parameters.Add(GetParameterName(1),schemaName);
             }
             
-            var result = connection.ExecuteScalar<long>(query, new {table = NamingStrategy.GetTableName(tableName)});
-
-            return result > 0;
+            return new CommandDefinition(sql, parameters, cancellationToken: cancellationToken);
         }
 
 //        /// <summary>Gets quoted table name.</summary>
