@@ -57,7 +57,7 @@ namespace SimpleStack.Orm.SqlServer
 		{
 			return ignoreIfExists ? 
 				$@"IF NOT EXISTS ( SELECT * FROM sys.schemas WHERE name = N'{schema}' )
-						EXEC('CREATE SCHEMA [app]')" : 
+						EXEC('CREATE SCHEMA [{schema}]')" : 
 				$"CREATE SCHEMA {schema}";
 		}
 

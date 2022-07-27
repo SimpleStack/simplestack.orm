@@ -296,7 +296,7 @@ namespace SimpleStack.Orm
         /// <typeparam name="T"></typeparam>
         /// <typeparam name="TKey"></typeparam>
         /// <returns></returns>
-        public Task<int> UpdateAllAsync<T, TKey>(object obj, Expression<Func<T, TKey>> onlyField,
+        public async Task<int> UpdateAllAsync<T, TKey>(object obj, Expression<Func<T, TKey>> onlyField,
             Expression<Func<T, bool>> where = null, CancellationToken cancellationToken = new CancellationToken())
         {
             var s = new TypedUpdateStatement<T>(DialectProvider);
@@ -308,7 +308,7 @@ namespace SimpleStack.Orm
             s.Values(obj, onlyField);
 
             var cmd = DialectProvider.ToUpdateStatement(s.Statement, CommandFlags.None, cancellationToken);
-            return this.ExecuteScalarAsync<int>(cmd);
+            return await this.ExecuteScalarAsync<int>(cmd);
         }
 
         /// <summary>
@@ -330,14 +330,14 @@ namespace SimpleStack.Orm
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
         /// <exception cref="OrmException"></exception>
-        public Task<TKey> InsertAsync<TKey, T>(T obj, CancellationToken cancellationToken = new CancellationToken())
+        public async Task<TKey> InsertAsync<TKey, T>(T obj, CancellationToken cancellationToken = new CancellationToken())
         {
             try
             {
                 var insertStatement = new TypedInsertStatement<T>(DialectProvider);
                 insertStatement.Values(obj, Array.Empty<string>());
                 var commandDefinition = DialectProvider.ToInsertStatement(insertStatement.Statement, CommandFlags.None, cancellationToken);
-                return this.ExecuteScalarAsync<TKey>(commandDefinition);
+                return await this.ExecuteScalarAsync<TKey>(commandDefinition);
             }
             catch (Exception e)
             {
@@ -351,18 +351,7 @@ namespace SimpleStack.Orm
         /// <param name="objs">The objects to insert</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public Task<IEnumerable<int>> InsertAsync<T>(IEnumerable<T> objs, CancellationToken cancellationToken = new CancellationToken())
-        {
-            return InsertAsync<int, T>(objs, cancellationToken);
-        }
-
-        /// <summary>
-        /// Insert multiple objects at once in the database
-        /// </summary>
-        /// <param name="objs">The objects to insert</param>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
-        public async Task<IEnumerable<TKey>> InsertAsync<TKey, T>(IEnumerable<T> objs, CancellationToken cancellationToken = new CancellationToken())
+        public async Task<IEnumerable<TKey>> InsertAsync<T,TKey>(IEnumerable<T> objs, CancellationToken cancellationToken = new CancellationToken())
         {
             if (objs == null)
             {
@@ -391,13 +380,13 @@ namespace SimpleStack.Orm
         /// <typeparam name="T"></typeparam>
         /// <typeparam name="TKey"></typeparam>
         /// <returns></returns>
-        public Task<int> InsertOnlyAsync<T, TKey>(T obj, Expression<Func<T, TKey>> onlyFields, CancellationToken cancellationToken = new CancellationToken())
+        public async Task<int> InsertOnlyAsync<T, TKey>(T obj, Expression<Func<T, TKey>> onlyFields, CancellationToken cancellationToken = new CancellationToken())
             where T : new()
         {
             var insertStatement = new TypedInsertStatement<T>(DialectProvider);
             insertStatement.Values(obj, onlyFields);
 
-            return this.ExecuteScalarAsync<int>(
+            return await this.ExecuteScalarAsync<int>(
                 DialectProvider.ToInsertStatement(insertStatement.Statement, CommandFlags.None, cancellationToken));
         }
 

@@ -224,17 +224,9 @@ namespace SimpleStack.Orm
         /// <param name="objs">  The objects.</param>
         public IEnumerable<int> Insert<T>(IEnumerable<T> objs)
         {
-            return InsertAsync(objs).Result;
+            return InsertAsync<T,int>(objs).Result;
         }
-
-        /// <summary>An OrmConnection method that inserts all.</summary>
-        /// <typeparam name="T">Generic type parameter.</typeparam>
-        /// <param name="objs">  The objects.</param>
-        public IEnumerable<TKey> Insert<TKey, T>(IEnumerable<T> objs)
-        {
-            return InsertAsync<TKey, T>(objs).Result;
-        }
-
+        
         /// <summary>An OrmConnection method that inserts an only.</summary>
         /// <typeparam name="T">Generic type parameter.</typeparam>
         /// <param name="obj">       The object.</param>

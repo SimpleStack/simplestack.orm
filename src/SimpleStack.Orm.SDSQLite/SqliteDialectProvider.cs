@@ -50,7 +50,7 @@ namespace SimpleStack.Orm.SDSQLite
             var name = string.IsNullOrEmpty(schemaName) ? tableName : $"{schemaName}_{tableName}";
             
             var sql = $"SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name =  {GetParameterName(0)}";
-            var parameters = new Dictionary<string, object> {{GetParameterName(0), tableName}};
+            var parameters = new Dictionary<string, object> {{GetParameterName(0), name}};
             
             return new CommandDefinition(sql, parameters, cancellationToken: cancellationToken);
         }

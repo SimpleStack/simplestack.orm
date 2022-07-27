@@ -103,10 +103,10 @@ namespace SimpleStack.Orm.PostgreSQL
             var sql = $@"SELECT COUNT(*) FROM pg_class
                        LEFT JOIN pg_namespace n ON n.oid = pg_class.relnamespace
                        WHERE relname = {GetParameterName(0)}";
-
+        
             var parameters = new Dictionary<string, object>
             {
-                {GetParameterName(0), tableName},
+                {GetParameterName(0), NamingStrategy.GetTableName(tableName)},
             };
             
             if (string.IsNullOrEmpty(schemaName))
@@ -116,7 +116,7 @@ namespace SimpleStack.Orm.PostgreSQL
             else
             {
                 sql += $" AND nspname = {GetParameterName(1)}";
-                parameters.Add(GetParameterName(1),schemaName);
+                parameters.Add(GetParameterName(1),NamingStrategy.GetTableName(schemaName));
             }
             
             return new CommandDefinition(sql, parameters, cancellationToken: cancellationToken);
