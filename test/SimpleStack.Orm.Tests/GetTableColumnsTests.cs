@@ -19,7 +19,7 @@ namespace SimpleStack.Orm.Tests
                 db.CreateTable<TestType2>(true);
 
                 var columns = db.GetTableColumns("TestType2").ToArray();
-                Assert.AreEqual(8, columns.Length);
+                Assert.AreEqual(7, columns.Length);
                 
                 Assert.AreEqual("id", columns[0].Name.ToLower());
                 Assert.AreEqual(true, columns[0].PrimaryKey);
@@ -50,17 +50,14 @@ namespace SimpleStack.Orm.Tests
                 Assert.AreEqual(false, columns[5].PrimaryKey);
                 Assert.False(columns[5].Unique);
                 Assert.AreEqual(DbType.Guid, columns[5].DbType);
-
-                Assert.AreEqual("complexobjcol", columns[6].Name.ToLower());
-                Assert.AreEqual(false, columns[6].PrimaryKey);
-                Assert.False(columns[6].Unique);
+                
                 // SQLServer return String for this type
                 //Assert.AreEqual(DbType.Binary, columns[6].DbType);
 
-                Assert.AreEqual("longcol", columns[7].Name.ToLower());
-                Assert.AreEqual(false, columns[7].PrimaryKey);
-                Assert.False(columns[7].Unique);
-                Assert.AreEqual(DbType.Int64, columns[7].DbType);
+                Assert.AreEqual("longcol", columns[6].Name.ToLower());
+                Assert.AreEqual(false, columns[6].PrimaryKey);
+                Assert.False(columns[6].Unique);
+                Assert.AreEqual(DbType.Int64, columns[6].DbType);
             }
         }
 
