@@ -237,6 +237,15 @@ namespace SimpleStack.Orm.Tests
     {
         public SQLServerTests() : base(new SqlServerDialectProvider(),@"server=localhost,21433;User id=sa;Password=Simplestack2022!;database=test;Encrypt=True;TrustServerCertificate=True")
         {
+            var conn = new OrmConnectionFactory(new SqlServerDialectProvider(),
+                @"server=localhost,21433;User id=sa;Password=Simplestack2022!;Encrypt=True;TrustServerCertificate=True");
+            using (var c = conn.OpenConnection())
+            {
+                c.Execute(@"IF NOT EXISTS(SELECT * FROM sys.databases WHERE name = 'test')
+                BEGIN
+                    CREATE DATABASE [test]
+                END");
+            }
         }
         
         public override void Can_Select_Logical_Bitwise_xor_int_expression()
