@@ -31,8 +31,8 @@
 
     <ItemGroup>
       <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-      <PackageReference Include="System.Data.SQLite" Version="1.0.116" />
-      <PackageReference Include="System.Data.SQLite.Core" Version="1.0.116" />
+      <PackageReference Include="System.Data.SQLite" Version="1.0.117" />
+      <PackageReference Include="System.Data.SQLite.Core" Version="1.0.117" />
     </ItemGroup>
 
 </Project>
