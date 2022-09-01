@@ -249,7 +249,7 @@ namespace SimpleStack.Orm.SqlServer
 								       c.[scale] NUMERIC_SCALE,
 								       cl.definition COMPUTED_DEFINITION
 								FROM sys.columns c
-								LEFT JOIN sys.computed_columns cl ON cl.column_id = c.column_id 
+								LEFT JOIN sys.computed_columns cl ON cl.column_id = c.column_id AND c.object_id = cl.object_id 
 								LEFT JOIN sys.default_constraints dc ON dc.object_id = c.default_object_id 
 								INNER JOIN sys.types t ON t.user_type_id  = c.user_type_id 
 								where c.object_id = OBJECT_ID(@TableName);";
