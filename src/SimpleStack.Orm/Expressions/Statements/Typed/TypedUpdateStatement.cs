@@ -86,6 +86,7 @@ namespace SimpleStack.Orm.Expressions.Statements.Typed
                 var pname = _dialectProvider.GetParameterName(Statement.Parameters.Count);
                 Statement.UpdateFields.Add(_dialectProvider.GetQuotedColumnName(fieldDef.FieldName), pname);
                 Statement.Parameters.Add(pname, fieldDef.GetValue(values));
+                Statement.ParameterDefinitions.Add(pname, fieldDef);
             }
 
             //Add Primarykey filter if required
@@ -104,6 +105,7 @@ namespace SimpleStack.Orm.Expressions.Statements.Typed
                     Statement.WhereExpression.Append("=");
                     Statement.WhereExpression.Append(pname);
                     Statement.Parameters.Add(pname, pk.GetValue(values));
+                    Statement.ParameterDefinitions.Add(pname, pk);
                 }
             }
 

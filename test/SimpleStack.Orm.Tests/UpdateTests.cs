@@ -31,15 +31,27 @@ namespace SimpleStack.Orm.Tests
             /// <value>true if , false if not.</value>
             public bool Bool { get; set; }
 
+            public bool? NullBool { get; set; }
+
             /// <summary>Gets or sets the date time.</summary>
             /// <value>The date time.</value>
             public DateTime DateTime { get; set; }
+
+            public DateTime? NullDateTime { get; set; }
 
             /// <summary>Gets or sets the double.</summary>
             /// <value>The double.</value>
             public double Double { get; set; }
 
+            public double? NullDouble { get; set; }
+
             public Guid Guid { get; set; }
+
+            public Guid? NullGuid { get; set; }
+
+            public byte[] Bytes { get; set; }
+
+            public byte[] NullBytes { get; set; }
 
             /// <summary>Creates a new ModelWithFieldsOfDifferentTypes.</summary>
             /// <param name="id">The identifier.</param>
@@ -53,7 +65,8 @@ namespace SimpleStack.Orm.Tests
                     Double = 1.11d + id,
                     LongId = 999 + id,
                     Name = "Name" + id,
-                    Guid = Guid.NewGuid()
+                    Guid = Guid.NewGuid(),
+                    Bytes = new[] { (byte)(id % 256) },
                 };
 
                 return row;
@@ -71,7 +84,8 @@ namespace SimpleStack.Orm.Tests
                     Double = 1.11d + id,
                     LongId = 999 + id,
                     Name = "Name" + id,
-                    Guid = Guid.Empty
+                    Guid = Guid.Empty,
+                    Bytes = new[] { (byte)(id % 256) },
                 };
 
                 return row;
