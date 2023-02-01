@@ -55,6 +55,7 @@ namespace SimpleStack.Orm.Expressions.Statements.Typed
                 {
                     var pname = _dialectProvider.GetParameterName(Statement.Parameters.Count);
                     Statement.Parameters.Add(pname, v);
+                    Statement.ParameterDefinitions.Add(pname, fieldDef);
                     Statement.InsertFields.Add(_dialectProvider.GetQuotedColumnName(fieldDef.FieldName));
                 }
             }

@@ -150,7 +150,7 @@ namespace SimpleStack.Orm
             }
 
 
-            return new CommandDefinition(sql.ToString(), statement.Parameters, flags: flags, cancellationToken:cancellationToken);
+            return new CommandDefinition(sql.ToString(), statement.GetDynamicParameters(), flags: flags, cancellationToken:cancellationToken);
         }
 
         public virtual CommandDefinition ToCountStatement(CountStatement statement, CommandFlags flags, CancellationToken cancellationToken = new CancellationToken())
@@ -184,7 +184,7 @@ namespace SimpleStack.Orm
                 sql.Append(statement.HavingExpression);
             }
 
-            return new CommandDefinition(sql.ToString(), statement.Parameters, flags: flags, cancellationToken:cancellationToken);
+            return new CommandDefinition(sql.ToString(), statement.GetDynamicParameters(), flags: flags, cancellationToken:cancellationToken);
         }
 
         public virtual CommandDefinition ToDeleteStatement(DeleteStatement statement, CancellationToken cancellationToken = new CancellationToken())
@@ -197,7 +197,7 @@ namespace SimpleStack.Orm
                 query.Append(statement.WhereExpression);
             }
 
-            return new CommandDefinition(query.ToString(), statement.Parameters, cancellationToken:cancellationToken);
+            return new CommandDefinition(query.ToString(), statement.GetDynamicParameters(), cancellationToken:cancellationToken);
         }
 
         public virtual CommandDefinition ToInsertStatement(InsertStatement insertStatement, CommandFlags flags, CancellationToken cancellationToken = new CancellationToken())
@@ -219,7 +219,7 @@ namespace SimpleStack.Orm
 
             query.Append(insertStatement.HasIdentity ? SelectIdentitySql : "SELECT 0");
 
-            return new CommandDefinition(query.ToString(), insertStatement.Parameters, flags: flags, cancellationToken:cancellationToken);
+            return new CommandDefinition(query.ToString(), insertStatement.GetDynamicParameters(), flags: flags, cancellationToken:cancellationToken);
         }
 
         public virtual CommandDefinition ToUpdateStatement(UpdateStatement statement, CommandFlags flags, CancellationToken cancellationToken = new CancellationToken())
@@ -248,7 +248,7 @@ namespace SimpleStack.Orm
                 query.Append(statement.WhereExpression);
             }
 
-            return new CommandDefinition(query.ToString(), statement.Parameters, flags: flags, cancellationToken:cancellationToken);
+            return new CommandDefinition(query.ToString(), statement.GetDynamicParameters(), flags: flags, cancellationToken:cancellationToken);
         }
 
         /// <summary>Converts a tableType to a create table statement.</summary>

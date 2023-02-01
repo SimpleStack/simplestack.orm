@@ -197,7 +197,7 @@ namespace SimpleStack.Orm.MySQL
             
             query.Append(insertStatement.HasIdentity ? SelectIdentitySql : "SELECT 0");
         
-            return new CommandDefinition(query.ToString(), insertStatement.Parameters, flags: flags, cancellationToken: cancellationToken);
+            return new CommandDefinition(query.ToString(), insertStatement.GetDynamicParameters(), flags: flags, cancellationToken: cancellationToken);
         }
     }
 }
