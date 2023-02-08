@@ -5,16 +5,17 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
+using SimpleStack.Orm.Expressions.Statements;
 
 namespace SimpleStack.Orm.Expressions
 {
     internal abstract class ExpressionVisitor
     {
         protected readonly IDialectProvider DialectProvider;
-        protected readonly IDictionary<string, object> Parameters;
+        protected readonly StatementParameters Parameters;
 
         protected ExpressionVisitor(IDialectProvider dialectProvider,
-            IDictionary<string, object> parameters)
+            StatementParameters parameters)
         {
             DialectProvider = dialectProvider;
             Parameters = parameters;
@@ -31,7 +32,7 @@ namespace SimpleStack.Orm.Expressions
 
             if (statement is ParameterPart pp)
             {
-                return (bool) Parameters[pp.Text] ? "1=1" : "1=0";
+                return (bool) Parameters[pp.Text].Value ? "1=1" : "1=0";
             }
 
             if (statement is ColumnAccessPart cp)
@@ -236,7 +237,7 @@ namespace SimpleStack.Orm.Expressions
 
                     if (o is ParameterPart op && op.ParameterType == typeof(bool))
                     {
-                        Parameters[op.Text] = !(bool) Parameters[op.Text];
+                        Parameters[op.Text].Value = !(bool) Parameters[op.Text].Value;
                         return o;
                     }
 
@@ -310,7 +311,7 @@ namespace SimpleStack.Orm.Expressions
 
                 if (leftp?.ParameterType == typeof(bool) || rightp?.ParameterType == typeof(bool))
                 {
-                    var boolValue = (bool) (leftp != null ? Parameters[leftp.Text] : Parameters[rightp.Text]);
+                    var boolValue = (bool) (leftp != null ? Parameters[leftp.Text].Value : Parameters[rightp.Text].Value);
                     if (operand == "AND")
                     {
                         if (boolValue)
@@ -336,12 +337,12 @@ namespace SimpleStack.Orm.Expressions
             {
                 if (leftca != null && leftca.ColumnType.IsEnum() && rightp != null)
                 {
-                    Parameters[rightp.Text] = Enum.ToObject(leftca.ColumnType, Parameters[rightp.Text]);
+                    Parameters[rightp.Text].Value = Enum.ToObject(leftca.ColumnType, Parameters[rightp.Text].Value);
                 }
 
                 if (rightca != null && rightca.ColumnType.IsEnum() && leftp != null)
                 {
-                    Parameters[leftp.Text] = Enum.ToObject(rightca.ColumnType, Parameters[leftp.Text]);
+                    Parameters[leftp.Text].Value = Enum.ToObject(rightca.ColumnType, Parameters[leftp.Text].Value);
                 }
             }
 
@@ -432,9 +433,12 @@ namespace SimpleStack.Orm.Expressions
         /// <returns></returns>
         protected ParameterPart AddParameter(object param)
         {
-            var paramName = DialectProvider.GetParameterName(Parameters.Count);
-            Parameters.Add(paramName, param);
-            return new ParameterPart(paramName, param.GetType());
+            var statementParameter = new StatementParameter(
+                DialectProvider.GetParameterName(Parameters.Count),
+                param.GetType(),
+                param);
+            Parameters.Add(statementParameter);
+            return new ParameterPart(statementParameter.ParameterName, statementParameter.Type);
         }
 
         protected class StatementPart

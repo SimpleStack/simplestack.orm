@@ -2,15 +2,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using SimpleStack.Orm.Expressions.Statements;
 
 namespace SimpleStack.Orm.Expressions
 {
-    internal class ColumnWhereExpresionVisitor<T> : ExpressionVisitor
+    internal class ColumnWhereExpressionVisitor<T> : ExpressionVisitor
     {
         private readonly string _statement;
 
-        public ColumnWhereExpresionVisitor(IDialectProvider dialectProvider,
-            IDictionary<string, object> parameters,
+        public ColumnWhereExpressionVisitor(IDialectProvider dialectProvider,
+            StatementParameters parameters,
             string statement)
             : base(dialectProvider, parameters)
         {

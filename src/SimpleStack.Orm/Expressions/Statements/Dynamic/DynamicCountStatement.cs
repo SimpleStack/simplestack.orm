@@ -65,7 +65,7 @@ namespace SimpleStack.Orm.Expressions.Statements.Dynamic
             if (predicate != null)
             {
                 Statement.HavingExpression.Append(
-                    new ColumnWhereExpresionVisitor<T>(_dialectProvider, Statement.Parameters,
+                    new ColumnWhereExpressionVisitor<T>(_dialectProvider, Statement.Parameters,
                             _dialectProvider.GetQuotedColumnName(columnName))
                         .VisitExpression(predicate));
             }
@@ -87,9 +87,9 @@ namespace SimpleStack.Orm.Expressions.Statements.Dynamic
             return Where(condition, "OR");
         }
 
-        internal ColumnWhereExpresionVisitor<T> GetExpressionVisitor<T>(string columnOrExpression)
+        internal ColumnWhereExpressionVisitor<T> GetExpressionVisitor<T>(string columnOrExpression)
         {
-            return new ColumnWhereExpresionVisitor<T>(_dialectProvider, Statement.Parameters, columnOrExpression);
+            return new ColumnWhereExpressionVisitor<T>(_dialectProvider, Statement.Parameters, columnOrExpression);
         }
 
         internal DynamicCountStatement Where<T>(ExpressionVisitor visitor, Expression<Func<T, bool>> func,

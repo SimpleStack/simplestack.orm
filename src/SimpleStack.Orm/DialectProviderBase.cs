@@ -150,7 +150,7 @@ namespace SimpleStack.Orm
             }
 
 
-            return new CommandDefinition(sql.ToString(), statement.GetDynamicParameters(), flags: flags, cancellationToken:cancellationToken);
+            return new CommandDefinition(sql.ToString(), statement.Parameters.ToDynamicParameters(), flags: flags, cancellationToken:cancellationToken);
         }
 
         public virtual CommandDefinition ToCountStatement(CountStatement statement, CommandFlags flags, CancellationToken cancellationToken = new CancellationToken())
@@ -184,7 +184,7 @@ namespace SimpleStack.Orm
                 sql.Append(statement.HavingExpression);
             }
 
-            return new CommandDefinition(sql.ToString(), statement.GetDynamicParameters(), flags: flags, cancellationToken:cancellationToken);
+            return new CommandDefinition(sql.ToString(), statement.Parameters.ToDynamicParameters(), flags: flags, cancellationToken:cancellationToken);
         }
 
         public virtual CommandDefinition ToDeleteStatement(DeleteStatement statement, CancellationToken cancellationToken = new CancellationToken())
@@ -197,7 +197,7 @@ namespace SimpleStack.Orm
                 query.Append(statement.WhereExpression);
             }
 
-            return new CommandDefinition(query.ToString(), statement.GetDynamicParameters(), cancellationToken:cancellationToken);
+            return new CommandDefinition(query.ToString(), statement.Parameters.ToDynamicParameters(), cancellationToken:cancellationToken);
         }
 
         public virtual CommandDefinition ToInsertStatement(InsertStatement insertStatement, CommandFlags flags, CancellationToken cancellationToken = new CancellationToken())
@@ -209,7 +209,7 @@ namespace SimpleStack.Orm
                 query.Append(" (");
                 query.Append(insertStatement.InsertFields.Aggregate((x, y) => x + ", " + y));
                 query.Append(" ) VALUES (");
-                query.Append(insertStatement.Parameters.Select(x => x.Key).Aggregate((x, y) => x + ", " + y));
+                query.Append(insertStatement.Parameters.Select(x => x.ParameterName).Aggregate((x, y) => x + ", " + y));
                 query.Append(");");
             }
             else
@@ -219,7 +219,7 @@ namespace SimpleStack.Orm
 
             query.Append(insertStatement.HasIdentity ? SelectIdentitySql : "SELECT 0");
 
-            return new CommandDefinition(query.ToString(), insertStatement.GetDynamicParameters(), flags: flags, cancellationToken:cancellationToken);
+            return new CommandDefinition(query.ToString(), insertStatement.Parameters.ToDynamicParameters(), flags: flags, cancellationToken:cancellationToken);
         }
 
         public virtual CommandDefinition ToUpdateStatement(UpdateStatement statement, CommandFlags flags, CancellationToken cancellationToken = new CancellationToken())
@@ -248,7 +248,7 @@ namespace SimpleStack.Orm
                 query.Append(statement.WhereExpression);
             }
 
-            return new CommandDefinition(query.ToString(), statement.GetDynamicParameters(), flags: flags, cancellationToken:cancellationToken);
+            return new CommandDefinition(query.ToString(), statement.Parameters.ToDynamicParameters(), flags: flags, cancellationToken:cancellationToken);
         }
 
         /// <summary>Converts a tableType to a create table statement.</summary>
@@ -539,7 +539,7 @@ namespace SimpleStack.Orm
         }
 
         public virtual string GetStringFunction(string functionName, string quotedColumnName,
-            IDictionary<string, object> parameters, params string[] availableParameters)
+            StatementParameters parameters, params string[] availableParameters)
         {
             switch (functionName.ToLower())
             {
@@ -556,19 +556,18 @@ namespace SimpleStack.Orm
                 case "tolower":
                     return $"lower({quotedColumnName})";
                 case "startswith":
-                    parameters[availableParameters[0]] = parameters[availableParameters[0]].ToString().ToUpper() + "%";
+                    parameters[availableParameters[0]].Value = parameters[availableParameters[0]].Value.ToString().ToUpper() + "%";
                     return $"upper({quotedColumnName}) LIKE {availableParameters[0]} ";
                 case "endswith":
-                    parameters[availableParameters[0]] = "%" + parameters[availableParameters[0]].ToString().ToUpper();
+                    parameters[availableParameters[0]].Value = "%" + parameters[availableParameters[0]].Value.ToString().ToUpper();
                     return $"upper({quotedColumnName}) LIKE {availableParameters[0]} ";
                 case "contains":
-                    parameters[availableParameters[0]] =
-                        "%" + parameters[availableParameters[0]].ToString().ToUpper() + "%";
+                    parameters[availableParameters[0]].Value = "%" + parameters[availableParameters[0]].Value.ToString().ToUpper() + "%";
                     return $"upper({quotedColumnName}) LIKE {availableParameters[0]} ";
                 case "substring":
                     //Ensure Offset is start at 1 instead of 0
-                    var offset = (int) parameters[availableParameters[0]] + 1;
-                    parameters[availableParameters[0]] = offset;
+                    var offset = (int) parameters[availableParameters[0]].Value + 1;
+                    parameters[availableParameters[0]].Value = offset;
 
                     if (parameters.Count == 2)
                     {

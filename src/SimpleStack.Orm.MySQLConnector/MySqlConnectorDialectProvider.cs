@@ -194,13 +194,13 @@ namespace SimpleStack.Orm.MySQLConnector
 
             if (insertStatement.Parameters.Any())
             {
-                query.Append(insertStatement.Parameters.Select(x => x.Key).Aggregate((x, y) => x + ", " + y));
+                query.Append(insertStatement.Parameters.Select(x => x.ParameterName).Aggregate((x, y) => x + ", " + y));
             }
             query.Append(");");
             
             query.Append(insertStatement.HasIdentity ? SelectIdentitySql : "SELECT 0");
 
-            return new CommandDefinition(query.ToString(), insertStatement.GetDynamicParameters(), flags: flags, cancellationToken: cancellationToken);
+            return new CommandDefinition(query.ToString(), insertStatement.Parameters.ToDynamicParameters(), flags: flags, cancellationToken: cancellationToken);
         }
     }
 }

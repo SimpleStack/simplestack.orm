@@ -1,33 +1,49 @@
+using System;
 using Dapper;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace SimpleStack.Orm.Expressions.Statements
 {
+    public class StatementParameters : KeyedCollection<string, StatementParameter>
+    {
+        protected override string GetKeyForItem(StatementParameter item)
+        {
+            return item.ParameterName;
+        }
+        
+        public DynamicParameters ToDynamicParameters()
+        {
+            var result = new DynamicParameters();
+            foreach (var pair in this)
+            {
+#pragma warning disable CS0618 // Type or member is obsolete
+                result.Add(pair.ParameterName, pair.Value,
+                    SqlMapper.LookupDbType(pair.Type, pair.ParameterName, demand: true, out _));
+#pragma warning restore CS0618 // Type or member is obsolete
+            }
+
+            return result;
+        }
+    }
+
+    public class StatementParameter
+    {
+        public string ParameterName { get; }
+        public Type Type { get; }
+        public object Value { get; set; }
+
+        public StatementParameter(string parameterName, Type type, object value)
+        {
+            ParameterName = parameterName;
+            Type = type;
+            Value = value;
+        }
+    }
+    
     public abstract class Statement
     {
         public string TableName { get; set; }
-        public IDictionary<string, object> Parameters { get; } = new Dictionary<string, object>();
-        public IDictionary<string, FieldDefinition> ParameterDefinitions { get; } = new Dictionary<string, FieldDefinition>();
-    }
-
-    public static class StatementExtensions
-    {
-        // This is to fix MSSQL provider error happen on UpdateStatement during update binary column with null value:
-        //   "Implicit conversion from data type nvarchar to varbinary is not allowed. Use the CONVERT function to run this query."
-        // When null parameter passed as object Dapper do not know the type and by default type is set to DbType.String.
-        public static DynamicParameters GetDynamicParameters(this Statement statement)
-        {
-            var result = new DynamicParameters();
-            foreach (var pair in statement.Parameters)
-            {
-                if (statement.ParameterDefinitions.TryGetValue(pair.Key, out var definition))
-#pragma warning disable CS0618 // Type or member is obsolete
-                    result.Add(pair.Key, pair.Value, SqlMapper.LookupDbType(definition.FieldType, pair.Key, demand: true, out _));
-#pragma warning restore CS0618 // Type or member is obsolete
-                else
-                    result.Add(pair.Key, pair.Value);
-            }
-            return result;
-        }
+        public StatementParameters Parameters { get; } = new StatementParameters();
     }
 }

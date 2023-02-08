@@ -36,8 +36,7 @@ namespace SimpleStack.Orm.Expressions.Statements.Typed
                 Statement.WhereExpression.Append(_dialectProvider.GetQuotedColumnName(pk.FieldName));
                 Statement.WhereExpression.Append("=");
                 Statement.WhereExpression.Append(pname);
-                Statement.Parameters.Add(pname, pk.GetValue(values));
-                Statement.ParameterDefinitions.Add(pname, pk);
+                Statement.Parameters.Add(new StatementParameter(pname,pk.FieldType, pk.GetValue(values)));
             }
 
             return this;

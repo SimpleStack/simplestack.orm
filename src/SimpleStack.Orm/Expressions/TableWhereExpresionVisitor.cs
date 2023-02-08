@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using SimpleStack.Orm.Expressions.Statements;
 
 namespace SimpleStack.Orm.Expressions
 {
@@ -11,7 +12,7 @@ namespace SimpleStack.Orm.Expressions
         private readonly ModelDefinition _modelDefinition;
 
         public TableWhereExpresionVisitor(IDialectProvider dialectProvider,
-            IDictionary<string, object> parameters,
+            StatementParameters parameters,
             ModelDefinition modelDefinition)
             : base(dialectProvider, parameters)
         {

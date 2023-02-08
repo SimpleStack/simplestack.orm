@@ -197,7 +197,7 @@ namespace SimpleStack.Orm.SqlServer
 			return $"DATEPART({name.ToLower()},{quotedColName})";
 		}
 
-		public override string GetStringFunction(string functionName, string quotedColumnName, IDictionary<string, object> parameters,
+		public override string GetStringFunction(string functionName, string quotedColumnName, StatementParameters parameters,
 			params string[] availableParameters)
 		{
 			switch (functionName.ToLower())
@@ -208,8 +208,8 @@ namespace SimpleStack.Orm.SqlServer
 					return $"ltrim(rtrim({quotedColumnName}))";
 				case "substring":                    
 					//Ensure Offset is start at 1 instead of 0
-					int offset = ((int) parameters[availableParameters[0]]) + 1;
-					parameters[availableParameters[0]] = offset;
+					int offset = ((int) parameters[availableParameters[0]].Value) + 1;
+					parameters[availableParameters[0]].Value = offset;
 
 					if (parameters.Count == 2)
 					{
