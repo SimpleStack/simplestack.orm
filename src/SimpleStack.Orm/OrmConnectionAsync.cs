@@ -95,13 +95,13 @@ namespace SimpleStack.Orm
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
         /// <exception cref="InvalidOperationException">If the query does not returns any element</exception>
-        public async Task<T> FirstAsync<T>(Expression<Func<T, bool>> predicate)
+        public async Task<T> FirstAsync<T>(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = new CancellationToken())
         {
             var r = await SelectAsync<T>(x =>
             {
                 x.Where(predicate);
                 x.Limit(1);
-            }).ConfigureAwait(false);
+            }, cancellationToken: cancellationToken).ConfigureAwait(false);
             return r.First();
         }
 
@@ -112,13 +112,13 @@ namespace SimpleStack.Orm
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
         /// <exception cref="InvalidOperationException">If the query does not returns any element</exception>
-        public async Task<T> FirstAsync<T>(Action<TypedSelectStatement<T>> expression)
+        public async Task<T> FirstAsync<T>(Action<TypedSelectStatement<T>> expression, CancellationToken cancellationToken = new CancellationToken())
         {
             var r = await SelectAsync<T>(x =>
             {
                 expression(x);
                 x.Limit(1);
-            }).ConfigureAwait(false);
+            }, cancellationToken: cancellationToken).ConfigureAwait(false);
             return r.First();
         }
 
@@ -128,13 +128,13 @@ namespace SimpleStack.Orm
         /// <param name="predicate">Where clause</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public async Task<T> FirstOrDefaultAsync<T>(Expression<Func<T, bool>> predicate)
+        public async Task<T> FirstOrDefaultAsync<T>(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = new CancellationToken())
         {
             var r = await SelectAsync<T>(x =>
             {
                 x.Where(predicate);
                 x.Limit(1);
-            }).ConfigureAwait(false);
+            }, cancellationToken: cancellationToken).ConfigureAwait(false);
             return r.FirstOrDefault();
         }
 
@@ -144,13 +144,13 @@ namespace SimpleStack.Orm
         /// <param name="expression"></param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public async Task<T> FirstOrDefaultAsync<T>(Action<TypedSelectStatement<T>> expression)
+        public async Task<T> FirstOrDefaultAsync<T>(Action<TypedSelectStatement<T>> expression, CancellationToken cancellationToken = new CancellationToken())
         {
             var r = await SelectAsync<T>(x =>
             {
                 expression(x);
                 x.Limit(1);
-            }).ConfigureAwait(false);
+            }, cancellationToken: cancellationToken).ConfigureAwait(false);
             return r.FirstOrDefault();
         }
 
