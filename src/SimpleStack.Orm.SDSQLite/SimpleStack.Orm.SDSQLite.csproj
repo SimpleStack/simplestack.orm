@@ -4,7 +4,6 @@
         <Description>SQLite Provider for SimpleStack.Orm based on System.Data.Sqlite</Description>
         <VersionPrefix>1.0.2</VersionPrefix>
         <Authors>SimpleStack Team;NServiceKit;ServiceStack</Authors>
-        <TargetFramework>netstandard2.1</TargetFramework>
         <AssemblyName>SimpleStack.Orm.SDSQLite</AssemblyName>
         <PackageId>SimpleStack.Orm.SDSQLite</PackageId>
         <PackageTags>System.Data.Sqlite;SimpleStack;Sqlite</PackageTags>
@@ -20,6 +19,7 @@
         <PackageProjectUrl>https://simplestack.org/</PackageProjectUrl>
         <RepositoryUrl>https://github.com/SimpleStack/simplestack.orm</RepositoryUrl>
         <LangVersion>latestmajor</LangVersion>
+        <TargetFrameworks>netstandard2.1;net8.0</TargetFrameworks>
     </PropertyGroup>
 
     <ItemGroup>

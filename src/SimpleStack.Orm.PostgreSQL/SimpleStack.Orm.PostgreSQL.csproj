@@ -4,7 +4,6 @@
     <Description>PostgreSQL Provider for SimpleStack.Orm</Description>
     <VersionPrefix>1.0.2</VersionPrefix>
     <Authors>SimpleStack Team;NServiceKit;ServiceStack</Authors>
-    <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
     <AssemblyName>SimpleStack.Orm.PostgreSQL</AssemblyName>
     <PackageId>SimpleStack.Orm.PostgreSQL</PackageId>
     <PackageTags>npgsql;SimpleStack;PostgreSQL</PackageTags>
@@ -19,6 +18,7 @@
     <PackageProjectUrl>https://simplestack.org/</PackageProjectUrl>
     <RepositoryUrl>https://github.com/SimpleStack/simplestack.orm</RepositoryUrl>
     <LangVersion>latestmajor</LangVersion>
+    <TargetFramework>net8.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
