@@ -152,7 +152,7 @@ namespace SimpleStack.Orm.Tests
                 {
                     if (results[i].Id != expected[i].Id)
                     {
-                        Assert.Fail("Expected person with id {0}, got {1}", expected[i].Id, results[i].Id);
+                        Assert.Fail($"Expected person with id {expected[i].Id}, got {results[i].Id}");
                     }
                 }
 
@@ -179,7 +179,7 @@ namespace SimpleStack.Orm.Tests
                 {
                     if (results[i].Id != expected[i].Id)
                     {
-                        Assert.Fail("Expected person with id {0}, got {1}", expected[i].Id, results[i].Id);
+                        Assert.Fail($"Expected person with id {expected[i].Id}, got {results[i].Id}");
                     }
                 }
             }
