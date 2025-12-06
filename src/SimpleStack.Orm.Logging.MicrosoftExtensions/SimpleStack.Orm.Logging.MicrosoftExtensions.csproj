@@ -5,11 +5,11 @@
         <LangVersion>latestmajor</LangVersion>
         <AssemblyVersion>1.3.0</AssemblyVersion>
         <FileVersion>1.3.0</FileVersion>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
+      <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.0" />
     </ItemGroup>
 
     <ItemGroup>
