@@ -320,7 +320,7 @@ namespace SimpleStack.Orm.Tests
 			    
 			    var actual = conn.Select(tableName, q =>
 			    {
-				    q.Where<string>(columnName, x => stringArray.Contains(x));
+				    q.Where<string>(columnName, x => ((IEnumerable<string>)stringArray).Contains(x));
 			    }).ToArray();
 
 			    Assert.AreEqual(1,actual.Length);
@@ -336,10 +336,10 @@ namespace SimpleStack.Orm.Tests
 
 			using (var conn = OpenDbConnection())
 			{
-				var target = conn.Select<TestType2>(x => new []{"asdf", "qwer"}.Contains(x.TextCol));
+				var target = conn.Select<TestType2>(x => new []{"asdf", "qwer"}.AsEnumerable().Contains(x.TextCol));
 				Assert.AreEqual(2, target.Count());
 				
-				target = conn.Select<TestType2>(x => GetStrings().ToArray().Contains(x.TextCol));
+				target = conn.Select<TestType2>(x => GetStrings().AsEnumerable().Contains(x.TextCol));
 				Assert.AreEqual(2, target.Count());				
 				target = conn.Select<TestType2>(x => GetStrings().Contains(x.TextCol));
 				Assert.AreEqual(2, target.Count());				
@@ -361,7 +361,7 @@ namespace SimpleStack.Orm.Tests
 
 			using (var conn = OpenDbConnection())
 			{
-				var target = conn.Select<TestType2>(q => new [] { 1, 2, 3 }.Contains(q.Id));
+				var target = conn.Select<TestType2>(q => new [] { 1, 2, 3 }.AsEnumerable().Contains(q.Id));
 				Assert.AreEqual(3, target.Count());
 			}
 		}
@@ -374,7 +374,7 @@ namespace SimpleStack.Orm.Tests
 
 			using (var conn = OpenDbConnection())
 			{
-				var target = conn.Select<TestType2>(q => new object[] { 1, 2, 3 }.Contains(q.Id));
+				var target = conn.Select<TestType2>(q => new object[] { 1, 2, 3 }.AsEnumerable().Contains(q.Id));
 				Assert.AreEqual(3, target.Count());
 			}
 		}
