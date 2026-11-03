@@ -7,7 +7,7 @@
     <AssemblyName>SimpleStack.Orm.MySQL</AssemblyName>
     <PackageId>SimpleStack.Orm.MySQL</PackageId>
     <PackageTags>MySQL;SimpleStack;Orm</PackageTags>
-    <PackageLicenseUrl>http://www.gnu.org/licenses/old-licenses/gpl-2.0-standalone.html</PackageLicenseUrl>
+    <PackageLicenseExpression>GPL-2.0-only WITH Universal-FOSS-exception-1.0</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
