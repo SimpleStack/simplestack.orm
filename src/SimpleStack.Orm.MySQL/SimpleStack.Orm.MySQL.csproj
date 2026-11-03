@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>MySQL Provider for SimpleStack.Orm</Description>
-    <VersionPrefix>1.0.2</VersionPrefix>
+    <VersionPrefix>1.5.0</VersionPrefix>
     <Authors>SimpleStack Team;NServiceKit;ServiceStack</Authors>
     <AssemblyName>SimpleStack.Orm.MySQL</AssemblyName>
     <PackageId>SimpleStack.Orm.MySQL</PackageId>
@@ -12,10 +12,10 @@
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
-    <Version>1.2.0-beta95</Version>
-    <AssemblyVersion>1.3.0</AssemblyVersion>
-    <FileVersion>1.3.0</FileVersion>
-    <PackageVersion>1.4.0</PackageVersion>
+    <Version>1.5.0</Version>
+    <AssemblyVersion>1.5.0</AssemblyVersion>
+    <FileVersion>1.5.0</FileVersion>
+    <PackageVersion>1.5.0</PackageVersion>
     <PackageProjectUrl>https://simplestack.org/</PackageProjectUrl>
     <RepositoryUrl>https://github.com/SimpleStack/simplestack.orm</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
