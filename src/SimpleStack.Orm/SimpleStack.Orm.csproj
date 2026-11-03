@@ -2,7 +2,7 @@
 
 <PropertyGroup>
     <Description>Lite ORM framework based on Dapper and SQL Query Generation from ServiceStack/NServicekit</Description>
-    <VersionPrefix>1.0.2</VersionPrefix>
+    <VersionPrefix>1.5.0</VersionPrefix>
     <Authors>SimpleStack Team;NServiceKit;ServiceStack</Authors>
     <AssemblyName>SimpleStack.Orm</AssemblyName>
     <PackageId>SimpleStack.Orm</PackageId>
@@ -10,11 +10,11 @@
     <PackageLicenseUrl>http://www.opensource.org/licenses/MIT</PackageLicenseUrl>
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
     <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
-    <Version>1.2.0-beta95</Version>
+    <Version>1.5.0</Version>
     <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
-    <AssemblyVersion>1.3.0</AssemblyVersion>
-    <FileVersion>1.3.0</FileVersion>
-    <PackageVersion>1.4.0</PackageVersion>
+    <AssemblyVersion>1.5.0</AssemblyVersion>
+    <FileVersion>1.5.0</FileVersion>
+    <PackageVersion>1.5.0</PackageVersion>
     <PackageProjectUrl>https://simplestack.org/</PackageProjectUrl>
     <RepositoryUrl>https://github.com/SimpleStack/simplestack.orm</RepositoryUrl>
     <TargetFrameworks>net8.0;netstandard2.1;net10.0</TargetFrameworks>
@@ -22,8 +22,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Dapper" Version="2.1.66" />
-    <PackageReference Include="Microsoft.CSharp" Version="4.6.0" />
+    <PackageReference Include="Dapper" Version="2.1.89" />
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
   </ItemGroup>
 
 </Project>
