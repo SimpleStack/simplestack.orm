@@ -7,7 +7,7 @@
     <AssemblyName>SimpleStack.Orm.MySQLConnector</AssemblyName>
     <PackageId>SimpleStack.Orm.MySQLConnector</PackageId>
     <PackageTags>MySQLConnector;SimpleStack;MySQL</PackageTags>
-    <PackageLicenseUrl>http://www.opensource.org/licenses/MIT</PackageLicenseUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>

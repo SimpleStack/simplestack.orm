@@ -7,7 +7,7 @@
     <AssemblyName>SimpleStack.Orm.SQLServer</AssemblyName>
     <PackageId>SimpleStack.Orm.SQLServer</PackageId>
     <PackageTags>SimpleStack;SQLServer</PackageTags>
-    <PackageLicenseUrl>http://www.opensource.org/licenses/MIT</PackageLicenseUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>

@@ -7,7 +7,7 @@
     <AssemblyName>SimpleStack.Orm</AssemblyName>
     <PackageId>SimpleStack.Orm</PackageId>
     <PackageTags>Orm;Dapper;SQL Generator</PackageTags>
-    <PackageLicenseUrl>http://www.opensource.org/licenses/MIT</PackageLicenseUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
     <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
     <Version>1.5.0</Version>
